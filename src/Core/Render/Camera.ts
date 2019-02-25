@@ -1,6 +1,10 @@
-import { mat4 } from '../Geometry/Matrix/mat4'
-import { getIdentityMat4 } from '../Geometry/Matrix/identity'
-import { flatMat4 } from '../Geometry/Matrix/flatten'
+import { mat4 } from '../Geometry/Matrix/mat'
+import { getIdentityMat4 } from '../Geometry/Matrix/identity';
+import { flatMat4 } from '../Geometry/Matrix/flatten';
+import { lookAtMatrix } from '../Geometry/Matrix/lookAt';
+import { getPerspectiveMatrix } from '../Geometry/Matrix/perspective';
+import { radians } from '../Geometry/radians';
+import { MainController } from '../Controller/MainController';
 
 export interface Camera {
     getProjectionMatrix(): mat4;
@@ -13,8 +17,17 @@ export interface Camera {
 }
 
 export class SimpleCamera implements Camera {
-    protected projection_matrix: mat4 = getIdentityMat4()
-    protected view_matrix: mat4 = getIdentityMat4()
+    protected projection_matrix: mat4 = getPerspectiveMatrix(
+        radians(90),
+        MainController.CanvasController.getAspect(),
+        0.5,
+        50
+    );
+    protected view_matrix: mat4 = lookAtMatrix(
+        {x: 1, y: 0.5, z: 5},
+        {x: 0, y: 0, z: 0},
+        {x: 0, y: 1, z: 0}
+    );
 
     bindCamera(GL: WebGL2RenderingContext,
                projection_matrix_location: WebGLUniformLocation,

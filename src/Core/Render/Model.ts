@@ -1,5 +1,6 @@
 import {SceneObject} from "../Scene/SceneObject";
 import {DrawMesh} from "./DrawMesh";
+import { Transformation } from '../Geometry/Transformation/Transformation';
 
 /**
  * Class Model
@@ -18,6 +19,7 @@ export class Model {
 
     public readonly related_scene_object: SceneObject;
     public draw_meshes: DrawMesh[] = [];
+    public transformation: Transformation = new Transformation();
 
     constructor(related_scene_object: SceneObject) {
         this.related_scene_object = related_scene_object;

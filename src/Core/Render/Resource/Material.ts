@@ -1,7 +1,7 @@
 import {RenderResource} from "./RenderResource";
 import {Texture} from "./Texture";
-import {vec3} from "../../Geometry/Vector/vec3";
 import {GeometryShader} from "../Shader/GeometryShader";
+import { vec3 } from '../../Geometry/Vector/vec';
 
 export interface Material extends RenderResource {
     readonly resource_type: 'material';

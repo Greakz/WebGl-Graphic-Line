@@ -1,6 +1,6 @@
 import {Material} from "../../../../Core/Render/Resource/Material";
-import {vec3} from "../../../../Core/Geometry/Vector/vec3";
 import {GeometryShader} from "../../../../Core/Render/Shader/GeometryShader";
+import { vec3 } from '../../../../Core/Geometry/Vector/vec';
 
 export class BaseMaterial implements Material {
     readonly resource_type: 'material';

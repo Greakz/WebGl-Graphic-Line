@@ -1,4 +1,4 @@
-import { mat4 } from './mat4'
+import { mat4 } from './mat'
 
 export function flatMat4(mat4: mat4) {
     return [

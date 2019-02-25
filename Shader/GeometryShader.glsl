@@ -5,8 +5,9 @@ layout(location = 0) in vec3 VertexPosition;
 layout(location = 1) in vec3 VertexNormals;
 layout(location = 2) in vec2 TexturePosition;
 
+
 layout(location = 3) in mat4 mesh_matrix;
-layout(location = 4) in mat4 model_matrix;
+layout(location = 7) in mat4 model_matrix;
 
 // material data
 uniform vec3 albedo_color;
@@ -39,8 +40,5 @@ uniform sampler2D specular_texture;
 out vec4 fragmentColor;
 
 void main(void) {
-    vColor;
-    vNormals;
-    vTexPos;
-    fragmentColor = vec4(vec3(vTexPos, 1.0) + vNormals, 1.0);
+    fragmentColor = vec4(vec3(vTexPos, 1.0) + vNormals, 1.0) * vec4(vColor, 1.0);
 }

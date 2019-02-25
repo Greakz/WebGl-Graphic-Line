@@ -1,10 +1,15 @@
 import {Mesh} from "../../../../Core/Render/Resource/Mesh";
 import {GeometryShader} from "../../../../Core/Render/Shader/GeometryShader";
 import {ShadowShader} from "../../../../Core/Render/Shader/ShadowShader";
+import { Transformation } from '../../../../Core/Geometry/Transformation/Transformation';
+import { MainController } from '../../../../Core/Controller/MainController';
 
 export class PlaneMesh implements Mesh {
     public readonly resource_type: 'mesh';
     public readonly resource_id: string = 'plane-mesh';
+    public readonly draw_count: number = 6;
+
+    transformation: Transformation = new Transformation();
 
     private vertex_points: number[] = [
         // Position         // Normals          //Textures
@@ -35,6 +40,7 @@ export class PlaneMesh implements Mesh {
 
         // Bind Shadow Shader Pointer
         // ...
+        MainController.RenderController.setMeshAndModelAttributePointer(GL);
 
         // Unbind Created Buffer
         GL.bindBuffer(GL.ARRAY_BUFFER, null);

@@ -3,10 +3,13 @@ import LogInstance, {LogInterface} from "../Util/LogInstance";
 export interface CanvasControllerInterface {
     getGL: () => WebGL2RenderingContext;
     init(): void;
+    getAspect(): number;
 }
 
 var canvas_instance: HTMLCanvasElement;
 var canvas_context: WebGL2RenderingContext;
+var canvas_height: number;
+var canvas_width: number;
 
 class CanvasController implements CanvasControllerInterface{
 
@@ -27,6 +30,9 @@ class CanvasController implements CanvasControllerInterface{
     getGL(): WebGL2RenderingContext {
         return canvas_context;
     }
+    getAspect(): number {
+        return canvas_width / canvas_height;
+    }
 }
 
 
@@ -41,11 +47,11 @@ function initDom() {
 }
 
 function adjustCanvasSize() {
-    const newHeight = document.getElementById('container').clientHeight;
-    const newWidth = document.getElementById('container').clientWidth;
-    canvas_instance.height = newHeight;
-    (canvas_instance as any).width = newWidth;
-    canvas_context.viewport(0, 0, newWidth, newHeight);
+    canvas_height = document.getElementById('container').clientHeight;
+    canvas_width = document.getElementById('container').clientWidth;
+    canvas_instance.height = canvas_height;
+    (canvas_instance as any).width = canvas_width;
+    canvas_context.viewport(0, 0, canvas_width, canvas_height);
 }
 
 
