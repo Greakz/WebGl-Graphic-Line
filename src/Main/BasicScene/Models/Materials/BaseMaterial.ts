@@ -1,33 +1,12 @@
-import {Material} from "../../../../Core/Render/Resource/Material";
-import {GeometryShader} from "../../../../Core/Render/Shader/GeometryShader";
-import { vec3 } from '../../../../Core/Geometry/Vector/vec';
+import {vec3} from '../../../../Core/Geometry/Vector/vec';
+import {DefaultColorMaterial} from "../../../../Core/Render/Resource/Material/DefaultColorMaterial";
 
-export class BaseMaterial implements Material {
+export class BaseMaterial extends DefaultColorMaterial {
     readonly resource_type: 'material';
     readonly resource_id: string = 'base-material';
-    load(GL: WebGL2RenderingContext): void {
 
-    };
-    use(GL: WebGL2RenderingContext, geometryShader: GeometryShader): void {
-        GL.uniform3f(
-            geometryShader.uniform_locations.albedo_color,
-            this.albedo.x,
-            this.albedo.y,
-            this.albedo.z
-        );
-        GL.uniform3f(
-            geometryShader.uniform_locations.specular_color,
-            this.specular.x,
-            this.specular.y,
-            this.specular.z
-        );
-        GL.uniform1f(
-            geometryShader.uniform_locations.shininess,
-            this.shininess
-        );
-    };
-    albedo: vec3 = {x: 0.8, y: 0.4, z: 0.5};
-    specular: vec3 = {x: 0.9, y: 0.5, z: 0.6};
+    albedo_color: vec3 = {x: 0.8, y: 0.4, z: 0.5};
+    specular_color: vec3 = {x: 0.9, y: 0.5, z: 0.6};
     shininess: number = 8;
     transparency: number = 0;
 }

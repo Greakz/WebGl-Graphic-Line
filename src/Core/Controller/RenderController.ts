@@ -55,23 +55,19 @@ class RenderController implements RenderControllerInterface {
     public geometryPass() {
         const GL: WebGL2RenderingContext = MainController.CanvasController.getGL();
 
-        GL.clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT);
-        GL.clearColor(0.2, 0.2, 0.2, 1.0);
-        GL.enable(GL.DEPTH_TEST);
-
         // Set the active shader
         MainController.ShaderController.useGeometryShader();
 
+        GL.clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT);
+        GL.clearColor(0.7, 0.7, 0.7, 1.0);
+        GL.cullFace(GL.FRONT);
+        GL.enable(GL.DEPTH_TEST);
+
         // Set Data for Camera
-        MainController.SceneController.getSceneCamera().bindCamera(
-            GL,
-            MainController.ShaderController.getGeometryShader().uniform_locations.projection_matrix,
-            MainController.ShaderController.getGeometryShader().uniform_locations.view_matrix,
-        );
+        MainController.SceneController.getSceneCamera().bindCamera(GL);
 
         this.render_queue.forEach(
             (render_queue_mesh_entry: RenderQueueMeshEntry) => {
-
                 // there has to be an entry so select from the first
                 const mesh_to_use = render_queue_mesh_entry.render_queue_material_entries[0].draw_meshes[0].related_mesh;
                 // activate mesh
@@ -86,9 +82,7 @@ class RenderController implements RenderControllerInterface {
                         // activate material
                         material_to_use.use(GL, MainController.ShaderController.getGeometryShader());
 
-                        console.log('render now: ' + mesh_to_use.resource_id + '.' + material_to_use.resource_id + ' x' + render_queue_entry.draw_meshes.length);
                         this.geometryPassDrawMeshTasks(render_queue_entry.draw_meshes);
-
                     }
                 );
             }
@@ -119,7 +113,6 @@ class RenderController implements RenderControllerInterface {
         GL.bufferData(GL.ARRAY_BUFFER, new Float32Array(bufferData), GL.DYNAMIC_DRAW);
         GL.bindBuffer(GL.ARRAY_BUFFER, null);
 
-        console.log("drawCall")
         GL.drawArraysInstanced(GL.TRIANGLES, 0, taskList[0].related_mesh.draw_count, taskList.length);
     }
 
@@ -227,6 +220,9 @@ class RenderController implements RenderControllerInterface {
         // do render task
         const GL: WebGL2RenderingContext = MainController.CanvasController.getGL();
         this.model_mesh_matrix_buffer = GL.createBuffer();
+        GL.bindBuffer(GL.ARRAY_BUFFER, this.model_mesh_matrix_buffer);
+        GL.bufferData(GL.ARRAY_BUFFER, new Float32Array(32), GL.DYNAMIC_DRAW);
+        GL.bindBuffer(GL.ARRAY_BUFFER, null);
     }
 
     public setMeshAndModelAttributePointer(GL: WebGL2RenderingContext) {
@@ -234,42 +230,41 @@ class RenderController implements RenderControllerInterface {
             this.createMeshModelBuffer();
         }
         GL.bindBuffer(GL.ARRAY_BUFFER, this.model_mesh_matrix_buffer);
-        GL.bufferData(GL.ARRAY_BUFFER, new Float32Array(32), GL.DYNAMIC_DRAW);
         // Prepare Geometry Bindings
         const model_matrix_location: number = MainController.ShaderController.getGeometryShader().attribute_pointer.model_matrix;
         const mesh_matrix_location: number = MainController.ShaderController.getGeometryShader().attribute_pointer.mesh_matrix;
 
         // Define Attribute Matrix Pointer
         GL.enableVertexAttribArray(model_matrix_location);
-        GL.vertexAttribPointer(model_matrix_location, 4, GL.FLOAT, false, 8 * 4, 0);
+        GL.vertexAttribPointer(model_matrix_location, 4, GL.FLOAT, false, 32 * 4, 0);
         GL.vertexAttribDivisor(model_matrix_location, 1);
 
         GL.enableVertexAttribArray(model_matrix_location + 1);
-        GL.vertexAttribPointer(model_matrix_location + 1, 4, GL.FLOAT, false, 8 * 4, 1 * 4);
+        GL.vertexAttribPointer(model_matrix_location + 1, 4, GL.FLOAT, false, 32 * 4, 4 * 4);
         GL.vertexAttribDivisor(model_matrix_location + 1, 1);
 
         GL.enableVertexAttribArray(model_matrix_location + 2);
-        GL.vertexAttribPointer(model_matrix_location + 2, 4, GL.FLOAT, false, 8 * 4, 2 * 4);
+        GL.vertexAttribPointer(model_matrix_location + 2, 4, GL.FLOAT, false, 32 * 4, 8 * 4);
         GL.vertexAttribDivisor(model_matrix_location + 2, 1);
 
         GL.enableVertexAttribArray(model_matrix_location + 3);
-        GL.vertexAttribPointer(model_matrix_location + 3, 4, GL.FLOAT, false, 8 * 4, 3 * 4);
+        GL.vertexAttribPointer(model_matrix_location + 3, 4, GL.FLOAT, false, 32 * 4, 12 * 4);
         GL.vertexAttribDivisor(model_matrix_location + 3, 1);
 
         GL.enableVertexAttribArray(mesh_matrix_location);
-        GL.vertexAttribPointer(mesh_matrix_location, 4, GL.FLOAT, false, 8 * 4, 4 * 4);
+        GL.vertexAttribPointer(mesh_matrix_location, 4, GL.FLOAT, false, 32 * 4, 16 * 4);
         GL.vertexAttribDivisor(mesh_matrix_location, 1);
 
         GL.enableVertexAttribArray(mesh_matrix_location + 1);
-        GL.vertexAttribPointer(mesh_matrix_location + 1, 4, GL.FLOAT, false, 8 * 4, 5 * 4);
+        GL.vertexAttribPointer(mesh_matrix_location + 1, 4, GL.FLOAT, false, 32 * 4, 20 * 4);
         GL.vertexAttribDivisor(mesh_matrix_location + 1, 1);
 
         GL.enableVertexAttribArray(mesh_matrix_location + 2);
-        GL.vertexAttribPointer(mesh_matrix_location + 2, 4, GL.FLOAT, false, 8 * 4, 6 * 4);
+        GL.vertexAttribPointer(mesh_matrix_location + 2, 4, GL.FLOAT, false, 32 * 4, 24 * 4);
         GL.vertexAttribDivisor(mesh_matrix_location + 2, 1);
 
         GL.enableVertexAttribArray(mesh_matrix_location + 3);
-        GL.vertexAttribPointer(mesh_matrix_location + 3, 4, GL.FLOAT, false, 8 * 4, 7 * 4);
+        GL.vertexAttribPointer(mesh_matrix_location + 3, 4, GL.FLOAT, false, 32 * 4, 28 * 4);
         GL.vertexAttribDivisor(mesh_matrix_location + 3, 1);
 
         GL.bindBuffer(GL.ARRAY_BUFFER, null);

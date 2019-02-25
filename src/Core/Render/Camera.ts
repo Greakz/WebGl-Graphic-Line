@@ -5,18 +5,22 @@ import { lookAtMatrix } from '../Geometry/Matrix/lookAt';
 import { getPerspectiveMatrix } from '../Geometry/Matrix/perspective';
 import { radians } from '../Geometry/radians';
 import { MainController } from '../Controller/MainController';
+import {LogInterface} from "../Util/LogInstance";
+import LogInstance from "../Util/LogInstance";
 
 export interface Camera {
     getProjectionMatrix(): mat4;
 
     getViewMatrix(): mat4;
 
-    bindCamera(GL: WebGL2RenderingContext, camera_block_index: WebGLUniformLocation, view_matrix_location: WebGLUniformLocation): void
+    bindCamera(GL: WebGL2RenderingContext): void
 
     update(time: number): void;
 }
 
 export class SimpleCamera implements Camera {
+    private static readonly Log: LogInterface = LogInstance;
+
     protected projection_matrix: mat4 = getPerspectiveMatrix(
         radians(90),
         MainController.CanvasController.getAspect(),
@@ -24,16 +28,23 @@ export class SimpleCamera implements Camera {
         50
     );
     protected view_matrix: mat4 = lookAtMatrix(
-        {x: 1, y: 0.5, z: 5},
+        {x: 2, y: 1.5, z: 5},
         {x: 0, y: 0, z: 0},
         {x: 0, y: 1, z: 0}
     );
 
-    bindCamera(GL: WebGL2RenderingContext,
-               projection_matrix_location: WebGLUniformLocation,
-               view_matrix_location: WebGLUniformLocation): void {
-        GL.uniformMatrix4fv(projection_matrix_location, false, new Float32Array(flatMat4(this.projection_matrix)));
-        GL.uniformMatrix4fv(view_matrix_location, false, new Float32Array(flatMat4(this.view_matrix)));
+    bindCamera(GL: WebGL2RenderingContext): void {
+        // SimpleCamera.Log.info('Camera', 'binding Scene-Camera');
+        GL.uniformMatrix4fv(
+            MainController.ShaderController.getGeometryShader().uniform_locations.view_matrix,
+            false,
+            new Float32Array(flatMat4(this.view_matrix))
+        );
+        GL.uniformMatrix4fv(
+            MainController.ShaderController.getGeometryShader().uniform_locations.projection_matrix,
+            false,
+            new Float32Array(flatMat4(this.projection_matrix))
+        );
     }
 
     setProjectionMatrix(new_matrix: mat4): void {

@@ -8,6 +8,7 @@ interface GeometryShaderAttributePointer {
 
     mesh_matrix: GLint;
     model_matrix: GLint;
+    material_block_index: GLint;
 }
 
 interface GeometryShaderUniformLocations {
@@ -36,7 +37,8 @@ export class GeometryShader implements Shader {
             texture_position: GL.getAttribLocation(this.program, "TexturePosition"),
 
             mesh_matrix: GL.getAttribLocation(this.program, "mesh_matrix"),
-            model_matrix: GL.getAttribLocation(this.program, "model_matrix")
+            model_matrix: GL.getAttribLocation(this.program, "model_matrix"),
+            material_block_index: GL.getUniformBlockIndex(this.program, "mat"),
         };
         this.uniform_locations = {
             view_matrix: GL.getUniformLocation(this.program, "view_matrix"),
@@ -47,5 +49,7 @@ export class GeometryShader implements Shader {
             specular_texture: GL.getUniformLocation(this.program, "specular_texture"),
             shininess: GL.getUniformLocation(this.program, "shininess"),
         };
+        // set Materials to 0
+        GL.uniformBlockBinding(this.program, this.attribute_pointer.material_block_index, 0);
     }
 }

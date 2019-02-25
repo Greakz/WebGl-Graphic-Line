@@ -1,7 +1,7 @@
 import {Transformation} from "../Geometry/Transformation/Transformation";
 import {Model} from "./Model";
-import {Mesh} from "./Resource/Mesh";
-import {Material} from "./Resource/Material";
+import {Mesh} from "./Resource/Mesh/Mesh";
+import {Material} from "./Resource/Material/Material";
 import {MainController} from "../Controller/MainController";
 
 export class DrawMesh {

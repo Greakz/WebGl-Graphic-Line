@@ -21,7 +21,7 @@ export class Transformation {
         this.translation = Transformation.zeroVec();
         this.rotation = Transformation.zeroVec();
         this.scaling = Transformation.oneVec();
-        this.generateMatrix();
+        this.apply();
     }
 
     moveX(offset: number) {this.translation.x += offset; return this;}
@@ -44,7 +44,7 @@ export class Transformation {
     setScaling(s: vec3) {this.scaling = s; return this;}
     getScaling(): vec3 {return this.scaling}
     
-    generateMatrix(): void {
+    apply(): void {
         this.generated_matrix = multiplyArrayOfMatrices([
             getTranslationMatrix(this.translation.x, this.translation.y, this.translation.z),
             getRotationZMatrix(radians(this.rotation.z)),

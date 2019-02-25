@@ -93,7 +93,7 @@ export class MainController {
     }
 
     private static renderFrame(currentTime: number): void {
-        MainController.Log.info("MainController", "Starting Frame");
+        // MainController.Log.info("MainController", "Starting Frame");
 
         /*
             CHECK FOR EVENTS
@@ -116,7 +116,7 @@ export class MainController {
         MainController.RenderController.lightningPass()
         MainController.RenderController.postProcessPass()
 
-        MainController.Log.info("MainController", "Finishing Frame")
+        // MainController.Log.info("MainController", "Finishing Frame")
 
     }
 

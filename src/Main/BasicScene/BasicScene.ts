@@ -13,6 +13,9 @@ export class BasicScene implements Scene
     private exampleCube2: DynamicCubeObject = new DynamicCubeObject();
 
     init() {
+        this.groundPlane.model.transformation.scale(4).moveY(-0.52).apply();
+        this.exampleCube.model.transformation.moveX(-0.55).apply();
+        this.exampleCube2.model.transformation.moveX(0.55).apply();
         // push some objects
         MainController.pushSceneObject(this.groundPlane);
         MainController.pushSceneObject(this.exampleCube);
@@ -22,7 +25,8 @@ export class BasicScene implements Scene
         MainController.pushSceneObject(this.exampleCube);
 
         // remove one object
-        MainController.removeSceneObject(this.exampleCube)
+        MainController.removeSceneObject(this.exampleCube);
+        MainController.pushSceneObject(this.exampleCube);
     }
     update(time: number) {
 

@@ -26,6 +26,7 @@ class ShaderController implements ShaderControllerInterface{
     }
 
     useGeometryShader(): void {
+        // ShaderController.Log.info('RenderController', 'binding Geometry-Shader');
         MainController.CanvasController.getGL().useProgram(this.geometry_shader.program);
     }
 }

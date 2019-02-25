@@ -1,7 +1,7 @@
-import {Mesh} from "../Render/Resource/Mesh";
-import {Material} from "../Render/Resource/Material";
-import {Texture} from "../Render/Resource/Texture";
-import {Image} from "../Render/Resource/Image";
+import {Mesh} from "../Render/Resource/Mesh/Mesh";
+import {Material} from "../Render/Resource/Material/Material";
+import {Texture} from "../Render/Resource/Texture/Texture";
+import {Image} from "../Render/Resource/Image/Image";
 import {MainController} from "./MainController";
 import {LogInterface} from "../Util/LogInstance";
 import LogInstance from "../Util/LogInstance";
@@ -47,7 +47,6 @@ class ResourceController implements ResourceControllerInterface {
                 console.log(foundMesh.resource_id, mesh.resource_id)
             }
         } else {
-            console.log("load", mesh.resource_id)
             mesh.load(
                 MainController.CanvasController.getGL(),
                 MainController.ShaderController.getGeometryShader(),
