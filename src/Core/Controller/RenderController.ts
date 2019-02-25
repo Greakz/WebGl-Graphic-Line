@@ -1,7 +1,7 @@
-import {DrawMesh} from "../Render/DrawMesh";
-import LogInstance, {LogInterface} from "../Util/LogInstance";
-import {MainController} from "./MainController";
-import {Model} from "../Render/Model";
+import { DrawMesh } from "../Render/DrawMesh";
+import LogInstance, { LogInterface } from "../Util/LogInstance";
+import { MainController } from "./MainController";
+import { Model } from "../Render/Model";
 
 export interface GraphicOptions {
 
@@ -28,6 +28,8 @@ export interface RenderControllerInterface {
 class RenderController implements RenderControllerInterface {
     private static readonly Log: LogInterface = LogInstance;
     private graphic_options: GraphicOptions = {};
+    private model_mesh_matrix_buffer_prepared: boolean = false;
+    private model_mesh_matrix_buffer: WebGLBuffer;
 
     constructor() {
     }
@@ -48,7 +50,16 @@ class RenderController implements RenderControllerInterface {
 
     public geometryPass() {
         const GL: WebGL2RenderingContext = MainController.CanvasController.getGL();
+        // Set the active shader
         MainController.ShaderController.useGeometryShader();
+
+        // Set Data for Camera
+        MainController.SceneController.getSceneCamera().bindCamera(
+            GL,
+            MainController.ShaderController.getGeometryShader().uniform_locations.projection_matrix,
+            MainController.ShaderController.getGeometryShader().uniform_locations.view_matrix,
+        );
+
         this.render_queue.forEach(
             (render_queue_mesh_entry: RenderQueueMeshEntry) => {
 
@@ -66,15 +77,33 @@ class RenderController implements RenderControllerInterface {
                         // activate material
                         material_to_use.use(GL, MainController.ShaderController.getGeometryShader());
 
-                        console.log('would render now: ' + mesh_to_use.resource_id + '.' + material_to_use.resource_id + ' x' + render_queue_entry.draw_meshes.length)
-                        // prepare some shit like all the uniform data from all dem draw meshes
-
-                        // and fire draw instance calls!
+                        console.log('render now: ' + mesh_to_use.resource_id + '.' + material_to_use.resource_id + ' x' + render_queue_entry.draw_meshes.length);
+                        this.geometryPassDrawMeshTasks(render_queue_entry.draw_meshes);
 
                     }
-                )
+                );
             }
-        )
+        );
+    }
+
+    private geometryPassDrawMeshTasks(taskList: DrawMesh[]) {
+        this.checkAndPrepareMeshMatrixBuffer();
+
+        // Collect Data to buffer
+        let bufferData: number[] = taskList.reduce(
+            (acc: number[], task: DrawMesh, index: number, list: DrawMesh[]) => {
+                // Prepare Current rendering
+                return []
+            },
+            []
+        );
+
+
+        // Buffer Data
+        const GL: WebGL2RenderingContext = MainController.CanvasController.getGL();
+        GL.bindBuffer(GL.ARRAY_BUFFER, this.model_mesh_matrix_buffer);
+        GL.bufferData(GL.ARRAY_BUFFER, new Float32Array([]), GL.DYNAMIC_DRAW);
+
     }
 
     public lightningPass() {
@@ -98,7 +127,7 @@ class RenderController implements RenderControllerInterface {
             (draw_mesh: DrawMesh) => {
                 this.addMesh(draw_mesh);
             }
-        )
+        );
     }
 
     private addMesh(draw_mesh: DrawMesh) {
@@ -120,7 +149,7 @@ class RenderController implements RenderControllerInterface {
                                     return {
                                         ...render_queue_material_entry,
                                         draw_meshes: [...render_queue_material_entry.draw_meshes, draw_mesh]
-                                    }
+                                    };
                                 }
                                 return render_queue_material_entry;
                             }
@@ -137,9 +166,9 @@ class RenderController implements RenderControllerInterface {
                                     draw_meshes: [draw_mesh]
                                 }
                             ]
-                        }
+                        };
                     }
-                    return new_render_queue_entry
+                    return new_render_queue_entry;
                 }
                 return render_queue_entry;
             }
@@ -153,7 +182,7 @@ class RenderController implements RenderControllerInterface {
                     material_id: draw_mesh.related_material.resource_id,
                     draw_meshes: [draw_mesh]
                 }]
-            })
+            });
         }
     }
 
@@ -165,16 +194,53 @@ class RenderController implements RenderControllerInterface {
                     (render_queue_material_entry: RenderQueueMaterialEntry) => {
                         render_queue_material_entry.draw_meshes = render_queue_material_entry.draw_meshes.filter(
                             (exist_draw_mesh: DrawMesh) => {
-                                return (exist_draw_mesh.related_model.related_scene_object.scene_object_id !== delete_id)
+                                return (exist_draw_mesh.related_model.related_scene_object.scene_object_id !== delete_id);
                             }
                         );
                         return render_queue_material_entry.draw_meshes.length > 0;
                     }
                 );
                 render_queue_entry.render_queue_material_entries = new_render_queue_material_entries;
-                return new_render_queue_material_entries.length > 0
+                return new_render_queue_material_entries.length > 0;
             }
-        )
+        );
+    }
+
+    private checkAndPrepareMeshMatrixBuffer() {
+        if (!this.model_mesh_matrix_buffer_prepared) {
+            // do render task
+
+            const GL: WebGL2RenderingContext = MainController.CanvasController.getGL();
+            this.model_mesh_matrix_buffer = GL.createBuffer();
+            GL.bindBuffer(GL.ARRAY_BUFFER, this.model_mesh_matrix_buffer);
+            // Prepare Geometry Bindings
+            GL.enableVertexAttribArray(MainController.ShaderController.getGeometryShader().attribute_pointer.model_matrix);
+            GL.vertexAttribPointer(
+                MainController.ShaderController.getGeometryShader().attribute_pointer.model_matrix,
+                16,
+                GL.FLOAT,
+                false,
+                32 * 4,
+                0
+            );
+            GL.vertexAttribDivisor( // tell web gl to update the model_matrix every new instance
+                MainController.ShaderController.getGeometryShader().attribute_pointer.model_matrix, 1);
+
+            GL.enableVertexAttribArray(MainController.ShaderController.getGeometryShader().attribute_pointer.mesh_matrix);
+            GL.vertexAttribPointer(
+                MainController.ShaderController.getGeometryShader().attribute_pointer.mesh_matrix,
+                16,
+                GL.FLOAT,
+                false,
+                32 * 4,
+                16 * 4
+            );
+            GL.vertexAttribDivisor( // tell web gl to update the model_matrix every new instance
+                MainController.ShaderController.getGeometryShader().attribute_pointer.mesh_matrix, 1);
+
+            GL.bindBuffer(GL.ARRAY_BUFFER, null);
+            this.model_mesh_matrix_buffer_prepared = true;
+        }
     }
 }
 

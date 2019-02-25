@@ -10,4 +10,5 @@ document.addEventListener('DOMContentLoaded', () => {
     MainController.startApplication();
     const scene: BasicScene = new BasicScene();
     scene.init();
+    MainController.SceneController.setScene(scene);
 });

@@ -5,12 +5,12 @@ interface GeometryShaderAttributePointer {
     vertex_position: GLint;
     vertex_normal: GLint;
     texture_position: GLint;
+
+    mesh_matrix: GLint;
+    model_matrix: GLint;
 }
 
 interface GeometryShaderUniformLocations {
-    mesh_matrix: WebGLUniformLocation;
-    model_matrix: WebGLUniformLocation;
-
     view_matrix: WebGLUniformLocation;
     projection_matrix: WebGLUniformLocation;
 
@@ -33,11 +33,12 @@ export class GeometryShader implements Shader {
         this.attribute_pointer = {
             vertex_position: GL.getAttribLocation(this.program, "VertexPosition"),
             vertex_normal: GL.getAttribLocation(this.program, "VertexNormals"),
-            texture_position: GL.getAttribLocation(this.program, "TexturePosition")
+            texture_position: GL.getAttribLocation(this.program, "TexturePosition"),
+
+            mesh_matrix: GL.getAttribLocation(this.program, "mesh_matrix"),
+            model_matrix: GL.getAttribLocation(this.program, "model_matrix")
         };
         this.uniform_locations = {
-            mesh_matrix: GL.getUniformLocation(this.program, "mesh_matrix"),
-            model_matrix: GL.getUniformLocation(this.program, "model_matrix"),
             view_matrix: GL.getUniformLocation(this.program, "view_matrix"),
             projection_matrix: GL.getUniformLocation(this.program, "projection_matrix"),
             albedo_color: GL.getUniformLocation(this.program, "albedo_color"),
@@ -46,6 +47,5 @@ export class GeometryShader implements Shader {
             specular_texture: GL.getUniformLocation(this.program, "specular_texture"),
             shininess: GL.getUniformLocation(this.program, "shininess"),
         };
-        console.log(this.attribute_pointer.vertex_position, this.attribute_pointer.vertex_normal, this.attribute_pointer.texture_position)
     }
 }

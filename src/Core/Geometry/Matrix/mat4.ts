@@ -1,0 +1,1 @@
+export type mat4 = number[][];

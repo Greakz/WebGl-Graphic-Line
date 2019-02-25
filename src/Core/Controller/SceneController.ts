@@ -3,18 +3,20 @@ import {DynamicSceneObject} from "../Scene/DynamicSceneObject";
 import {SceneObject} from "../Scene/SceneObject";
 import {LogInterface} from "../Util/LogInstance";
 import LogInstance from "../Util/LogInstance";
-import {SceneCamera} from "../Scene/SceneCamera";
+import { Scene } from '../Scene/Scene'
+import { Camera } from '../Render/Camera'
 
 export interface SceneControllerInterface {
-    updateSceneCamera(time: number): void
+    updateScene(time: number): void
     updateStaticSceneObjects(time: number): void
     updateDynamicSceneObjects(time: number): void
 
     pushSceneObject(sceneObject: SceneObject): void
     removeSceneObject(sceneObject: SceneObject): void
 
-    setSceneCamera(scene_camera: SceneCamera): void
-    getSceneCamera(): SceneCamera;
+    setScene(scene: Scene): void
+    hasActiveScene(): boolean
+    getSceneCamera(): Camera
 }
 
 class SceneController implements SceneControllerInterface {
@@ -23,12 +25,18 @@ class SceneController implements SceneControllerInterface {
     constructor() {
     }
 
-    private scene_camera: SceneCamera = new SceneCamera();
+    private scene: Scene;
     private static_scene_objects: StaticSceneObject[] = [];
     private dynamic_scene_objects: DynamicSceneObject[] = [];
 
-    updateSceneCamera(time: number) {
-        this.scene_camera.update();
+    setScene(scene: Scene): void {
+        this.scene = scene;
+    }
+
+    updateScene(time: number) {
+        if(this.scene !== undefined) {
+            this.scene.update(time);
+        }
     }
 
     updateStaticSceneObjects(time: number): void {
@@ -79,11 +87,12 @@ class SceneController implements SceneControllerInterface {
         }
     }
 
-    setSceneCamera(scene_camera: SceneCamera) {
-        this.scene_camera = scene_camera;
+    hasActiveScene(): boolean {
+        return this.scene !== undefined
     }
-    getSceneCamera(): SceneCamera {
-        return this.scene_camera;
+
+    getSceneCamera(): Camera {
+        return this.scene.camera;
     }
 }
 

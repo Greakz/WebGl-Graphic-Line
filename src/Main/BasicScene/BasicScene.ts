@@ -1,10 +1,13 @@
-import {Scene} from "../../Core/Controller/Scene";
+import {Scene} from "../../Core/Scene/Scene";
 import {MainController} from "../../Core/Controller/MainController";
 import {StaticPlaneObject} from "./SceneObjects/Static/StaticPlaneObject";
 import {DynamicCubeObject} from "./SceneObjects/Dynamic/DynamicPlaneObject";
+import { Camera, SimpleCamera } from '../../Core/Render/Camera'
 
 export class BasicScene implements Scene
 {
+    camera: Camera = new SimpleCamera();
+
     private groundPlane: StaticPlaneObject = new StaticPlaneObject();
     private exampleCube: DynamicCubeObject = new DynamicCubeObject();
     private exampleCube2: DynamicCubeObject = new DynamicCubeObject();
