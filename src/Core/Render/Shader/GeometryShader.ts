@@ -32,7 +32,7 @@ export class GeometryShader implements Shader {
         this.program = ShaderLoader.buildShader('GeometryShader');
         this.attribute_pointer = {
             vertex_position: GL.getAttribLocation(this.program, "VertexPosition"),
-            vertex_normal: GL.getAttribLocation(this.program, "VertexNormal"),
+            vertex_normal: GL.getAttribLocation(this.program, "VertexNormals"),
             texture_position: GL.getAttribLocation(this.program, "TexturePosition")
         };
         this.uniform_locations = {
@@ -46,5 +46,6 @@ export class GeometryShader implements Shader {
             specular_texture: GL.getUniformLocation(this.program, "specular_texture"),
             shininess: GL.getUniformLocation(this.program, "shininess"),
         };
+        console.log(this.attribute_pointer.vertex_position, this.attribute_pointer.vertex_normal, this.attribute_pointer.texture_position)
     }
 }
