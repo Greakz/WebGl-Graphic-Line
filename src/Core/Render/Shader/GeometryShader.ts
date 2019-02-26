@@ -25,6 +25,15 @@ interface GeometryShaderUniformLocations {
 
 export class GeometryShader implements Shader {
     public readonly shader_id: string = 'geometry-shader';
+
+    readonly uniform_block_bindings = {
+        material: 0
+    };
+    readonly texture_bindings = {
+        albedo_texture: 0,
+        specular_texture: 1,
+    };
+
     attribute_pointer: GeometryShaderAttributePointer;
     uniform_locations: GeometryShaderUniformLocations;
     program: WebGLProgram;
@@ -49,7 +58,19 @@ export class GeometryShader implements Shader {
             specular_texture: GL.getUniformLocation(this.program, "specular_texture"),
             shininess: GL.getUniformLocation(this.program, "shininess"),
         };
-        // set Materials to 0
-        GL.uniformBlockBinding(this.program, this.attribute_pointer.material_block_index, 0);
+        GL.uniformBlockBinding(
+            this.program,
+            this.attribute_pointer.material_block_index,
+            this.uniform_block_bindings.material
+        );
+
+        GL.uniform1i(
+            this.uniform_locations.albedo_texture,
+            this.texture_bindings.albedo_texture
+        );
+        GL.uniform1i(
+            this.uniform_locations.specular_texture,
+            this.texture_bindings.specular_texture
+        );
     }
 }

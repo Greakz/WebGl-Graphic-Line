@@ -1,8 +1,9 @@
 import {vec3} from "../../../Geometry/Vector/vec";
 import {GeometryShader} from "../../Shader/GeometryShader";
 import {Material} from "./Material";
+import {MainController} from "../../../Controller/MainController";
 
-export class DefaultColorMaterial implements Material {
+export abstract class DefaultColorMaterial implements Material {
     readonly resource_type: 'material' = 'material';
 
     /**
@@ -35,14 +36,17 @@ export class DefaultColorMaterial implements Material {
         GL.bindBuffer(GL.UNIFORM_BUFFER, this.uniform_buffer_object);
     };
     readonly use = (GL: WebGL2RenderingContext, geometryShader: GeometryShader) => {
-        // LogInstance.info("Material", "binding Material");
+        MainController.RenderController.bindEmptyTexture(GL, GL.TEXTURE0);
+        MainController.RenderController.bindEmptyTexture(GL, GL.TEXTURE1);
+// LogInstance.info("Material", "binding Material");
+        GL.bindBuffer(GL.UNIFORM_BUFFER, this.uniform_buffer_object);
         GL.bufferData(
             GL.UNIFORM_BUFFER,
             new Float32Array([
                 this.albedo_color.x, this.albedo_color.y, this.albedo_color.z, 0.0,
                 this.specular_color.x, this.specular_color.y, this.specular_color.z, 0.0,
                 this.shininess,
-                1.0, // Use Color = false;
+                1.0, // Use Color = true;
                 0.0, // Use Texture = false;
                 0.0
             ]),

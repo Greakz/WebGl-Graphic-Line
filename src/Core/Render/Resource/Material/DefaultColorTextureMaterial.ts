@@ -3,7 +3,7 @@ import {Texture} from "../Texture/Texture";
 import {GeometryShader} from "../../Shader/GeometryShader";
 import {Material} from "./Material";
 
-export class DefaultColorTextureMaterial implements Material {
+export abstract class DefaultColorTextureMaterial implements Material {
     readonly resource_type: 'material' = 'material';
 
     /**
@@ -44,6 +44,7 @@ export class DefaultColorTextureMaterial implements Material {
         GL.bindBuffer(GL.UNIFORM_BUFFER, this.uniform_buffer_object);
     };
     use(GL: WebGL2RenderingContext, geometryShader: GeometryShader): void {
+        GL.bindBuffer(GL.UNIFORM_BUFFER, this.uniform_buffer_object);
         GL.bufferData(
             GL.UNIFORM_BUFFER,
             new Float32Array([

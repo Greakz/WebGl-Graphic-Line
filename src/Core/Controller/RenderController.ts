@@ -1,9 +1,11 @@
-import { DrawMesh } from "../Render/DrawMesh";
-import LogInstance, { LogInterface } from "../Util/LogInstance";
-import { MainController } from "./MainController";
-import { Model } from "../Render/Model";
-import { mat4 } from '../Geometry/Matrix/mat';
-import { flatMat4 } from '../Geometry/Matrix/flatten';
+import {DrawMesh} from "../Render/DrawMesh";
+import LogInstance, {LogInterface} from "../Util/LogInstance";
+import {MainController} from "./MainController";
+import {Model} from "../Render/Model";
+import {mat4} from '../Geometry/Matrix/mat';
+import {flatMat4} from '../Geometry/Matrix/flatten';
+import {Texture} from "../Render/Resource/Texture/Texture";
+import {Image} from "../Render/Resource/Image/Image";
 
 export interface GraphicOptions {
 
@@ -27,6 +29,8 @@ export interface RenderControllerInterface {
     removeModel(model: Model): void;
 
     setMeshAndModelAttributePointer(GL: WebGL2RenderingContext): void;
+
+    bindEmptyTexture(GL: WebGL2RenderingContext, binding_slot: GLenum): void;
 }
 
 class RenderController implements RenderControllerInterface {
@@ -92,7 +96,7 @@ class RenderController implements RenderControllerInterface {
     private geometryPassDrawMeshTasks(taskList: DrawMesh[]) {
         const GL: WebGL2RenderingContext = MainController.CanvasController.getGL();
 
-        if(!this.model_mesh_matrix_buffer_prepared) {
+        if (!this.model_mesh_matrix_buffer_prepared) {
             this.createMeshModelBuffer();
             this.setMeshAndModelAttributePointer(GL)
         }
@@ -226,7 +230,7 @@ class RenderController implements RenderControllerInterface {
     }
 
     public setMeshAndModelAttributePointer(GL: WebGL2RenderingContext) {
-        if(!this.model_mesh_matrix_buffer_prepared) {
+        if (!this.model_mesh_matrix_buffer_prepared) {
             this.createMeshModelBuffer();
         }
         GL.bindBuffer(GL.ARRAY_BUFFER, this.model_mesh_matrix_buffer);
@@ -269,6 +273,15 @@ class RenderController implements RenderControllerInterface {
 
         GL.bindBuffer(GL.ARRAY_BUFFER, null);
     }
+
+    private empty_texture: Texture | null = null;
+    bindEmptyTexture(GL: WebGL2RenderingContext, binding_slot: GLenum) {
+        if (this.empty_texture === null) {
+            this.empty_texture = MainController.ResourceController.getTexture(new EmptyTexture());
+        }
+        GL.activeTexture(binding_slot);
+        this.empty_texture.use(GL);
+    }
 }
 
 interface RenderQueueMeshEntry {
@@ -290,3 +303,35 @@ interface LightQueueEntry {
 
 var RenderControllerInstance: RenderController = new RenderController();
 export default RenderControllerInstance;
+
+class EmptyTexture implements Texture {
+    public readonly resource_type: 'texture';
+    public readonly resource_id: string = 'def-t-';
+    private texture_buffer: WebGLTexture;
+    image: Image;
+    readonly load = (GL: WebGL2RenderingContext) => {
+        this.texture_buffer = GL.createTexture();
+        GL.bindTexture(GL.TEXTURE_2D, this.texture_buffer);
+        GL.pixelStorei(GL.UNPACK_ALIGNMENT, 1);
+        GL.texImage2D(GL.TEXTURE_2D,
+            0,
+            GL.R8,
+            2,
+            2,
+            0,
+            GL.RED,
+            GL.UNSIGNED_BYTE,
+            new Uint8Array([
+                128,  64,
+                0, 192,
+            ]));
+        // base settings, make it editable with texture options
+        GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_WRAP_S, GL.CLAMP_TO_EDGE);
+        GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_WRAP_T, GL.CLAMP_TO_EDGE);
+        GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MIN_FILTER, GL.NEAREST);
+        GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MAG_FILTER, GL.NEAREST);
+    };
+    readonly use = (GL: WebGL2RenderingContext) => {
+        GL.bindTexture(GL.TEXTURE_2D, this.texture_buffer);
+    };
+}

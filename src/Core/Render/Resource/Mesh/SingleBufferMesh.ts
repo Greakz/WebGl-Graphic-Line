@@ -4,7 +4,7 @@ import {Transformation} from '../../../Geometry/Transformation/Transformation';
 import {MainController} from "../../../Controller/MainController";
 import {Mesh} from "./Mesh";
 
-export class SingleBufferMesh implements Mesh {
+export abstract class SingleBufferMesh implements Mesh {
     readonly resource_type: 'mesh' = 'mesh';
     /**
      * resource_id: string | should be set by a Mesh. Must be an unique identifier for a Mesh
