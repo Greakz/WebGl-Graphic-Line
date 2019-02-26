@@ -38,7 +38,7 @@ export abstract class DefaultColorMaterial implements Material {
     readonly use = (GL: WebGL2RenderingContext, geometryShader: GeometryShader) => {
         MainController.RenderController.bindEmptyTexture(GL, GL.TEXTURE0);
         MainController.RenderController.bindEmptyTexture(GL, GL.TEXTURE1);
-// LogInstance.info("Material", "binding Material");
+
         GL.bindBuffer(GL.UNIFORM_BUFFER, this.uniform_buffer_object);
         GL.bufferData(
             GL.UNIFORM_BUFFER,

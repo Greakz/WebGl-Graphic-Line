@@ -2,6 +2,7 @@ import {vec3} from "../../../Geometry/Vector/vec";
 import {Texture} from "../Texture/Texture";
 import {GeometryShader} from "../../Shader/GeometryShader";
 import {Material} from "./Material";
+import {MainController} from "../../../Controller/MainController";
 
 export abstract class DefaultColorTextureMaterial implements Material {
     readonly resource_type: 'material' = 'material';
@@ -42,8 +43,15 @@ export abstract class DefaultColorTextureMaterial implements Material {
         GL.bindBuffer(GL.UNIFORM_BUFFER, this.uniform_buffer_object);
         GL.bufferData(GL.UNIFORM_BUFFER, new Float32Array(12), GL.DYNAMIC_DRAW);
         GL.bindBuffer(GL.UNIFORM_BUFFER, this.uniform_buffer_object);
+
+        this.albedo_texture = MainController.ResourceController.getTexture(this.albedo_texture);
+        this.specular_texture = MainController.ResourceController.getTexture(this.specular_texture);
     };
     use(GL: WebGL2RenderingContext, geometryShader: GeometryShader): void {
+        GL.activeTexture(GL.TEXTURE0);
+        this.albedo_texture.use(GL);
+        GL.activeTexture(GL.TEXTURE1);
+        this.specular_texture.use(GL);
         GL.bindBuffer(GL.UNIFORM_BUFFER, this.uniform_buffer_object);
         GL.bufferData(
             GL.UNIFORM_BUFFER,
@@ -52,7 +60,7 @@ export abstract class DefaultColorTextureMaterial implements Material {
                 this.specular_color.x, this.specular_color.y, this.specular_color.z, 0.0,
                 this.shininess,
                 1.0, // Use Color = false;
-                0.0, // Use Texture = false;
+                1.0, // Use Texture = false;
                 0.0
             ]),
             GL.DYNAMIC_DRAW

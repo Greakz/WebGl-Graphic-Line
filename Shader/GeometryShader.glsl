@@ -25,9 +25,7 @@ out vec3 vColor;
 out vec3 vNormals;
 out vec2 vTexPos;
 out float vShininess;
-flat out int vUseTexture;
-flat out int vUseColor;
-flat out vec4 vUseFactor;
+flat out int vUseCol;
 
 void main(void) {
 
@@ -40,9 +38,7 @@ void main(void) {
     vNormals = vec3(projection_matrix * view_matrix * model_matrix * mesh_matrix * vec4(VertexNormals, 0.0));
     vTexPos = TexturePosition;
     vShininess = shininess;
-    vUseColor = (useColor > 0.5) ? 1 : 0;
-    vUseTexture = (useTex > 0.5) ? 1 : 0;
-    vUseFactor = (useColor > 0.5 && useTex > 0.5) ? vec4(0.5) : vec4(1.0);
+    vUseCol = (useTex > 0.5 && useColor > 0.5) ? 1 : (useColor > 0.5) ? 2 : (useTex > 0.5) ? 3 : 0;
 }
 //#FRAGMENT-SHADER#//
 #version 300 es
@@ -51,9 +47,7 @@ in vec3 vColor;
 in vec3 vNormals;
 in vec2 vTexPos;
 in float vShininess;
-flat in int vUseTexture;
-flat in int vUseColor;
-flat in vec4 vUseFactor;
+flat in int vUseCol;
 
 uniform sampler2D albedo_texture;
 uniform sampler2D specular_texture;
@@ -62,14 +56,13 @@ out vec4 fragmentColor;
 
 void main(void) {
     vec4 albedo_color_final = vec4(0.0);
-    if(vUseColor == 1) {
-        albedo_color_final += vUseFactor * vec4(vColor, 1.0);
+    if(vUseCol == 1) {
+        albedo_color_final += vec4(vColor * texture(albedo_texture, vTexPos).rgb, 1.0);
+    } else if (vUseCol == 2) {
+            albedo_color_final += vec4(vColor, 1.0);
+    } else if (vUseCol == 3) {
+            albedo_color_final += vec4(texture(albedo_texture, vTexPos).rgb, 1.0);
     }
-    if(vUseTexture == 1) {
-        albedo_color_final += vUseFactor * texture(albedo_texture, vTexPos);
-    }
-    albedo_color_final = vec4(vec3(albedo_color_final.rgb), 1.0);
-
     vec4 zero_but_keeps_shit = vec4(vNormals, 1.0) * vec4(vShininess) * vec4(0.0);
     fragmentColor = zero_but_keeps_shit + albedo_color_final;
 }
