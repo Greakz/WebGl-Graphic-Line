@@ -30,6 +30,7 @@ class SceneController implements SceneControllerInterface {
     private dynamic_scene_objects: DynamicSceneObject[] = [];
 
     setScene(scene: Scene): void {
+        scene.init();
         this.scene = scene;
     }
 

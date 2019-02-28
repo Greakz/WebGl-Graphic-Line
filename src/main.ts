@@ -8,7 +8,9 @@ document.addEventListener('DOMContentLoaded', () => {
     Log.info('main', 'Starting the application...!')
 
     MainController.startApplication();
+    /* CREATE YOUR SCENE */
     const scene: BasicScene = new BasicScene();
-    scene.init();
+
+    // add scene to SceneController
     MainController.SceneController.setScene(scene);
 });

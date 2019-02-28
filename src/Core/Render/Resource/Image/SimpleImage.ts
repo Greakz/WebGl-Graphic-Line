@@ -12,7 +12,6 @@ export class SimpleImage implements Image {
         this.image = new Image();
         this.image.src = this.image_src;
         this.image.onload = () => {
-            console.log('image loaded');
             this.ready = true;
             if(this.callback !== undefined) {
                 this.callback();

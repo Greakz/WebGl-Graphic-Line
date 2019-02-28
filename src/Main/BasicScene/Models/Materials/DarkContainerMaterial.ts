@@ -1,4 +1,3 @@
-import {DefaultTextureMaterial} from "../../../../Core/Render/Resource/Material/DefaultTextureMaterial";
 import {Texture} from "../../../../Core/Render/Resource/Texture/Texture";
 import {ContainerTexture} from "../Textures/ContainerTexture";
 import {ContainerSpecTexture} from "../Textures/ContainerSpecTexture";

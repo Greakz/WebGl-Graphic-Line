@@ -25,10 +25,10 @@ export class SimpleCamera implements Camera {
         radians(90),
         MainController.CanvasController.getAspect(),
         0.5,
-        50
+        100
     );
     protected view_matrix: mat4 = lookAtMatrix(
-        {x: 2, y: 1.5, z: 5},
+        {x: 1, y: 1.2, z: 3},
         {x: 0, y: 0, z: 0},
         {x: 0, y: 1, z: 0}
     );

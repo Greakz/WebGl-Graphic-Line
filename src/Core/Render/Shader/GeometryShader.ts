@@ -58,6 +58,7 @@ export class GeometryShader implements Shader {
             specular_texture: GL.getUniformLocation(this.program, "specular_texture"),
             shininess: GL.getUniformLocation(this.program, "shininess"),
         };
+        GL.useProgram(this.program);
         GL.uniformBlockBinding(
             this.program,
             this.attribute_pointer.material_block_index,

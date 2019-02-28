@@ -61,10 +61,11 @@ export abstract class DefaultColorTextureMaterial implements Material {
                 this.shininess,
                 1.0, // Use Color = false;
                 1.0, // Use Texture = false;
-                0.0
+                1.0
             ]),
             GL.DYNAMIC_DRAW
         );
         GL.bindBufferBase(GL.UNIFORM_BUFFER, geometryShader.attribute_pointer.material_block_index, this.uniform_buffer_object);
     };
+
 }

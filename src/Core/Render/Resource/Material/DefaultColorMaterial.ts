@@ -48,7 +48,7 @@ export abstract class DefaultColorMaterial implements Material {
                 this.shininess,
                 1.0, // Use Color = true;
                 0.0, // Use Texture = false;
-                0.0
+                1.0
             ]),
             GL.DYNAMIC_DRAW
         );

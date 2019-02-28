@@ -38,6 +38,7 @@ export abstract class DefaultTextureMaterial implements Material {
         this.albedo_texture = MainController.ResourceController.getTexture(this.albedo_texture);
         this.specular_texture = MainController.ResourceController.getTexture(this.specular_texture);
     };
+
     use(GL: WebGL2RenderingContext, geometryShader: GeometryShader): void {
         GL.activeTexture(GL.TEXTURE0);
         this.albedo_texture.use(GL);
@@ -52,10 +53,11 @@ export abstract class DefaultTextureMaterial implements Material {
                 this.shininess,
                 0.0, // Use Color = false;
                 1.0, // Use Texture = true;
-                0.0
+                1.0
             ]),
             GL.DYNAMIC_DRAW
         );
         GL.bindBufferBase(GL.UNIFORM_BUFFER, geometryShader.attribute_pointer.material_block_index, this.uniform_buffer_object);
     };
+
 }

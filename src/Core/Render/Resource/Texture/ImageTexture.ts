@@ -13,7 +13,6 @@ export abstract class ImageTexture implements Texture {
     private texture_buffer: WebGLTexture;
 
     readonly load = (GL: WebGL2RenderingContext) => {
-        console.log("texture continues after image load call 1");
         this.texture_buffer = GL.createTexture();
 
         this.use_image = MainController.ResourceController.getImage(this.image);
@@ -26,9 +25,6 @@ export abstract class ImageTexture implements Texture {
             GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MIN_FILTER, GL.LINEAR);
             GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MAG_FILTER, GL.LINEAR);
         });
-
-
-        console.log("texture continues after image load call 3");
     };
     readonly use = (GL: WebGL2RenderingContext) => {
         GL.bindTexture(GL.TEXTURE_2D, this.texture_buffer);

@@ -38,6 +38,8 @@ export abstract class SingleBufferMesh implements Mesh {
      * @param shadow_shader ShadowShader
      */
     readonly load = (GL: WebGL2RenderingContext, geometry_shader: GeometryShader, shadow_shader: ShadowShader) => {
+        GL.useProgram(geometry_shader.program);
+
         this.mesh_vao = GL.createVertexArray();
         GL.bindVertexArray(this.mesh_vao);
 
