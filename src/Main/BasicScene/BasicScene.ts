@@ -1,7 +1,7 @@
 import {Scene} from "../../Core/Scene/Scene";
 import {MainController} from "../../Core/Controller/MainController";
 import {StaticPlaneObject} from "./SceneObjects/Static/StaticPlaneObject";
-import {DynamicCubeObject} from "./SceneObjects/Dynamic/DynamicPlaneObject";
+import {DynamicCubeObject} from "./SceneObjects/Dynamic/DynamicCubeObject";
 import { Camera, SimpleCamera } from '../../Core/Render/Camera'
 
 export class BasicScene implements Scene
@@ -13,9 +13,9 @@ export class BasicScene implements Scene
     private exampleCube2: DynamicCubeObject = new DynamicCubeObject();
 
     init() {
-        this.groundPlane.model.transformation.scale(4).moveY(-0.52).apply();
-        this.exampleCube.model.transformation.moveX(-0.55).apply();
-        this.exampleCube2.model.transformation.moveX(0.55).apply();
+        this.groundPlane.model.transformation.scale(4).moveY(-0.5).apply();
+        this.exampleCube.model.transformation.moveX(-0.5).apply();
+        this.exampleCube2.model.transformation.moveX(0.5).apply();
         // push some objects
         MainController.pushSceneObject(this.groundPlane);
         MainController.pushSceneObject(this.exampleCube);

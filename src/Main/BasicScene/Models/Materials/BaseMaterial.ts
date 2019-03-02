@@ -7,6 +7,6 @@ export class BaseMaterial extends DefaultColorMaterial {
 
     albedo_color: vec3 = {x: 0.8, y: 0.4, z: 0.5};
     specular_color: vec3 = {x: 0.9, y: 0.5, z: 0.6};
-    shininess: number = 8;
+    shininess: number = 0.2;
     transparency: number = 0;
 }

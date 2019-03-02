@@ -22,13 +22,13 @@ export class SimpleCamera implements Camera {
     private static readonly Log: LogInterface = LogInstance;
 
     protected projection_matrix: mat4 = getPerspectiveMatrix(
-        radians(90),
+        radians(45),
         MainController.CanvasController.getAspect(),
         0.5,
         100
     );
     protected view_matrix: mat4 = lookAtMatrix(
-        {x: 1, y: 1.2, z: 3},
+        {x: 0, y: 0, z: 5},
         {x: 0, y: 0, z: 0},
         {x: 0, y: 1, z: 0}
     );

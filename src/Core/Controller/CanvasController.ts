@@ -66,7 +66,7 @@ function adjustCanvasSize() {
     canvas_width = document.getElementById('container').clientWidth;
     canvas_instance.height = canvas_height;
     (canvas_instance as any).width = canvas_width;
-    canvas_context.viewport(0, 0, canvas_width, canvas_height);
+    // canvas_context.viewport(0, 0, canvas_width, canvas_height);
 }
 
 

@@ -35,9 +35,11 @@ void main(void) {
     float passTask = shini_ucolor_utex.w;
 
     // position!
-    gl_Position = projection_matrix * view_matrix * model_matrix * mesh_matrix * vec4(VertexPosition, 1.0);
+    vec4 resultPos = projection_matrix * view_matrix * model_matrix * mesh_matrix * vec4(VertexPosition, 1.0);
+    gl_Position = resultPos;
     vTexPos = TexturePosition;
     vTask =
+            (passTask > 3.5) ? 4 : // Normal Pass
             (passTask > 2.5) ? 3 : // Normal Pass
             (passTask > 1.5) ? 2 : // Specular Pass
             (passTask > 0.5) ? 1 : // Albedo Pass
@@ -46,7 +48,9 @@ void main(void) {
         ? albedo_color
         : (vTask == 2)
             ? specular_color
-            : vec3(projection_matrix * view_matrix * model_matrix * mesh_matrix * vec4(VertexNormals, 0.0));
+            : (vTask == 3)
+                ? vec3(projection_matrix * view_matrix * model_matrix * mesh_matrix * vec4(VertexNormals, 0.0))
+                : vec3(resultPos.rgb);
 
     vShininess = shininess;
     vUseCol = (useTex > 0.5 && useColor > 0.5) ? 1 : (useColor > 0.5) ? 2 : (useTex > 0.5) ? 3 : 0;
@@ -67,7 +71,7 @@ flat in int vTask;
 uniform sampler2D albedo_texture;
 uniform sampler2D specular_texture;
 
-layout(location = 0) out vec3 outColor;
+layout(location = 0) out vec4 outColor;
 
 vec3 calculateColor(vec3 texel, vec3 color, int useCol) {
     if(useCol == 1) {
@@ -87,9 +91,9 @@ void main(void) {
         final_color = calculateColor(texture(albedo_texture, vTexPos).rgb, vColor, vUseCol);
     } else if (vTask == 2) {
         // Specular Pass
-        final_color = calculateColor(texture(specular_texture, vTexPos).rgb, vColor, vUseCol);
-   } else if (vTask == 3) {
+        final_color = vec3(calculateColor(texture(specular_texture, vTexPos).rgb, vColor, vUseCol).r, vShininess, 0.0);
+   } else if (vTask == 3 || vTask == 4) {
         final_color = vec3(0.5) * normalize(vColor) + vec3(0.5);
     }
-    outColor = final_color;
+    outColor = vec4(final_color, 1.0);
 }
