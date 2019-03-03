@@ -5,6 +5,7 @@ import {LogInterface} from "../Util/LogInstance";
 import LogInstance from "../Util/LogInstance";
 import { Scene } from '../Scene/Scene'
 import { Camera } from '../Render/Camera'
+import {DayLight} from "../Render/Resource/Light/DayLight";
 
 export interface SceneControllerInterface {
     updateScene(time: number): void
@@ -17,6 +18,7 @@ export interface SceneControllerInterface {
     setScene(scene: Scene): void
     hasActiveScene(): boolean
     getSceneCamera(): Camera
+    getSceneDayLight(): DayLight
 }
 
 class SceneController implements SceneControllerInterface {
@@ -94,6 +96,9 @@ class SceneController implements SceneControllerInterface {
 
     getSceneCamera(): Camera {
         return this.scene.camera;
+    }
+    getSceneDayLight(): DayLight{
+        return this.scene.day_light;
     }
 }
 
