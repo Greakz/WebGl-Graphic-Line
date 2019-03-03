@@ -12,6 +12,6 @@ export class DarkContainerMaterial extends DefaultColorTextureMaterial {
     albedo_color: vec3 = {x: 0.3, y: 0.3, z: 0.3};
     specular_texture: Texture = new ContainerSpecTexture();
     specular_color: vec3 = {x: 0.2, y: 0.2, z: 0.2};
-    shininess: number = 8;
+    shininess: number = 0.2;
     transparency: number = 0;
 }

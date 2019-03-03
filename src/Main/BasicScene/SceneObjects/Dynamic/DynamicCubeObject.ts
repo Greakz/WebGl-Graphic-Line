@@ -6,5 +6,6 @@ import {DynamicSceneObject} from "../../../../Core/Scene/DynamicSceneObject";
 export class DynamicCubeObject extends DynamicSceneObject {
     readonly model: CubeModel = new CubeModel(this);
     update(time: number) {
+
     }
 }
