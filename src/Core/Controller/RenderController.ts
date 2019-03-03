@@ -22,7 +22,7 @@ export interface RenderControllerInterface {
 
     geometryPass(): void;
 
-    frambufferDebugPass(): void;
+    framebufferDebugPass(): void;
 
     lightningPass(): void;
 
@@ -261,7 +261,7 @@ class RenderController implements RenderControllerInterface {
 
     }
 
-    public frambufferDebugPass() {
+    public framebufferDebugPass() {
         const GL = MainController.CanvasController.getGL();
 
         MainController.ShaderController.getFramebufferDebugShader().textureDebugPass(

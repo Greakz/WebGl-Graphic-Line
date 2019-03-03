@@ -25,7 +25,7 @@ export interface Camera {
 export class SimpleCamera implements Camera {
     private static readonly Log: LogInterface = LogInstance;
 
-    position: vec3 = {x: 4, y: 1, z: 8};
+    position: vec3 = {x: 4, y: 3, z: 8};
     target: vec3 = {x: 0, y: 0, z: 0};
 
     nearPlane: number = 0.5;

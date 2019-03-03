@@ -49,7 +49,7 @@ void main(void) {
         : (vTask == 2)
             ? specular_color
             : (vTask == 3)
-                ? vec3(projection_matrix * view_matrix * model_matrix * mesh_matrix * vec4(VertexNormals, 0.0))
+                ? vec3(model_matrix * mesh_matrix * vec4(VertexNormals, 0.0))
                 : vec3(resultPos.rgb);
 
     vShininess = shininess;

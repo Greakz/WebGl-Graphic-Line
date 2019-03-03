@@ -34,7 +34,7 @@ layout(location = 0) out vec4 outColor;
 
 void main(void) {
     vec4 world_space_position = undo_view_matrix * undo_projection_matrix * vec4(gl_FragCoord.x, gl_FragCoord.y, texture(position_map, vTex).r, 1.0);
-    vec3 world_space_normal = texture(normal_map, vTex).rgb;
+    vec3 world_space_normal = texture(normal_map, vTex).rgb * vec3(2.0) - vec3(1.0);
 
     vec3 fragment_diffuse_color = texture(albedo_map, vTex).rgb;
     float fragment_specular_intensity = texture(specular_map, vTex).r;
@@ -52,6 +52,6 @@ void main(void) {
 
     vec3 multnoprobshit = vec3(0.0) * (camera_position + amb_color + dir_color + diff_light_result + amb_light_result);
 
-    // outColor = vec4(diff_light_result + amb_light_result, 1.0);
-    outColor = vec4(fragment_diffuse_color + multnoprobshit, 1.0);
+    outColor = vec4(diff_light_result + amb_light_result, 1.0);
+    //outColor = vec4(fragment_diffuse_color + multnoprobshit, 1.0);
 }
