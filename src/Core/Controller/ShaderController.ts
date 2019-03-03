@@ -3,6 +3,7 @@ import LogInstance from "../Util/LogInstance";
 import {GeometryShader} from "../Render/Shader/GeometryShader";
 import {MainController} from "./MainController";
 import {FramebufferDebugShader} from "../Render/Shader/FramebufferDebugShader";
+import {DeferredLightningShader} from "../Render/Shader/DeferredLightningShader";
 
 export interface ShaderControllerInterface {
     loadShader(): void;
@@ -10,6 +11,8 @@ export interface ShaderControllerInterface {
     getGeometryShader(): GeometryShader;
     useFramebufferDebugShader(): void;
     getFramebufferDebugShader(): FramebufferDebugShader;
+    useDeferredLightningShader(): void;
+    getDeferredLightningShader(): DeferredLightningShader;
 }
 
 class ShaderController implements ShaderControllerInterface{
@@ -17,6 +20,7 @@ class ShaderController implements ShaderControllerInterface{
 
     private geometry_shader: GeometryShader;
     private fragment_debug_shader: FramebufferDebugShader;
+    private deferred_lightning_shader: DeferredLightningShader;
 
     constructor(){}
 
@@ -24,6 +28,7 @@ class ShaderController implements ShaderControllerInterface{
         const GL: WebGL2RenderingContext = MainController.CanvasController.getGL();
         this.geometry_shader = new GeometryShader(GL);
         this.fragment_debug_shader = new FramebufferDebugShader(GL);
+        this.deferred_lightning_shader = new DeferredLightningShader(GL);
     }
 
     getGeometryShader(): GeometryShader {
@@ -39,6 +44,13 @@ class ShaderController implements ShaderControllerInterface{
 
     useFramebufferDebugShader(): void {
         MainController.CanvasController.getGL().useProgram(this.fragment_debug_shader.program);
+    }
+
+    getDeferredLightningShader(): DeferredLightningShader {
+        return this.deferred_lightning_shader;
+    }
+    useDeferredLightningShader(): void {
+        MainController.CanvasController.getGL().useProgram(this.deferred_lightning_shader.program);
     }
 }
 

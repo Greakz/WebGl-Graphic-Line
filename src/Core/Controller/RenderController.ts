@@ -247,30 +247,24 @@ class RenderController implements RenderControllerInterface {
         MainController.ShaderController.useGeometryShader();
 
         GL.viewport(0, 0, 1920, 1920);
+        GL.enable(GL.DEPTH_TEST);
+        GL.depthFunc(GL.LESS);
 
         GL.bindFramebuffer(GL.FRAMEBUFFER, this.position_framebuffer);
-        GL.clearColor(0, 0, 0, 0.0);
+        GL.clearColor(0.1, 0, 0, 0.0);
         GL.clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT);
-        GL.enable(GL.DEPTH_TEST);
-        GL.depthFunc(GL.LESS);
 
         GL.bindFramebuffer(GL.FRAMEBUFFER, this.albedo_framebuffer);
-        GL.clearColor(0, 0, 0, 0.0);
+        GL.clearColor(0, 0.1, 0, 0.0);
         GL.clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT);
-        GL.enable(GL.DEPTH_TEST);
-        GL.depthFunc(GL.LESS);
 
         GL.bindFramebuffer(GL.FRAMEBUFFER, this.specular_framebuffer);
-        GL.clearColor(0, 0, 0, 0.0);
+        GL.clearColor(0, 0, 0.1, 0.0);
         GL.clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT);
-        GL.enable(GL.DEPTH_TEST);
-        GL.depthFunc(GL.LESS);
 
         GL.bindFramebuffer(GL.FRAMEBUFFER, this.normal_framebuffer);
-        GL.clearColor(0, 0, 0, 0.0);
+        GL.clearColor(0.1, 0.1, 0, 0.0);
         GL.clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT);
-        GL.enable(GL.DEPTH_TEST);
-        GL.depthFunc(GL.LESS);
 
         // Set Data for Camera
         MainController.SceneController.getSceneCamera().bindCamera(GL);

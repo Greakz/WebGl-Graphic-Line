@@ -23,12 +23,12 @@ export class SimpleCamera implements Camera {
 
     protected projection_matrix: mat4 = getPerspectiveMatrix(
         radians(45),
-        MainController.CanvasController.getAspect(),
+        1.0,
         0.5,
         100
     );
     protected view_matrix: mat4 = lookAtMatrix(
-        {x: 0, y: 0, z: 5},
+        {x: 4, y: 1, z: 8},
         {x: 0, y: 0, z: 0},
         {x: 0, y: 1, z: 0}
     );
