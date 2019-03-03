@@ -3,10 +3,12 @@ import {MainController} from "../../Core/Controller/MainController";
 import {StaticPlaneObject} from "./SceneObjects/Static/StaticPlaneObject";
 import {DynamicCubeObject} from "./SceneObjects/Dynamic/DynamicCubeObject";
 import { Camera, SimpleCamera } from '../../Core/Render/Camera'
+import {DayLight} from "../../Core/Render/Resource/Lights/DayLight";
 
 export class BasicScene implements Scene
 {
     camera: Camera = new SimpleCamera();
+    day_light: DayLight = new DayLight();
 
     private groundPlane: StaticPlaneObject = new StaticPlaneObject();
     private exampleCube: DynamicCubeObject = new DynamicCubeObject();

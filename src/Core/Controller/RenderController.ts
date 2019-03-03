@@ -7,6 +7,7 @@ import {flatMat4} from '../Geometry/Matrix/flatten';
 import {Texture} from "../Render/Resource/Texture/Texture";
 import {Image} from "../Render/Resource/Image/Image";
 import {checkFramebuffer} from "../Util/FramebufferCheck";
+import {DeferredLightningShader} from "../Render/Shader/DeferredLightningShader";
 
 export interface GraphicOptions {
 
@@ -21,7 +22,7 @@ export interface RenderControllerInterface {
 
     geometryPass(): void;
 
-    frambufferDebugPass(): void;
+    framebufferDebugPass(): void;
 
     lightningPass(): void;
 
@@ -69,6 +70,9 @@ class RenderController implements RenderControllerInterface {
 
     public prepareRenderPasses() {
         const GL: WebGL2RenderingContext = MainController.CanvasController.getGL();
+        /**
+         * PREPARE GEOMETRY PASS
+         */
 
         /**
          * Position FRAMEBUFFER
@@ -197,16 +201,72 @@ class RenderController implements RenderControllerInterface {
 
 
         GL.bindFramebuffer(GL.FRAMEBUFFER,null);
+
+        /**
+         * PREPARE LIGHTNING PASS
+         */
+
+        /**
+         * Prepare planebuffer + vertex buffer;
+         */
+/*
+        this.plane_texture_buffer = GL.createBuffer();
+        this.plane_vertex_buffer = GL.createBuffer();
+        this.plane_vao = GL.createVertexArray();
+
+        const deferred_lightning_shader: DeferredLightningShader = MainController.ShaderController.getDeferredLightningShader();
+        MainController.ShaderController.useDeferredLightningShader();
+        
+        GL.bindVertexArray(this.plane_vao);
+        GL.bindBuffer(GL.ARRAY_BUFFER, this.plane_vertex_buffer);
+        GL.bufferData(GL.ARRAY_BUFFER, new Float32Array([
+            -1.0, 1.0, 0.0,
+            -1.0, -1.0, 0.0,
+            1.0,  1.0, 0.0,
+
+            -1.0, -1.0, 0.0,
+            1.0, -1.0, 0.0,
+            1.0,  1.0, 0.0,
+        ]), GL.STATIC_DRAW);
+        GL.enableVertexAttribArray(deferred_lightning_shader.attribute_pointer.vertex_position);
+        GL.vertexAttribPointer(deferred_lightning_shader.attribute_pointer.vertex_position, 3, GL.FLOAT, false, 0, 0);
+        
+        GL.bindBuffer(GL.ARRAY_BUFFER, this.plane_texture_buffer);
+        GL.bufferData(GL.ARRAY_BUFFER, new Float32Array(12), GL.DYNAMIC_DRAW);
+        GL.enableVertexAttribArray(deferred_lightning_shader.attribute_pointer.texture_position);
+        GL.vertexAttribPointer(deferred_lightning_shader.attribute_pointer.texture_position, 2, GL.FLOAT, false, 0, 0);
+        
+        GL.bindBuffer(GL.ARRAY_BUFFER, null);
+        GL.bindVertexArray(null);
+        */
     }
 
     public initRenderPassRun() {
+        const GL = MainController.CanvasController.getGL();
         this.frame_info =  {
             height: MainController.CanvasController.getHeight(),
             width: MainController.CanvasController.getWidth()
         };
+        const aspect = this.frame_info.width / this.frame_info.height;
+        const height = 1 / aspect;
+        const bottom = (1 - height) / 2;
+        const top = bottom + height;
+        /*
+        GL.bindBuffer(GL.ARRAY_BUFFER, this.plane_texture_buffer);
+        const texData = [
+            0.0, top,
+            0.0, bottom,
+            1.0, top,
+            0.0, bottom,
+            1.0, bottom,
+            1.0, top,
+        ];
+        GL.bufferData(GL.ARRAY_BUFFER, new Float32Array(texData), GL.DYNAMIC_DRAW);
+        GL.bindBuffer(GL.ARRAY_BUFFER, null);
+        */
     }
 
-    public frambufferDebugPass() {
+    public framebufferDebugPass() {
         const GL = MainController.CanvasController.getGL();
 
         MainController.ShaderController.getFramebufferDebugShader().textureDebugPass(
@@ -248,29 +308,29 @@ class RenderController implements RenderControllerInterface {
 
         GL.viewport(0, 0, 1920, 1920);
 
+        // GL.enable(GL.CULL_FACE);
+        // GL.depthFunc(GL.LESS);
+        // GL.depthMask(false);
+
         GL.bindFramebuffer(GL.FRAMEBUFFER, this.position_framebuffer);
-        GL.clearColor(0, 0, 0, 0.0);
+        GL.clearColor(0.1, 0.1, 0, 1.0);
         GL.clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT);
         GL.enable(GL.DEPTH_TEST);
         GL.depthFunc(GL.LESS);
 
         GL.bindFramebuffer(GL.FRAMEBUFFER, this.albedo_framebuffer);
-        GL.clearColor(0, 0, 0, 0.0);
+        GL.clearColor(0.1, 0, 0, 1.0);
         GL.clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT);
-        GL.enable(GL.DEPTH_TEST);
-        GL.depthFunc(GL.LESS);
+
+        // GL.disable(GL.BLEND);
 
         GL.bindFramebuffer(GL.FRAMEBUFFER, this.specular_framebuffer);
-        GL.clearColor(0, 0, 0, 0.0);
+        GL.clearColor(0, 0.1, 0, 1.0);
         GL.clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT);
-        GL.enable(GL.DEPTH_TEST);
-        GL.depthFunc(GL.LESS);
 
         GL.bindFramebuffer(GL.FRAMEBUFFER, this.normal_framebuffer);
-        GL.clearColor(0, 0, 0, 0.0);
+        GL.clearColor(0, 0.0, 0.1, 1.0);
         GL.clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT);
-        GL.enable(GL.DEPTH_TEST);
-        GL.depthFunc(GL.LESS);
 
         // Set Data for Camera
         MainController.SceneController.getSceneCamera().bindCamera(GL);
@@ -292,25 +352,22 @@ class RenderController implements RenderControllerInterface {
                         const material_to_use = render_queue_entry.draw_meshes[0].related_material;
                         material_to_use.use(GL, MainController.ShaderController.getGeometryShader());
 
-
                         // Buffer Albedo Task Number
                         this.bufferSubDataTask(GL, 1);
                         GL.bindFramebuffer(GL.FRAMEBUFFER, this.albedo_framebuffer);
                         this.geometryPassDrawMeshTasks(render_queue_entry.draw_meshes);
 
-
-                        // Buffer Albedo Task Number
+                        // Buffer Specular Task Number
                         this.bufferSubDataTask(GL, 2);
                         GL.bindFramebuffer(GL.FRAMEBUFFER, this.specular_framebuffer);
                         this.geometryPassDrawMeshTasks(render_queue_entry.draw_meshes);
 
-
-                        // Buffer Albedo Task Number
+                        // Buffer Normal Task Number
                         this.bufferSubDataTask(GL, 3);
                         GL.bindFramebuffer(GL.FRAMEBUFFER, this.normal_framebuffer);
                         this.geometryPassDrawMeshTasks(render_queue_entry.draw_meshes);
 
-                        // Buffer Albedo Task Number
+                        // Buffer Position Task Number
                         this.bufferSubDataTask(GL, 4);
                         GL.bindFramebuffer(GL.FRAMEBUFFER, this.position_framebuffer);
                         this.geometryPassDrawMeshTasks(render_queue_entry.draw_meshes);
@@ -357,8 +414,42 @@ class RenderController implements RenderControllerInterface {
         GL.drawArraysInstanced(GL.TRIANGLES, 0, taskList[0].related_mesh.draw_count, taskList.length);
     }
 
-    public lightningPass() {
+    private plane_vertex_buffer: WebGLBuffer;
+    private plane_texture_buffer: WebGLBuffer;
+    private plane_vao: WebGLVertexArrayObject;
 
+    public lightningPass() {
+        const GL: WebGL2RenderingContext = MainController.CanvasController.getGL();
+        MainController.ShaderController.useDeferredLightningShader();
+
+        GL.viewport(0, 0, this.frame_info.width, this.frame_info.height);
+        GL.disable(GL.DEPTH_TEST);
+        GL.clearColor(0.3, 0.3, 0.3, 1.0);
+        GL.clear(GL.COLOR_BUFFER_BIT);
+
+        // Use The PlaneVao
+        // Bind Undo Matrices
+        MainController.SceneController.getSceneCamera().bindForLightningPass(GL);
+
+        GL.bindVertexArray(this.plane_vao);
+        // Bind Geometry Pass Textures
+        GL.activeTexture(GL.TEXTURE0);
+        GL.bindTexture(GL.TEXTURE_2D, this.albedo_texture);
+
+        GL.activeTexture(GL.TEXTURE1);
+        GL.bindTexture(GL.TEXTURE_2D, this.specular_texture);
+
+        GL.activeTexture(GL.TEXTURE2);
+        GL.bindTexture(GL.TEXTURE_2D, this.position_texture);
+
+        GL.activeTexture(GL.TEXTURE3);
+        GL.bindTexture(GL.TEXTURE_2D, this.normal_texture);
+
+        // Bind Daylight
+        MainController.SceneController.getScene().day_light.use(GL);
+
+        // Bind Other Light
+        GL.drawArrays(GL.TRIANGLES, 0, 6);
     }
 
     public postProcessPass() {

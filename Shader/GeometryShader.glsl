@@ -49,15 +49,11 @@ void main(void) {
         : (vTask == 2)
             ? specular_color
             : (vTask == 3)
-                ? vec3(projection_matrix * view_matrix * model_matrix * mesh_matrix * vec4(VertexNormals, 0.0))
+                ? vec3(/*projection_matrix * view_matrix **/ model_matrix * mesh_matrix * vec4(VertexNormals, 0.0))
                 : vec3(resultPos.rgb);
 
     vShininess = shininess;
     vUseCol = (useTex > 0.5 && useColor > 0.5) ? 1 : (useColor > 0.5) ? 2 : (useTex > 0.5) ? 3 : 0;
-
-
-
-
 }
 //#FRAGMENT-SHADER#//
 #version 300 es
@@ -65,6 +61,7 @@ precision mediump float;
 in vec3 vColor;
 in vec2 vTexPos;
 in float vShininess;
+in float zValue;
 flat in int vUseCol;
 flat in int vTask;
 
@@ -92,8 +89,10 @@ void main(void) {
     } else if (vTask == 2) {
         // Specular Pass
         final_color = vec3(calculateColor(texture(specular_texture, vTexPos).rgb, vColor, vUseCol).r, vShininess, 0.0);
-   } else if (vTask == 3 || vTask == 4) {
+   } else if (vTask == 3 ) {
         final_color = vec3(0.5) * normalize(vColor) + vec3(0.5);
+    } else if (vTask == 4) {
+        final_color = vec3(gl_FragCoord.w, 0.0, 0.0);
     }
     outColor = vec4(final_color, 1.0);
 }

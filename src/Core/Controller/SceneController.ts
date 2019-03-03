@@ -15,6 +15,7 @@ export interface SceneControllerInterface {
     removeSceneObject(sceneObject: SceneObject): void
 
     setScene(scene: Scene): void
+    getScene(): Scene
     hasActiveScene(): boolean
     getSceneCamera(): Camera
 }
@@ -32,6 +33,9 @@ class SceneController implements SceneControllerInterface {
     setScene(scene: Scene): void {
         scene.init();
         this.scene = scene;
+    }
+    getScene(): Scene {
+        return this.scene;
     }
 
     updateScene(time: number) {

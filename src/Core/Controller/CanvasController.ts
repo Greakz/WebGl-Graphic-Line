@@ -2,9 +2,13 @@ import LogInstance, {LogInterface} from "../Util/LogInstance";
 
 export interface CanvasControllerInterface {
     getGL: () => WebGL2RenderingContext;
+
     init(): void;
+
     getHeight(): number;
+
     getWidth(): number;
+
     getAspect(): number;
 }
 
@@ -13,23 +17,25 @@ var canvas_context: WebGL2RenderingContext;
 var canvas_height: number;
 var canvas_width: number;
 
-class CanvasController implements CanvasControllerInterface{
+class CanvasController implements CanvasControllerInterface {
 
     static readonly Log: LogInterface = LogInstance;
 
-    private extensions: {[key: string]: any} = {}
+    private extensions: { [key: string]: any } = {};
 
-    constructor(){}
+    constructor() {
+    }
 
     init() {
         initDom();
         canvas_instance = (document.querySelector('#canvas') as HTMLCanvasElement);
         canvas_context = canvas_instance.getContext('webgl2') as WebGL2RenderingContext;
+        /*
         this.extensions = {
             "drawbuffers": canvas_context.getExtension("GL_EXT_draw_buffers")
         };
         console.log(this.extensions.drawbuffers)
-
+        */
         window.addEventListener('resize', () => adjustCanvasSize());
         adjustCanvasSize();
         // Mouse.init();
@@ -39,12 +45,15 @@ class CanvasController implements CanvasControllerInterface{
     getGL(): WebGL2RenderingContext {
         return canvas_context;
     }
+
     getAspect(): number {
         return canvas_width / canvas_height;
     }
+
     getWidth(): number {
         return canvas_width;
     }
+
     getHeight(): number {
         return canvas_height;
     }
