@@ -1,5 +1,6 @@
 import {ShaderLoader} from "./ShaderLoader";
 import {Shader} from "./Shader";
+import { MainController } from '../../Controller/MainController';
 
 interface FramebufferDebugShaderAttributePointer {
     vertex_position: GLint;
@@ -63,14 +64,22 @@ export class FramebufferDebugShader implements Shader {
     private getVertexData(pos: number) {
         const xOffset = (pos === 1 || pos === 3) ? 1 : 0;
         const yOffset = (pos === 2 || pos === 3) ? -1 : 0;
-        return [
-            -1.0 + xOffset, 1.0 + yOffset, 0.0, 0.0, 1.0,
-            -1.0 + xOffset, 0.0 + yOffset, 0.0, 0.0, 0.0,
-            0.0 + xOffset, 1.0 + yOffset, 0.0, 1.0, 1.0,
 
-            0.0 + xOffset, 1.0 + yOffset, 0.0, 1.0, 1.0,
-            -1.0 + xOffset, 0.0 + yOffset, 0.0, 0.0, 0.0,
-            0.0 + xOffset, 0.0 + yOffset, 0.0, 1.0, 0.0
+        const aspect = MainController.CanvasController.getAspect();
+        const height = 1 / aspect;
+
+
+        const bottom = (1 - height) / 2;
+        const top = bottom + height;
+
+        return [
+            -1.0 + xOffset, 1.0 + yOffset, 0.0, 0.0, top,
+            -1.0 + xOffset, 0.0 + yOffset, 0.0, 0.0, bottom,
+            0.0 + xOffset, 1.0 + yOffset, 0.0, 1.0, top,
+
+            0.0 + xOffset, 1.0 + yOffset, 0.0, 1.0, top,
+            -1.0 + xOffset, 0.0 + yOffset, 0.0, 0.0, bottom,
+            0.0 + xOffset, 0.0 + yOffset, 0.0, 1.0, bottom
         ];
     }
 
