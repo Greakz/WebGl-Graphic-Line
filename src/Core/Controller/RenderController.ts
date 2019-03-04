@@ -9,6 +9,7 @@ import {Image} from "../Render/Resource/Image/Image";
 import {checkFramebuffer} from "../Util/FramebufferCheck";
 import {DeferredLightningShader} from "../Render/Shader/DeferredLightningShader";
 import {GeometryPass} from "./RenderPass/GeometryPass";
+import {LightningPass} from "./RenderPass/LightningPass";
 
 export interface GraphicOptions {
 
@@ -64,45 +65,8 @@ class RenderController implements RenderControllerInterface {
     };
 
     public prepareRenderPasses() {
-        const GL: WebGL2RenderingContext = MainController.CanvasController.getGL();
-
         GeometryPass.appSetup();
-
-        /**
-         * PREPARE LIGHTNING PASS
-         */
-
-        /**
-         * Prepare planebuffer + vertex buffer;
-         */
-
-        this.plane_texture_buffer = GL.createBuffer();
-        this.plane_vertex_buffer = GL.createBuffer();
-        this.plane_vao = GL.createVertexArray();
-        const deferred_lightning_shader: DeferredLightningShader = MainController.ShaderController.getDeferredLightningShader();
-        MainController.ShaderController.useDeferredLightningShader();
-
-        GL.bindVertexArray(this.plane_vao);
-        GL.bindBuffer(GL.ARRAY_BUFFER, this.plane_vertex_buffer);
-        GL.bufferData(GL.ARRAY_BUFFER, new Float32Array([
-            -1.0, 1.0, 0.0,
-            -1.0, -1.0, 0.0,
-            1.0, 1.0, 0.0,
-            -1.0, -1.0, 0.0,
-            1.0, -1.0, 0.0,
-            1.0, 1.0, 0.0,
-        ]), GL.STATIC_DRAW);
-        GL.enableVertexAttribArray(deferred_lightning_shader.attribute_pointer.vertex_position);
-        GL.vertexAttribPointer(deferred_lightning_shader.attribute_pointer.vertex_position, 3, GL.FLOAT, false, 0, 0);
-
-        GL.bindBuffer(GL.ARRAY_BUFFER, this.plane_texture_buffer);
-        GL.bufferData(GL.ARRAY_BUFFER, new Float32Array(12), GL.DYNAMIC_DRAW);
-        GL.enableVertexAttribArray(deferred_lightning_shader.attribute_pointer.texture_position);
-        GL.vertexAttribPointer(deferred_lightning_shader.attribute_pointer.texture_position, 2, GL.FLOAT, false, 0, 0);
-
-        GL.bindBuffer(GL.ARRAY_BUFFER, null);
-        GL.bindVertexArray(null);
-
+        LightningPass.appSetup();
     }
 
     public initRenderPassRun() {
@@ -110,40 +74,13 @@ class RenderController implements RenderControllerInterface {
             height: MainController.CanvasController.getHeight(),
             width: MainController.CanvasController.getWidth()
         };
-        const aspect = this.frame_info.width / this.frame_info.height;
-        let top, bottom, left, right;
-        if(aspect > 1) {
-            const height = 1 / aspect;
-            bottom = (1 - height) / 2;
-            top = bottom + height;
-            left = 0.0;
-            right = 1.0;
-        }else {
-            left = (1 - aspect) / 2;
-            right = left + aspect;
-            top = 1.0;
-            bottom = 0.0;
-        }
-        const GL = MainController.CanvasController.getGL();
-        GL.bindBuffer(GL.ARRAY_BUFFER, this.plane_texture_buffer);
-        const texData = [
-            left, top,
-            left, bottom,
-            right, top,
-            left, bottom,
-            right, bottom,
-            right, top,
-        ];
-        GL.bufferData(GL.ARRAY_BUFFER, new Float32Array(texData), GL.DYNAMIC_DRAW);
-        GL.bindBuffer(GL.ARRAY_BUFFER, null);
-
+        GeometryPass.frameSetup(this.frame_info);
+        LightningPass.frameSetup(this.frame_info);
     }
 
     public framebufferDebugPass() {
-        const GL = MainController.CanvasController.getGL();
-
         MainController.ShaderController.getFramebufferDebugShader().textureDebugPass(
-            GL, [
+            [
                 GeometryPass.position_texture,
                 GeometryPass.albedo_texture,
                 GeometryPass.specular_texture,
@@ -159,42 +96,8 @@ class RenderController implements RenderControllerInterface {
         GeometryPass.runPass(this.render_queue, this.frame_info);
     }
 
-    private plane_vertex_buffer: WebGLBuffer;
-    private plane_texture_buffer: WebGLBuffer;
-    private plane_vao: WebGLVertexArrayObject;
-
     public lightningPass() {
-        const GL: WebGL2RenderingContext = MainController.CanvasController.getGL();
-        MainController.ShaderController.useDeferredLightningShader();
-
-        GL.viewport(0, 0, this.frame_info.width, this.frame_info.height);
-        GL.disable(GL.DEPTH_TEST);
-        GL.clearColor(0.3, 0.3, 0.3, 1.0);
-        GL.clear(GL.COLOR_BUFFER_BIT);
-
-        // Use The PlaneVao
-        // Bind Undo Matrices
-        MainController.SceneController.getSceneCamera().bindForLightningPass(GL);
-
-        GL.bindVertexArray(this.plane_vao);
-        // Bind Geometry Pass Textures
-        GL.activeTexture(GL.TEXTURE0);
-        GL.bindTexture(GL.TEXTURE_2D, GeometryPass.albedo_texture);
-
-        GL.activeTexture(GL.TEXTURE1);
-        GL.bindTexture(GL.TEXTURE_2D, GeometryPass.specular_texture);
-
-        GL.activeTexture(GL.TEXTURE2);
-        GL.bindTexture(GL.TEXTURE_2D, GeometryPass.position_texture);
-
-        GL.activeTexture(GL.TEXTURE3);
-        GL.bindTexture(GL.TEXTURE_2D, GeometryPass.normal_texture);
-
-        // Bind Daylight
-        MainController.SceneController.getSceneDayLight().use(GL);
-
-        // Bind Other Light
-        GL.drawArrays(GL.TRIANGLES, 0, 6);
+        LightningPass.runPass([], this.frame_info);
     }
 
     public postProcessPass() {
@@ -322,7 +225,7 @@ export interface RenderQueueMaterialEntry {
 /**
  * Represents a LightSource, but in the Lightning Pass all of them should be rendered at the same time
  */
-interface LightQueueEntry {
+export interface LightQueueEntry {
 
 }
 

@@ -158,8 +158,8 @@ export abstract class GeometryPass {
         GL.bindFramebuffer(GL.FRAMEBUFFER, null);
     }
     
-    static frameSetup(): void {
-        const GL: WebGL2RenderingContext = MainController.CanvasController.getGL();
+    static frameSetup(frame_info: FrameInfo): void {
+        // const GL: WebGL2RenderingContext = MainController.CanvasController.getGL();
         
     }
     

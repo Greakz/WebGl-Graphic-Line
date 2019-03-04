@@ -83,8 +83,8 @@ export class FramebufferDebugShader implements Shader {
         ];
     }
 
-    textureDebugPass(GL: WebGL2RenderingContext,
-                     textures: WebGLTexture[]) {
+    textureDebugPass(textures: WebGLTexture[]) {
+        const GL = MainController.CanvasController.getGL();
         GL.bindFramebuffer(GL.FRAMEBUFFER, null);
         GL.clearColor(0.9, 0.9, 0.9, 1.0);
         GL.clear(GL.COLOR_BUFFER_BIT);
