@@ -68,7 +68,7 @@ export abstract class LightningPass {
         GL.bindBuffer(GL.ARRAY_BUFFER, null);
     }
 
-    static runPass(light_queu: LightQueueEntry[], frame_info: FrameInfo): void {
+    static runPass(light_queue: LightQueueEntry[], frame_info: FrameInfo): void {
         const GL: WebGL2RenderingContext = MainController.CanvasController.getGL();
         MainController.ShaderController.useDeferredLightningShader();
 
@@ -82,6 +82,7 @@ export abstract class LightningPass {
         MainController.SceneController.getSceneCamera().bindForLightningPass(GL);
 
         GL.bindVertexArray(LightningPass.plane_vao);
+
         // Bind Geometry Pass Textures
         GL.activeTexture(GL.TEXTURE0);
         GL.bindTexture(GL.TEXTURE_2D, GeometryPass.albedo_texture);
@@ -94,6 +95,9 @@ export abstract class LightningPass {
 
         GL.activeTexture(GL.TEXTURE3);
         GL.bindTexture(GL.TEXTURE_2D, GeometryPass.normal_texture);
+
+        GL.activeTexture(GL.TEXTURE4);
+        GL.bindTexture(GL.TEXTURE_2D, GeometryPass.material_texture);
 
         // Bind Daylight
         MainController.SceneController.getSceneDayLight().use(GL);

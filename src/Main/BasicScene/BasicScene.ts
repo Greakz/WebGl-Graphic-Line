@@ -18,8 +18,8 @@ export class BasicScene implements Scene
 
     init() {
         this.groundPlane.model.transformation.scale(6).moveY(-3).apply();
-        this.exampleCube.model.transformation.moveX(-0.5).apply();
-        this.exampleCube2.model.transformation.moveX(0.5).moveY(0.2).moveZ(0.3).apply();
+        // this.exampleCube.model.transformation.moveX(-0.5).apply();
+        this.exampleCube2.model.transformation.scale(0.5).moveX(0.5).moveY(0.5).moveZ(0.5).apply();
         this.exampleCube3.model.transformation.scale(3).moveY(-2).rotateY(45).apply();
         // push some objects
         MainController.pushSceneObject(this.groundPlane);
@@ -35,6 +35,6 @@ export class BasicScene implements Scene
         MainController.pushSceneObject(this.exampleCube);
     }
     update(time: number) {
-
+        this.exampleCube3.model.transformation.rotateY(-0.5).apply();
     }
 }

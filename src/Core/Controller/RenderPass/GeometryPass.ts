@@ -26,11 +26,16 @@ export abstract class GeometryPass {
     static normal_framebuffer: WebGLFramebuffer;
     static normal_depth_rbuffer: WebGLRenderbuffer;
     static normal_texture: WebGLTexture;
+
+    static material_framebuffer: WebGLFramebuffer;
+    static material_depth_rbuffer: WebGLRenderbuffer;
+    static material_texture: WebGLTexture;
     
     static appSetup(): void {
        const GL: WebGL2RenderingContext = MainController.CanvasController.getGL();
         /**
          * Position FRAMEBUFFER
+         * RGB = XYZ from ScreenSpace pressed
          */
         GeometryPass.position_framebuffer = GL.createFramebuffer();
         GL.bindFramebuffer(GL.FRAMEBUFFER, GeometryPass.position_framebuffer);
@@ -61,6 +66,7 @@ export abstract class GeometryPass {
 
         /**
          * ALBEDO FRAMEBUFFER
+         * RGB = RGB Diffuse Values
          */
         GeometryPass.albedo_framebuffer = GL.createFramebuffer();
         GL.bindFramebuffer(GL.FRAMEBUFFER, GeometryPass.albedo_framebuffer);
@@ -92,6 +98,7 @@ export abstract class GeometryPass {
 
         /**
          * SPECULAR FRAMEBUFFER
+         * RGB = RGB Specular Values
          */
         GeometryPass.specular_framebuffer = GL.createFramebuffer();
         GL.bindFramebuffer(GL.FRAMEBUFFER, GeometryPass.specular_framebuffer);
@@ -122,6 +129,7 @@ export abstract class GeometryPass {
 
         /**
          * NORMAL FRAMEBUFFER
+         * RGB = XYZ pressed Normal vectors
          */
         GeometryPass.normal_framebuffer = GL.createFramebuffer();
         GL.bindFramebuffer(GL.FRAMEBUFFER, GeometryPass.normal_framebuffer);
@@ -150,11 +158,41 @@ export abstract class GeometryPass {
 
         checkFramebuffer(GL, GeometryPass.normal_framebuffer);
 
+        /**
+         * Material FRAMEBUFFER
+         * R = Shininess
+         * G = Reflectiveness
+         */
+        GeometryPass.material_framebuffer = GL.createFramebuffer();
+        GL.bindFramebuffer(GL.FRAMEBUFFER, GeometryPass.material_framebuffer);
+
+        GeometryPass.material_texture = GL.createTexture();
+        GL.bindTexture(GL.TEXTURE_2D, GeometryPass.material_texture);
+        GL.texImage2D(
+            GL.TEXTURE_2D,
+            0,
+            GL.RGBA,
+            1920,
+            1920,
+            0,
+            GL.RGBA,
+            GL.UNSIGNED_BYTE,
+            null
+        );
+        GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MIN_FILTER, GL.LINEAR);
+        GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MAG_FILTER, GL.LINEAR);
+        GL.framebufferTexture2D(GL.FRAMEBUFFER, GL.COLOR_ATTACHMENT0, GL.TEXTURE_2D, GeometryPass.material_texture, 0);
+
+        GeometryPass.material_depth_rbuffer = GL.createRenderbuffer();
+        GL.bindRenderbuffer(GL.RENDERBUFFER, GeometryPass.material_depth_rbuffer);
+        GL.renderbufferStorage(GL.RENDERBUFFER, GL.DEPTH24_STENCIL8, 1920, 1920);
+        GL.framebufferRenderbuffer(GL.FRAMEBUFFER, GL.DEPTH_STENCIL_ATTACHMENT, GL.RENDERBUFFER, GeometryPass.material_depth_rbuffer);
+
+        checkFramebuffer(GL, GeometryPass.material_framebuffer);
+
         // reset used bindings
         GL.bindRenderbuffer(GL.RENDERBUFFER, null);
         GL.bindTexture(GL.TEXTURE_2D, null);
-
-
         GL.bindFramebuffer(GL.FRAMEBUFFER, null);
     }
     
@@ -229,6 +267,11 @@ export abstract class GeometryPass {
                         // Buffer Albedo Task Number
                         GeometryPass.bufferSubDataTask(GL, 4);
                         GL.bindFramebuffer(GL.FRAMEBUFFER, GeometryPass.position_framebuffer);
+                        GeometryPass.geometryPassDrawMeshTasks(render_queue_entry.draw_meshes);
+
+                        // Buffer Albedo Task Number
+                        GeometryPass.bufferSubDataTask(GL, 5);
+                        GL.bindFramebuffer(GL.FRAMEBUFFER, GeometryPass.material_framebuffer);
                         GeometryPass.geometryPassDrawMeshTasks(render_queue_entry.draw_meshes);
 
                     }

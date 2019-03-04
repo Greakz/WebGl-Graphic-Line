@@ -39,6 +39,7 @@ void main(void) {
     gl_Position = resultPos;
     vTexPos = TexturePosition;
     vTask =
+            (passTask > 4.5) ? 5 : // Material Pass
             (passTask > 3.5) ? 4 : // Normal Pass
             (passTask > 2.5) ? 3 : // Normal Pass
             (passTask > 1.5) ? 2 : // Specular Pass
@@ -93,9 +94,14 @@ void main(void) {
         // Specular Pass
         final_color = vec4(vec3(calculateColor(texture(specular_texture, vTexPos).rgb, vColor, vUseCol).rgb), vShininess);
    } else if (vTask == 3) {
+        // Normal Pass
         final_color = vec4(vec3(0.5) * normalize(vColor) + vec3(0.5), 1.0);
     } else if (vTask == 4) {
+        // Position Pass
         final_color = vec4(vec3(0.5) * vColor + vec3(0.5), 1.0);
+    } else if (vTask == 5) {
+        // Material Pass
+        final_color = vec4(vShininess, 0.0, 0.0, 1.0);
     }
     outColor = final_color;
 }
