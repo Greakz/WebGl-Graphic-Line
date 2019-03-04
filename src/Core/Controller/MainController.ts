@@ -34,7 +34,7 @@ export class MainController {
         MainController.CanvasController.init();
         MainController.ShaderController.loadShader();
         MainController.RenderController.prepareRenderPasses();
-        MainController.setFps(1);
+        MainController.setFps(60);
         MainController.loop();
     }
 
@@ -115,7 +115,7 @@ export class MainController {
         MainController.RenderController.initRenderPassRun();
         // MainController.RenderController.shadowPass();
         MainController.RenderController.geometryPass();
-        // MainController.RenderController.framebufferDebugPass();
+        MainController.RenderController.framebufferDebugPass();
         MainController.RenderController.lightningPass();
         // MainController.RenderController.postProcessPass();
 

@@ -8,21 +8,24 @@ import {DayLight} from "../../Core/Render/Resource/Light/DayLight";
 export class BasicScene implements Scene
 {
     camera: Camera = new SimpleCamera();
-    day_light: DayLight = new DayLight()
+    day_light: DayLight = new DayLight();
 
 
     private groundPlane: StaticPlaneObject = new StaticPlaneObject();
     private exampleCube: DynamicCubeObject = new DynamicCubeObject();
     private exampleCube2: DynamicCubeObject = new DynamicCubeObject();
+    private exampleCube3: DynamicCubeObject = new DynamicCubeObject();
 
     init() {
-        this.groundPlane.model.transformation.scale(4).moveY(-0.5).apply();
+        this.groundPlane.model.transformation.scale(6).moveY(-3).apply();
         this.exampleCube.model.transformation.moveX(-0.5).apply();
-        this.exampleCube2.model.transformation.moveX(0.5).apply();
+        this.exampleCube2.model.transformation.moveX(0.5).moveY(0.2).moveZ(0.3).apply();
+        this.exampleCube3.model.transformation.scale(3).moveY(-2).rotateY(45).apply();
         // push some objects
         MainController.pushSceneObject(this.groundPlane);
         MainController.pushSceneObject(this.exampleCube);
         MainController.pushSceneObject(this.exampleCube2);
+        MainController.pushSceneObject(this.exampleCube3);
 
         // make a fail push to test saftyness and no double insert
         MainController.pushSceneObject(this.exampleCube);

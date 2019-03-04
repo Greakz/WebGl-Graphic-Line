@@ -25,11 +25,11 @@ export interface Camera {
 export class SimpleCamera implements Camera {
     private static readonly Log: LogInterface = LogInstance;
 
-    position: vec3 = {x: 4, y: 3, z: 8};
-    target: vec3 = {x: 0, y: 0, z: 0};
+    position: vec3 = {x: 4, y: 8, z: 4};
+    target: vec3 = {x: 0, y: -1.0, z: 0};
 
     nearPlane: number = 0.5;
-    farPlane: number = 100;
+    farPlane: number = 25;
     fovDeg: number = 45;
 
     protected projection_matrix: mat4;
@@ -42,18 +42,25 @@ export class SimpleCamera implements Camera {
     }
 
     recalculateMatrices() {
+        this.recalculatePerspective();
+        this.recalculateViewMatrix();
+
+    }
+    recalculatePerspective() {
         this.projection_matrix = getPerspectiveMatrix(
             radians(this.fovDeg),
             1, // MainController.CanvasController.getAspect(),
             this.nearPlane,
             this.farPlane
         );
+        this.undo_projection_matrix = invertMatrix(this.projection_matrix);
+    }
+    recalculateViewMatrix() {
         this.view_matrix = lookAtMatrix(
             this.position,
             this.target,
             {x: 0, y: 1, z: 0}
         );
-        this.undo_projection_matrix = invertMatrix(this.projection_matrix);
         this.undo_view_matrix = invertMatrix(this.view_matrix);
     }
 
@@ -105,6 +112,13 @@ export class SimpleCamera implements Camera {
     }
 
     update(time: number) {
+        const position: number = (time * 0.0009) % (2 * Math.PI);
 
+        this.position = {
+            x: Math.sin(position) * 9,
+            y: 5,
+            z: Math.cos(position) * 9
+        };
+        this.recalculateViewMatrix();
     }
 }

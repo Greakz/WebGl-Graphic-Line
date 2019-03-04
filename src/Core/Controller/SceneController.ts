@@ -38,6 +38,8 @@ class SceneController implements SceneControllerInterface {
 
     updateScene(time: number) {
         if(this.scene !== undefined) {
+            this.scene.camera.update(time);
+            this.scene.day_light.update(time);
             this.scene.update(time);
         }
     }

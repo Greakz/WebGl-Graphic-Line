@@ -85,15 +85,17 @@ vec3 calculateColor(vec3 texel, vec3 color, int useCol) {
 }
 
 void main(void) {
-    vec3 final_color = vec3(0.0);
+    vec4 final_color = vec4(0.0);
     if(vTask == 1) {
         // Albedo Pass
-        final_color = calculateColor(texture(albedo_texture, vTexPos).rgb, vColor, vUseCol);
+        final_color = vec4(calculateColor(texture(albedo_texture, vTexPos).rgb, vColor, vUseCol), 1.0);
     } else if (vTask == 2) {
         // Specular Pass
-        final_color = vec3(calculateColor(texture(specular_texture, vTexPos).rgb, vColor, vUseCol).r, vShininess, 0.0);
-   } else if (vTask == 3 || vTask == 4) {
-        final_color = vec3(0.5) * normalize(vColor) + vec3(0.5);
+        final_color = vec4(vec3(calculateColor(texture(specular_texture, vTexPos).rgb, vColor, vUseCol).rgb), vShininess);
+   } else if (vTask == 3) {
+        final_color = vec4(vec3(0.5) * normalize(vColor) + vec3(0.5), 1.0);
+    } else if (vTask == 4) {
+        final_color = vec4(vec3(0.5) * vColor + vec3(0.5), 1.0);
     }
-    outColor = vec4(final_color, 1.0);
+    outColor = final_color;
 }

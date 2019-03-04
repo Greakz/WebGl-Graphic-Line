@@ -242,19 +242,28 @@ class RenderController implements RenderControllerInterface {
             width: MainController.CanvasController.getWidth()
         };
         const aspect = this.frame_info.width / this.frame_info.height;
-        const height = 1 / aspect;
-        const bottom = (1 - height) / 2;
-        const top = bottom + height;
-
+        let top, bottom, left, right;
+        if(aspect > 1) {
+            const height = 1 / aspect;
+            bottom = (1 - height) / 2;
+            top = bottom + height;
+            left = 0.0;
+            right = 1.0;
+        }else {
+            left = (1 - aspect) / 2;
+            right = left + aspect;
+            top = 1.0;
+            bottom = 0.0;
+        }
         const GL = MainController.CanvasController.getGL();
         GL.bindBuffer(GL.ARRAY_BUFFER, this.plane_texture_buffer);
         const texData = [
-            0.0, top,
-            0.0, bottom,
-            1.0, top,
-            0.0, bottom,
-            1.0, bottom,
-            1.0, top,
+            left, top,
+            left, bottom,
+            right, top,
+            left, bottom,
+            right, bottom,
+            right, top,
         ];
         GL.bufferData(GL.ARRAY_BUFFER, new Float32Array(texData), GL.DYNAMIC_DRAW);
         GL.bindBuffer(GL.ARRAY_BUFFER, null);
