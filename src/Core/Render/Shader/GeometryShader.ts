@@ -64,7 +64,6 @@ export class GeometryShader implements Shader {
             this.attribute_pointer.material_block_index,
             this.uniform_block_bindings.material
         );
-
         GL.uniform1i(
             this.uniform_locations.albedo_texture,
             this.texture_bindings.albedo_texture

@@ -3,12 +3,8 @@ import {Model} from "../Render/Model";
 
 export class SceneObject {
     static readonly scene_object_type: 'static' | 'dynamic' | 'undefined' = 'undefined';
-    readonly scene_object_id: number;
+    readonly scene_object_id: number = MainController.getNextSceneObjectId();;
     readonly model: Model;
-
-    constructor() {
-        this.scene_object_id = MainController.getNextSceneObjectId();
-    }
 
     update(time: number): void {}
 }

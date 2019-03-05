@@ -32,9 +32,9 @@ export class Transformation {
     rotateY(degree: number) {this.rotation.y = (this.rotation.y + degree) % 360; return this;}
     rotateZ(degree: number) {this.rotation.z = (this.rotation.z + degree) % 360; return this;}
 
-    scaleX(scale: number) {this.scaling.x *= scale; return this;}
-    scaleY(scale: number) {this.scaling.y *= scale; return this;}
-    scaleZ(scale: number) {this.scaling.y *= scale; return this;}
+    // scaleX(scale: number) {this.scaling.x *= scale; return this;}
+    // scaleY(scale: number) {this.scaling.y *= scale; return this;}
+    // scaleZ(scale: number) {this.scaling.y *= scale; return this;}
     scale(scale: number) {this.scaling = scaleVec3(this.scaling, scale); return this;}
 
     setTranslation(t: vec3) {this.translation = t; return this;}
@@ -51,7 +51,7 @@ export class Transformation {
             getRotationXMatrix(radians(this.rotation.x)),
             getRotationYMatrix(radians(this.rotation.y)),
             getScalingMatrix(this.scaling.x, this.scaling.y, this.scaling.z),
-        ])
+        ]);
     }
     getMatrix(): mat4 {
         return this.generated_matrix;

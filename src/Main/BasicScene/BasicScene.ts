@@ -10,7 +10,6 @@ export class BasicScene implements Scene
     camera: Camera = new SimpleCamera();
     day_light: DayLight = new DayLight();
 
-
     private groundPlane: StaticPlaneObject = new StaticPlaneObject();
     private exampleCube: DynamicCubeObject = new DynamicCubeObject();
     private exampleCube2: DynamicCubeObject = new DynamicCubeObject();
@@ -18,23 +17,26 @@ export class BasicScene implements Scene
 
     init() {
         this.groundPlane.model.transformation.scale(6).moveY(-3).apply();
+
         // this.exampleCube.model.transformation.moveX(-0.5).apply();
         this.exampleCube2.model.transformation.scale(0.5).moveX(0.5).moveY(0.5).moveZ(0.5).apply();
         this.exampleCube3.model.transformation.scale(3).moveY(-2).rotateY(45).apply();
         // push some objects
-        MainController.pushSceneObject(this.groundPlane);
-        MainController.pushSceneObject(this.exampleCube);
-        MainController.pushSceneObject(this.exampleCube2);
-        MainController.pushSceneObject(this.exampleCube3);
+        MainController.SceneController.pushSceneObject(this.groundPlane);
+        MainController.SceneController.pushSceneObject(this.exampleCube);
+        MainController.SceneController.pushSceneObject(this.exampleCube2);
+        MainController.SceneController.pushSceneObject(this.exampleCube3);
 
         // make a fail push to test saftyness and no double insert
-        MainController.pushSceneObject(this.exampleCube);
+        MainController.SceneController.pushSceneObject(this.exampleCube);
 
         // remove one object
-        MainController.removeSceneObject(this.exampleCube);
-        MainController.pushSceneObject(this.exampleCube);
+        MainController.SceneController.removeSceneObject(this.exampleCube);
+        MainController.SceneController.pushSceneObject(this.exampleCube);
     }
     update(time: number) {
+        this.camera.update(time);
+        this.day_light.update(time);
         this.exampleCube3.model.transformation.rotateY(-0.5).apply();
     }
 }

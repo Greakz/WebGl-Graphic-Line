@@ -14,15 +14,9 @@ void main(void) {
 //#FRAGMENT-SHADER#//
 #version 300 es
 precision mediump float;
+#define NR_LIGHTS_PER_PACK 64
 // vertex shader input
 in vec2 vTex;
-
-// daylight data
-uniform vec3 daylight_color;
-uniform vec3 daylight_direction;
-uniform vec3 daylight_amb_factor;
-uniform vec3 daylight_diff_factor;
-uniform vec3 daylight_spec_factor;
 
 // world space transform
 uniform mat4 undo_projection_matrix;
@@ -37,6 +31,51 @@ uniform sampler2D specular_map;
 uniform sampler2D position_map;
 uniform sampler2D normal_map;
 uniform sampler2D material_map;
+
+
+struct SpotLight {
+    vec3 position;
+    vec3 direction;
+    vec3 cutoff;
+    vec3 limit;
+    vec3 color;
+    vec3 amb_factor;
+    vec3 diff_factor;
+    vec3 spec_factor;
+};
+
+
+struct OmniLight {
+    vec3 position;
+    vec3 limit;  
+    vec3 color;
+    vec3 amb_factor;
+    vec3 diff_factor;
+    vec3 spec_factor;
+};
+
+struct DayLight {
+    vec3 direction;
+    vec3 color;
+    vec3 amb_factor;
+    vec3 diff_factor;
+    vec3 spec_factor;
+};
+
+uniform lights {
+    vec4 omni_spot_blockcount_lastblockcount;
+    DayLight daylight;
+
+    OmniLight omni_lights1[NR_LIGHTS_PER_PACK];
+    OmniLight omni_lights2[NR_LIGHTS_PER_PACK];
+    OmniLight omni_lights3[NR_LIGHTS_PER_PACK];
+    OmniLight omni_lights4[NR_LIGHTS_PER_PACK];
+
+    SpotLight spot_lights1[NR_LIGHTS_PER_PACK];
+    SpotLight spot_lights2[NR_LIGHTS_PER_PACK];
+    SpotLight spot_lights3[NR_LIGHTS_PER_PACK];
+    SpotLight spot_lights4[NR_LIGHTS_PER_PACK];
+};
 
 // output
 layout(location = 0) out vec4 outColor;
@@ -68,11 +107,27 @@ void main(void) {
 
     // DAYLIGHT (DIRECTIONAL)
     vec3 view_dir = normalize(camera_position - world_space_position.xyz);
-    vec3 dir_light_dir_unit = normalize(-daylight_direction);
-    vec3 dir_amb_light_res = daylight_color * daylight_amb_factor * fragment_diffuse_color;
-    vec3 dir_diff_light_res = calculateDiffuseLight(world_space_normal, fragment_diffuse_color, dir_light_dir_unit, daylight_color, daylight_diff_factor);
-    vec3 dir_spec_light_res = calculateSpecularLight(world_space_normal, fragment_specular_intensity, view_dir, dir_light_dir_unit, daylight_color, daylight_spec_factor, fragment_shininess_intensity);
+    vec3 dir_light_dir_unit = normalize(-daylight.direction);
+    vec3 dir_amb_light_res = daylight.color * daylight.amb_factor * fragment_diffuse_color;
+    vec3 dir_diff_light_res = calculateDiffuseLight(world_space_normal, fragment_diffuse_color, dir_light_dir_unit, daylight.color, daylight.diff_factor);
+    vec3 dir_spec_light_res = calculateSpecularLight(world_space_normal, fragment_specular_intensity, view_dir, dir_light_dir_unit, daylight.color, daylight.spec_factor, fragment_shininess_intensity);
     vec3 final_daylight_color = dir_amb_light_res + dir_diff_light_res+ dir_spec_light_res;
+
+    // OMNI LIGHTS
+    int omni_block_count = int(omni_spot_blockcount_lastblockcount.x);
+    int omni_count_in_last = int(omni_spot_blockcount_lastblockcount.y);
+    int spot_block_count = int(omni_spot_blockcount_lastblockcount.z);
+    int spot_count_in_last = int(omni_spot_blockcount_lastblockcount.w);
+
+    if(omni_block_count > 1) {
+        int runTo = (omni_block_count == 1) ? omni_count_in_last : NR_LIGHTS_PER_PACK;
+        vec3 omni_amb_light = vec3(0.0);
+        vec3 omni_diff_light = vec3(0.0);
+        vec3 omni_spec_light = vec3(0.0);
+        for(int i = 0; i < runTo; i++) {
+            omni_amb_light += omni_lights1[i].color * omni_lights1[i].amb_factor * fragment_diffuse_color;
+        }
+    }
 
     outColor = vec4(final_daylight_color, 1.0);
 }

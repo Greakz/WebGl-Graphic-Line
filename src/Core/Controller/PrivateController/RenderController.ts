@@ -1,13 +1,9 @@
-import {DrawMesh} from "../Render/DrawMesh";
-import LogInstance, {LogInterface} from "../Util/LogInstance";
-import {MainController} from "./MainController";
-import {Model} from "../Render/Model";
-import {mat4} from '../Geometry/Matrix/mat';
-import {flatMat4} from '../Geometry/Matrix/flatten';
-import {Texture} from "../Render/Resource/Texture/Texture";
-import {Image} from "../Render/Resource/Image/Image";
-import {checkFramebuffer} from "../Util/FramebufferCheck";
-import {DeferredLightningShader} from "../Render/Shader/DeferredLightningShader";
+import {DrawMesh} from "../../Render/DrawMesh";
+import LogInstance, {LogInterface} from "../../Util/LogInstance";
+import {MainController} from "../MainController";
+import {Model} from "../../Render/Model";
+import {Texture} from "../../Render/Resource/Texture/Texture";
+import {Image} from "../../Render/Resource/Image/Image";
 import {GeometryPass} from "./RenderPass/GeometryPass";
 import {LightningPass} from "./RenderPass/LightningPass";
 

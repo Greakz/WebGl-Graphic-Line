@@ -1,9 +1,9 @@
-import {MainController} from "../MainController";
-import {checkFramebuffer} from "../../Util/FramebufferCheck";
+import {MainController} from "../../MainController";
+import {checkFramebuffer} from "../../../Util/FramebufferCheck";
 import {FrameInfo, GraphicOptions, RenderQueueMaterialEntry, RenderQueueMeshEntry} from "../RenderController";
-import {DrawMesh} from "../../Render/DrawMesh";
-import {mat4} from "../../Geometry/Matrix/mat";
-import {flatMat4} from "../../Geometry/Matrix/flatten";
+import {DrawMesh} from "../../../Render/DrawMesh";
+import {mat4} from "../../../Geometry/Matrix/mat";
+import {flatMat4} from "../../../Geometry/Matrix/flatten";
 
 export abstract class GeometryPass {
 
@@ -224,6 +224,10 @@ export abstract class GeometryPass {
 
         GL.bindFramebuffer(GL.FRAMEBUFFER, GeometryPass.normal_framebuffer);
         GL.clearColor(0.1, 0.1, 0, 0.0);
+        GL.clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT);
+
+        GL.bindFramebuffer(GL.FRAMEBUFFER, GeometryPass.material_framebuffer);
+        GL.clearColor(0.0, 0.1, 0.1, 0.0);
         GL.clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT);
 
         // Set Data for Camera

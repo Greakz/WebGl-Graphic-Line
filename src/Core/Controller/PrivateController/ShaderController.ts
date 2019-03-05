@@ -1,9 +1,9 @@
-import {LogInterface} from "../Util/LogInstance";
-import LogInstance from "../Util/LogInstance";
-import {GeometryShader} from "../Render/Shader/GeometryShader";
-import {MainController} from "./MainController";
-import {FramebufferDebugShader} from "../Render/Shader/FramebufferDebugShader";
-import {DeferredLightningShader} from "../Render/Shader/DeferredLightningShader";
+import {LogInterface} from "../../Util/LogInstance";
+import LogInstance from "../../Util/LogInstance";
+import {GeometryShader} from "../../Render/Shader/GeometryShader";
+import {MainController} from "../MainController";
+import {FramebufferDebugShader} from "../../Render/Shader/FramebufferDebugShader";
+import {DeferredLightningShader} from "../../Render/Shader/DeferredLightningShader";
 
 export interface ShaderControllerInterface {
     loadShader(): void;

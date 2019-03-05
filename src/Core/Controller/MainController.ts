@@ -1,12 +1,12 @@
 import {SceneObject} from "../Scene/SceneObject";
 import {LogInterface} from "../Util/LogInstance";
 import LogInstance from "../Util/LogInstance";
-import CanvasControllerInstance, {CanvasControllerInterface} from "./CanvasController";
-import ResourceControllerInstance, {ResourceControllerInterface} from "./ResourceController";
-import RenderControllerInstance, {RenderControllerInterface} from "./RenderController";
-import ShaderControllerInstance, {ShaderControllerInterface} from "./ShaderController";
+import CanvasControllerInstance, {CanvasControllerInterface} from "./PrivateController/CanvasController";
+import ResourceControllerInstance, {ResourceControllerInterface} from "./PrivateController/ResourceController";
+import RenderControllerInstance, {RenderControllerInterface} from "./PrivateController/RenderController";
+import ShaderControllerInstance, {ShaderControllerInterface} from "./PrivateController/ShaderController";
 import EventControllerInstance, {EventControllerInterface} from "./EventController";
-import SceneControllerInstance, {SceneControllerInterface} from "./SceneController";
+import SceneControllerInstance, {PrivateSceneControllerInterface as SceneControllerInterface} from "./SceneController";
 
 /**
  * MainController
@@ -14,13 +14,6 @@ import SceneControllerInstance, {SceneControllerInterface} from "./SceneControll
  * Simple Class that is the Top Controll of the Application.
  * Mainly the holder for the Specific Logic Controller!
  */
-
-var scene_objects: SceneObject[] = [];
-var next_scene_object_id: number = 0;
-var frame_start_time: number;
-var frame_finish_time: number = (new Date()).getTime();
-var frame_interval: number = 1000 / 60;
-
 export class MainController {
     private static readonly Log: LogInterface = LogInstance;
     public static readonly CanvasController: CanvasControllerInterface = CanvasControllerInstance;
@@ -29,6 +22,16 @@ export class MainController {
     public static readonly ShaderController: ShaderControllerInterface = ShaderControllerInstance;
     public static readonly EventController: EventControllerInterface = EventControllerInstance;
     public static readonly SceneController: SceneControllerInterface = SceneControllerInstance;
+
+    private static next_scene_object_id: number = 0;
+    private static next_scene_light_id: number = 0;
+
+    private static frame_start_time: number = (new Date()).getTime();
+    private static frame_finish_time: number = (new Date()).getTime();
+    private static frame_interval: number = 1000 / 60;
+    
+    private static scene_objects: SceneObject[] = [];
+
 
     static startApplication() {
         MainController.CanvasController.init();
@@ -39,57 +42,33 @@ export class MainController {
     }
 
     static setFps(newFps: number) {
-        frame_interval = 1000 / newFps;
-    }
-
-    static pushSceneObject(sceneObject: SceneObject) {
-        let canBeAdded: boolean = true;
-        scene_objects.forEach(
-            (scene_object: SceneObject) => {
-                if (scene_object.scene_object_id === sceneObject.scene_object_id) {
-                    canBeAdded = false;
-                }
-            }
-        );
-        if (canBeAdded) {
-            scene_objects.push(sceneObject);
-            MainController.EventController.pushSceneObject(sceneObject);
-            MainController.SceneController.pushSceneObject(sceneObject);
-            MainController.RenderController.addModel(sceneObject.model);
-        }
-    }
-
-    static removeSceneObject(sceneObject: SceneObject) {
-        MainController.RenderController.removeModel(sceneObject.model);
-        MainController.EventController.removeSceneObject(sceneObject);
-        MainController.SceneController.removeSceneObject(sceneObject);
-        scene_objects = scene_objects.filter(
-            (sceneObjectCheck: SceneObject) => {
-                return sceneObjectCheck.scene_object_id !== sceneObject.scene_object_id;
-            }
-        );
+        MainController.frame_interval = 1000 / newFps;
     }
 
     static getNextSceneObjectId() {
-        next_scene_object_id++;
-        return next_scene_object_id;
+        MainController.next_scene_object_id++;
+        return MainController.next_scene_object_id;
+    }
+    static getNextSceneLightId() {
+        MainController.next_scene_light_id++;
+        return MainController.next_scene_light_id;
     }
 
     private static loop() {
         // MainController.Log.info("MainController", "RequestAnimationFrame");
 
         window.requestAnimationFrame(MainController.loop);
-        let currentTime = (new Date()).getTime();
-        let delta = (currentTime - frame_finish_time);
+        MainController.frame_start_time = (new Date()).getTime();
+        let delta = (MainController.frame_start_time - MainController.frame_finish_time);
 
-        if (delta > frame_interval) {
+        if (delta > MainController.frame_interval) {
 
             // Check if the Scene is Ready to be rendered!
             if (MainController.SceneController.hasActiveScene()) {
-                MainController.renderFrame(currentTime);
+                MainController.renderFrame(MainController.frame_start_time);
             }
 
-            frame_finish_time = currentTime - (delta % frame_interval);
+            MainController.frame_finish_time = MainController.frame_start_time - (delta % MainController.frame_interval);
         }
     }
 
@@ -115,7 +94,7 @@ export class MainController {
         MainController.RenderController.initRenderPassRun();
         // MainController.RenderController.shadowPass();
         MainController.RenderController.geometryPass();
-        MainController.RenderController.framebufferDebugPass();
+        // MainController.RenderController.framebufferDebugPass();
         MainController.RenderController.lightningPass();
         // MainController.RenderController.postProcessPass();
 

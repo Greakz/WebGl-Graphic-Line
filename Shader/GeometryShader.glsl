@@ -33,7 +33,6 @@ void main(void) {
     float useColor = shini_ucolor_utex.y;
     float useTex = shini_ucolor_utex.z;
     float passTask = shini_ucolor_utex.w;
-
     // position!
     vec4 resultPos = projection_matrix * view_matrix * model_matrix * mesh_matrix * vec4(VertexPosition, 1.0);
     gl_Position = resultPos;

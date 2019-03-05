@@ -3,7 +3,7 @@ import {ShadowShader} from "../../Shader/ShadowShader";
 import {Transformation} from '../../../Geometry/Transformation/Transformation';
 import {MainController} from "../../../Controller/MainController";
 import {Mesh} from "./Mesh";
-import {GeometryPass} from "../../../Controller/RenderPass/GeometryPass";
+import {GeometryPass} from "../../../Controller/PrivateController/RenderPass/GeometryPass";
 
 export abstract class SingleBufferMesh implements Mesh {
     readonly resource_type: 'mesh' = 'mesh';

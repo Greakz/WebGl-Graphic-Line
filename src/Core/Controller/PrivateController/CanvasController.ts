@@ -1,4 +1,4 @@
-import LogInstance, {LogInterface} from "../Util/LogInstance";
+import LogInstance, {LogInterface} from "../../Util/LogInstance";
 
 export interface CanvasControllerInterface {
     getGL: () => WebGL2RenderingContext;

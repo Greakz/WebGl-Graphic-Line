@@ -4,6 +4,7 @@ import {Shader} from "./Shader";
 interface GeometryShaderAttributePointer {
     vertex_position: GLint;
     texture_position: GLint;
+    lights: GLint
 }
 
 interface GeometryShaderUniformLocations {
@@ -27,6 +28,10 @@ interface GeometryShaderUniformLocations {
 export class DeferredLightningShader implements Shader {
     public readonly shader_id: string = 'deferred-lightning-shader';
 
+    readonly block_bindings = {
+        light: 1,
+    };
+
     readonly texture_bindings = {
         albedo_map: 0,
         specular_map: 1,
@@ -45,6 +50,9 @@ export class DeferredLightningShader implements Shader {
         this.attribute_pointer = {
             vertex_position: GL.getAttribLocation(this.program, "VertexPosition"),
             texture_position: GL.getAttribLocation(this.program, "TexturePosition"),
+
+            lights: GL.getUniformBlockIndex(this.program, "lights"),
+            // omni_lights_two_block_index: GL.getUniformBlockIndex(this.program, "omni_lights_two"),
         };
         this.uniform_locations = {
             daylight_color: GL.getUniformLocation(this.program, "daylight_color"),
@@ -63,6 +71,8 @@ export class DeferredLightningShader implements Shader {
             normal_map: GL.getUniformLocation(this.program, "normal_map"),
             material_map: GL.getUniformLocation(this.program, "material_map"),
         };
+        console.log(this.uniform_locations);
+        console.log(this.attribute_pointer);
         GL.uniform1i(
             this.uniform_locations.albedo_map,
             this.texture_bindings.albedo_map
@@ -82,6 +92,11 @@ export class DeferredLightningShader implements Shader {
         GL.uniform1i(
             this.uniform_locations.material_map,
             this.texture_bindings.material_map
+        );
+        GL.uniformBlockBinding(
+            this.program,
+            this.attribute_pointer.lights,
+            this.block_bindings.light
         );
     }
 }

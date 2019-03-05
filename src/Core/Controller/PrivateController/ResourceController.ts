@@ -1,10 +1,10 @@
-import {Mesh} from "../Render/Resource/Mesh/Mesh";
-import {Material} from "../Render/Resource/Material/Material";
-import {Texture} from "../Render/Resource/Texture/Texture";
-import {Image} from "../Render/Resource/Image/Image";
-import {MainController} from "./MainController";
-import {LogInterface} from "../Util/LogInstance";
-import LogInstance from "../Util/LogInstance";
+import {Mesh} from "../../Render/Resource/Mesh/Mesh";
+import {Material} from "../../Render/Resource/Material/Material";
+import {Texture} from "../../Render/Resource/Texture/Texture";
+import {Image} from "../../Render/Resource/Image/Image";
+import {MainController} from "../MainController";
+import {LogInterface} from "../../Util/LogInstance";
+import LogInstance from "../../Util/LogInstance";
 
 export interface ResourceControllerInterface {
     getMesh: <T extends Mesh>(mesh: T) => T;

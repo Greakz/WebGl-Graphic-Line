@@ -19,6 +19,7 @@ export class Model {
 
     public readonly related_scene_object: SceneObject;
     public draw_meshes: DrawMesh[] = [];
+    // public draw_lights: DrawMesh[] = [];
     public transformation: Transformation = new Transformation();
 
     constructor(related_scene_object: SceneObject) {
