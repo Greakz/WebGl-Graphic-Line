@@ -26,10 +26,10 @@ export class SimpleCamera implements Camera {
     private static readonly Log: LogInterface = LogInstance;
 
     position: vec3 = {x: 4, y: 8, z: 4};
-    target: vec3 = {x: 0, y: -1.0, z: 0};
+    target: vec3 = {x: 0, y: 0.0, z: 0};
 
     nearPlane: number = 0.5;
-    farPlane: number = 25;
+    farPlane: number = 100;
     fovDeg: number = 45;
 
     protected projection_matrix: mat4;
@@ -112,12 +112,12 @@ export class SimpleCamera implements Camera {
     }
 
     update(time: number) {
-        const position: number = (time * 0.0009) % (2 * Math.PI);
+        const position: number = (time * 0.0001) % (2 * Math.PI);
 
         this.position = {
-            x: Math.sin(position) * 9,
-            y: 5,
-            z: Math.cos(position) * 9
+            x: Math.sin(position) * 50,
+            y: 10,
+            z: Math.cos(position) * 50
         };
         this.recalculateViewMatrix();
     }

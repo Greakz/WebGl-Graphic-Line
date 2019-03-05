@@ -141,12 +141,12 @@ export abstract class LightningPass {
         let overflow: number = 0;
         let needUniformBlocks: number = 0;
         for(let i = 0; i < scene_light_info.omni_lights.length; i++) {
-            needUniformBlocks = Math.floor(i / MAXIMUM_LIGHTS_PER_BLOCK);
+            needUniformBlocks = Math.floor(i / MAXIMUM_LIGHTS_PER_BLOCK) + 1;
             if(needUniformBlocks < MAXIMUM_LIGHT_BLOCKS) {
                 const l = scene_light_info.omni_lights[i];
-                rawOmniData.concat([
+                rawOmniData = rawOmniData.concat([
                     l.position.x, l.position.y, l.position.z, 0.0,
-                    l.limit.x, l.limit.y, l.limit.z, 0.0,
+                    l.constant, l.linear, l.quadric, 0.0,
                     l.color.x, l.color.y, l.color.z, 0.0,
                     l.amb_factor.x, l.amb_factor.y, l.amb_factor.z, 0.0,
                     l.diff_factor.x, l.diff_factor.y, l.diff_factor.z, 0.0,
@@ -195,6 +195,7 @@ export abstract class LightningPass {
             0.0,
             0.0
         ];
+        console.log(settingsData)
         const dl: DayLight = MainController.SceneController.getSceneDayLight();
         const daylightData: number[] = [
             dl.direction.x, dl.direction.y, dl.direction.z, 0.0,

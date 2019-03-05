@@ -12,10 +12,13 @@ export abstract class ImageTexture implements Texture {
 
     private texture_buffer: WebGLTexture;
 
+    private ready: boolean = false;
+
     readonly load = (GL: WebGL2RenderingContext) => {
         this.texture_buffer = GL.createTexture();
 
         this.use_image = MainController.ResourceController.getImage(this.image);
+
         this.use_image.runIfReady(() => {
             GL.bindTexture(GL.TEXTURE_2D, this.texture_buffer);
             GL.texImage2D(GL.TEXTURE_2D, 0, GL.RGBA, this.use_image.image_width, this.use_image.image_height, 0, GL.RGBA, GL.UNSIGNED_BYTE, this.use_image.get());
@@ -24,9 +27,14 @@ export abstract class ImageTexture implements Texture {
             GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_WRAP_T, GL.CLAMP_TO_EDGE);
             GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MIN_FILTER, GL.LINEAR);
             GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MAG_FILTER, GL.LINEAR);
+            this.ready = true;
         });
     };
     readonly use = (GL: WebGL2RenderingContext) => {
-        GL.bindTexture(GL.TEXTURE_2D, this.texture_buffer);
+        if(this.ready) {
+            GL.bindTexture(GL.TEXTURE_2D, this.texture_buffer);
+        } else {
+            MainController.RenderController.bindEmptyTexture(GL);
+        }
     };
 }

@@ -8,12 +8,6 @@ interface GeometryShaderAttributePointer {
 }
 
 interface GeometryShaderUniformLocations {
-    daylight_color: WebGLUniformLocation;
-    daylight_direction: WebGLUniformLocation;
-    daylight_amb_factor: WebGLUniformLocation;
-    daylight_diff_factor: WebGLUniformLocation;
-    daylight_spec_factor: WebGLUniformLocation;
-
     undo_projection_matrix: WebGLUniformLocation;
     undo_view_matrix: WebGLUniformLocation;
     camera_position: WebGLUniformLocation;
@@ -55,12 +49,6 @@ export class DeferredLightningShader implements Shader {
             // omni_lights_two_block_index: GL.getUniformBlockIndex(this.program, "omni_lights_two"),
         };
         this.uniform_locations = {
-            daylight_color: GL.getUniformLocation(this.program, "daylight_color"),
-            daylight_direction: GL.getUniformLocation(this.program, "daylight_direction"),
-            daylight_amb_factor: GL.getUniformLocation(this.program, "daylight_amb_factor"),
-            daylight_diff_factor: GL.getUniformLocation(this.program, "daylight_diff_factor"),
-            daylight_spec_factor: GL.getUniformLocation(this.program, "daylight_spec_factor"),
-
             undo_projection_matrix: GL.getUniformLocation(this.program, "undo_projection_matrix"),
             undo_view_matrix: GL.getUniformLocation(this.program, "undo_view_matrix"),
             camera_position: GL.getUniformLocation(this.program, "camera_position"),

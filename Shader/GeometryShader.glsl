@@ -39,7 +39,7 @@ void main(void) {
     vTexPos = TexturePosition;
     vTask =
             (passTask > 4.5) ? 5 : // Material Pass
-            (passTask > 3.5) ? 4 : // Normal Pass
+            (passTask > 3.5) ? 4 : // Position Pass
             (passTask > 2.5) ? 3 : // Normal Pass
             (passTask > 1.5) ? 2 : // Specular Pass
             (passTask > 0.5) ? 1 : // Albedo Pass

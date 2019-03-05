@@ -30,7 +30,7 @@ export interface RenderControllerInterface {
 
     removeModel(model: Model): void;
 
-    bindEmptyTexture(GL: WebGL2RenderingContext, binding_slot: GLenum): void;
+    bindEmptyTexture(GL: WebGL2RenderingContext, binding_slot?: GLenum): void;
 
     prepareRenderPasses(): void;
 
@@ -194,11 +194,13 @@ class RenderController implements RenderControllerInterface {
 
     private empty_texture: Texture | null = null;
 
-    bindEmptyTexture(GL: WebGL2RenderingContext, binding_slot: GLenum) {
+    bindEmptyTexture(GL: WebGL2RenderingContext, binding_slot?: GLenum) {
         if (this.empty_texture === null) {
             this.empty_texture = MainController.ResourceController.getTexture(new EmptyTexture());
         }
-        GL.activeTexture(binding_slot);
+        if(binding_slot !== undefined) {
+            GL.activeTexture(binding_slot);
+        }
         this.empty_texture.use(GL);
     }
 }
@@ -239,15 +241,15 @@ class EmptyTexture implements Texture {
         GL.pixelStorei(GL.UNPACK_ALIGNMENT, 1);
         GL.texImage2D(GL.TEXTURE_2D,
             0,
-            GL.R8,
+            GL.RGB,
             2,
             2,
             0,
-            GL.RED,
+            GL.RGB,
             GL.UNSIGNED_BYTE,
             new Uint8Array([
-                128, 64,
-                0, 192,
+                80, 80, 80,     50, 50, 50,
+                50, 50, 50,     80, 80, 80,
             ]));
         // base settings, make it editable with texture options
         GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_WRAP_S, GL.CLAMP_TO_EDGE);

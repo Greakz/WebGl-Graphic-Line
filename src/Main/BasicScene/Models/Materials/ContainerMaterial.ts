@@ -9,6 +9,6 @@ export class ContainerMaterial extends DefaultTextureMaterial {
 
     albedo_texture: Texture = new ContainerTexture();
     specular_texture: Texture = new ContainerSpecTexture();
-    shininess: number = 0.2;
+    shininess: number = 0.6;
     transparency: number = 0;
 }
