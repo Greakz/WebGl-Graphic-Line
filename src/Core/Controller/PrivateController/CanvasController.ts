@@ -25,11 +25,10 @@ class CanvasController implements CanvasControllerInterface{
         initDom();
         canvas_instance = (document.querySelector('#canvas') as HTMLCanvasElement);
         canvas_context = canvas_instance.getContext('webgl2') as WebGL2RenderingContext;
-        this.extensions = {
-            "drawbuffers": canvas_context.getExtension("GL_EXT_draw_buffers")
-        };
-        console.log(this.extensions.drawbuffers)
-
+        if (!canvas_context.getExtension("EXT_color_buffer_float")) {
+            console.error("FLOAT color buffer not available");
+            document.body.innerHTML = "This example requires EXT_color_buffer_float which is unavailable on this system."
+        }
         window.addEventListener('resize', () => adjustCanvasSize());
         adjustCanvasSize();
         // Mouse.init();

@@ -37,6 +37,7 @@ export class MainController {
         MainController.CanvasController.init();
         MainController.ShaderController.loadShader();
         MainController.RenderController.prepareRenderPasses();
+        MainController.EventController.prepareEvents();
         MainController.setFps(60);
         MainController.loop();
     }

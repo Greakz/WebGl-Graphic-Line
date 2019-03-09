@@ -39,6 +39,8 @@ export class SimpleCamera implements Camera {
     protected undo_projection_matrix: mat4;
     protected undo_view_matrix: mat4;
 
+    private calced_aspect: number = 0;
+
     constructor() {
         this.recalculateMatrices();
     }
@@ -49,6 +51,7 @@ export class SimpleCamera implements Camera {
 
     }
     recalculatePerspective() {
+        this.calced_aspect = MainController.CanvasController.getAspect()
         this.proj_mat_a_1 = getPerspectiveMatrix(
             radians(this.fovDeg),
             1, // MainController.CanvasController.getAspect(),
@@ -57,7 +60,7 @@ export class SimpleCamera implements Camera {
         );
         this.proj_mat_a_v = getPerspectiveMatrix(
             radians(this.fovDeg),
-            MainController.CanvasController.getAspect(),
+            this.calced_aspect,
             this.nearPlane,
             this.farPlane
         );
@@ -141,5 +144,8 @@ export class SimpleCamera implements Camera {
             z: Math.cos(position) * 50
         };
         this.recalculateViewMatrix();
+        if(this.calced_aspect !== MainController.CanvasController.getAspect()) {
+            this.recalculatePerspective();
+        }
     }
 }

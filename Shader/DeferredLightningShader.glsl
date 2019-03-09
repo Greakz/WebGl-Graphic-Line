@@ -81,7 +81,7 @@ uniform lights {
 layout(location = 0) out vec4 outColor;
 
 vec3 calculateDiffuseLight(vec3 surface_normal_unit, vec3 mat_diff, vec3 light_dir_unit, vec3 light_color, vec3 diff_factor) {
-    float diff_strength = max(dot(surface_normal_unit, light_dir_unit), 0.0);
+    float diff_strength = max(dot(light_dir_unit, surface_normal_unit), 0.0);
     return vec3(diff_strength) * light_color * mat_diff * diff_factor;
 }
 
@@ -102,20 +102,20 @@ vec3 calculateOmniLight(
 ) {
     float point_distance = length(omni_light.position - frag_world_position);
     vec3 attenuation_factor = vec3((1.0 / (omni_light.limit.x + (omni_light.limit.y * point_distance) + (omni_light.limit.z * (point_distance * point_distance)))));
-    vec3 frag_to_point_n = normalize(frag_world_position - omni_light.position);
+    vec3 light_direction = normalize(omni_light.position - frag_world_position);
     // if(attenuation_factor.x < 0.001) {
     //     return vec3(0.0);
     // }
     vec3 result = vec3(0.0);
     // result += omni_light.color * omni_light.amb_factor * frag_diff;
-    result += calculateDiffuseLight(frag_world_normal, frag_diff, frag_to_point_n, omni_light.color, omni_light.diff_factor);
-    result += calculateSpecularLight(frag_world_normal, frag_spec, view_to_frag_n, frag_to_point_n, omni_light.color, omni_light.spec_factor, frag_shini);
+    result += calculateDiffuseLight(frag_world_normal, frag_diff, light_direction, omni_light.color, omni_light.diff_factor);
+    result += calculateSpecularLight(frag_world_normal, frag_spec, view_to_frag_n, light_direction, omni_light.color, omni_light.spec_factor, frag_shini);
     return result * attenuation_factor;
 }
 
 void main(void) {
-    vec4 world_space_position = vec4((texture(position_map, vTex).rgb  * vec3(2.0) - vec3(1.0)), 1.0);
-    vec3 world_space_normal = normalize(texture(normal_map, vTex).rgb * vec3(2.0) - vec3(1.0));
+    vec3 world_space_position = texture(position_map, vTex).rgb;
+    vec3 world_space_normal = normalize(texture(normal_map, vTex).rgb);
 
     vec3 fragment_diffuse_color = texture(albedo_map, vTex).rgb;
     vec3 fragment_specular_color = texture(specular_map, vTex).rgb;

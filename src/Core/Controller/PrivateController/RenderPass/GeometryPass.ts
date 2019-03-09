@@ -38,33 +38,36 @@ export abstract class GeometryPass {
          * RGB = XYZ from ScreenSpace pressed
          */
 
-        const INTERN_FORMAT = GL.RGB;
+        const SIZEX = 1920;
+        const SIZEY = 1920;
+        const INTERN_FORMAT = GL.RGBA16F;
         const INPT_FORMAT = GL.RGB;
-        const TYPE = GL.UNSIGNED_BYTE;
+        const TYPE = GL.FLOAT;
+        const FILTER = GL.NEAREST;
+        const LEVEL = 1;
 
         GeometryPass.position_framebuffer = GL.createFramebuffer();
         GL.bindFramebuffer(GL.FRAMEBUFFER, GeometryPass.position_framebuffer);
 
+        GL.activeTexture(GL.TEXTURE0);
+
         GeometryPass.position_texture = GL.createTexture();
         GL.bindTexture(GL.TEXTURE_2D, GeometryPass.position_texture);
-        GL.texImage2D(
+        GL.pixelStorei(GL.UNPACK_FLIP_Y_WEBGL, 0);
+        GL.texStorage2D(
             GL.TEXTURE_2D,
-            0,
+            LEVEL,
             INTERN_FORMAT,
-            1920,
-            1920,
-            0,
-            INPT_FORMAT,
-            TYPE,
-            null
+            SIZEX,
+            SIZEY
         );
-        GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MIN_FILTER, GL.LINEAR);
-        GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MAG_FILTER, GL.LINEAR);
+        GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MIN_FILTER, FILTER);
+        GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MAG_FILTER, FILTER);
         GL.framebufferTexture2D(GL.FRAMEBUFFER, GL.COLOR_ATTACHMENT0, GL.TEXTURE_2D, GeometryPass.position_texture, 0);
 
         GeometryPass.position_depth_rbuffer = GL.createRenderbuffer();
         GL.bindRenderbuffer(GL.RENDERBUFFER, GeometryPass.position_depth_rbuffer);
-        GL.renderbufferStorage(GL.RENDERBUFFER, GL.DEPTH24_STENCIL8, 1920, 1920);
+        GL.renderbufferStorage(GL.RENDERBUFFER, GL.DEPTH24_STENCIL8, SIZEX, SIZEX);
         GL.framebufferRenderbuffer(GL.FRAMEBUFFER, GL.DEPTH_STENCIL_ATTACHMENT, GL.RENDERBUFFER, GeometryPass.position_depth_rbuffer);
 
         checkFramebuffer(GL, GeometryPass.position_framebuffer);
@@ -75,27 +78,24 @@ export abstract class GeometryPass {
          */
         GeometryPass.albedo_framebuffer = GL.createFramebuffer();
         GL.bindFramebuffer(GL.FRAMEBUFFER, GeometryPass.albedo_framebuffer);
+        GL.activeTexture(GL.TEXTURE0);
 
         GeometryPass.albedo_texture = GL.createTexture();
         GL.bindTexture(GL.TEXTURE_2D, GeometryPass.albedo_texture);
-        GL.texImage2D(
+        GL.texStorage2D(
             GL.TEXTURE_2D,
-            0,
+            LEVEL,
             INTERN_FORMAT,
-            1920,
-            1920,
-            0,
-            INPT_FORMAT,
-            TYPE,
-            null
+            SIZEX,
+            SIZEY
         );
-        GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MIN_FILTER, GL.LINEAR);
-        GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MAG_FILTER, GL.LINEAR);
+        GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MIN_FILTER, FILTER);
+        GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MAG_FILTER, FILTER);
         GL.framebufferTexture2D(GL.FRAMEBUFFER, GL.COLOR_ATTACHMENT0, GL.TEXTURE_2D, GeometryPass.albedo_texture, 0);
 
         GeometryPass.albedo_depth_rbuffer = GL.createRenderbuffer();
         GL.bindRenderbuffer(GL.RENDERBUFFER, GeometryPass.albedo_depth_rbuffer);
-        GL.renderbufferStorage(GL.RENDERBUFFER, GL.DEPTH24_STENCIL8, 1920, 1920);
+        GL.renderbufferStorage(GL.RENDERBUFFER, GL.DEPTH24_STENCIL8, SIZEX, SIZEX);
         GL.framebufferRenderbuffer(GL.FRAMEBUFFER, GL.DEPTH_STENCIL_ATTACHMENT, GL.RENDERBUFFER, GeometryPass.albedo_depth_rbuffer);
 
         checkFramebuffer(GL, GeometryPass.albedo_framebuffer);
@@ -107,27 +107,24 @@ export abstract class GeometryPass {
          */
         GeometryPass.specular_framebuffer = GL.createFramebuffer();
         GL.bindFramebuffer(GL.FRAMEBUFFER, GeometryPass.specular_framebuffer);
+        GL.activeTexture(GL.TEXTURE0);
 
         GeometryPass.specular_texture = GL.createTexture();
         GL.bindTexture(GL.TEXTURE_2D, GeometryPass.specular_texture);
-        GL.texImage2D(
+        GL.texStorage2D(
             GL.TEXTURE_2D,
-            0,
+            LEVEL,
             INTERN_FORMAT,
-            1920,
-            1920,
-            0,
-            INPT_FORMAT,
-            TYPE,
-            null
+            SIZEX,
+            SIZEY
         );
-        GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MIN_FILTER, GL.LINEAR);
-        GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MAG_FILTER, GL.LINEAR);
+        GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MIN_FILTER, FILTER);
+        GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MAG_FILTER, FILTER);
         GL.framebufferTexture2D(GL.FRAMEBUFFER, GL.COLOR_ATTACHMENT0, GL.TEXTURE_2D, GeometryPass.specular_texture, 0);
 
         GeometryPass.specular_depth_rbuffer = GL.createRenderbuffer();
         GL.bindRenderbuffer(GL.RENDERBUFFER, GeometryPass.specular_depth_rbuffer);
-        GL.renderbufferStorage(GL.RENDERBUFFER, GL.DEPTH24_STENCIL8, 1920, 1920);
+        GL.renderbufferStorage(GL.RENDERBUFFER, GL.DEPTH24_STENCIL8, SIZEX, SIZEX);
         GL.framebufferRenderbuffer(GL.FRAMEBUFFER, GL.DEPTH_STENCIL_ATTACHMENT, GL.RENDERBUFFER, GeometryPass.specular_depth_rbuffer);
 
         checkFramebuffer(GL, GeometryPass.specular_framebuffer);
@@ -138,27 +135,24 @@ export abstract class GeometryPass {
          */
         GeometryPass.normal_framebuffer = GL.createFramebuffer();
         GL.bindFramebuffer(GL.FRAMEBUFFER, GeometryPass.normal_framebuffer);
+        GL.activeTexture(GL.TEXTURE0);
 
         GeometryPass.normal_texture = GL.createTexture();
         GL.bindTexture(GL.TEXTURE_2D, GeometryPass.normal_texture);
-        GL.texImage2D(
+        GL.texStorage2D(
             GL.TEXTURE_2D,
-            0,
+            LEVEL,
             INTERN_FORMAT,
-            1920,
-            1920,
-            0,
-            INPT_FORMAT,
-            TYPE,
-            null
+            SIZEX,
+            SIZEY
         );
-        GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MIN_FILTER, GL.LINEAR);
-        GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MAG_FILTER, GL.LINEAR);
+        GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MIN_FILTER, FILTER);
+        GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MAG_FILTER, FILTER);
         GL.framebufferTexture2D(GL.FRAMEBUFFER, GL.COLOR_ATTACHMENT0, GL.TEXTURE_2D, GeometryPass.normal_texture, 0);
 
         GeometryPass.normal_depth_rbuffer = GL.createRenderbuffer();
         GL.bindRenderbuffer(GL.RENDERBUFFER, GeometryPass.normal_depth_rbuffer);
-        GL.renderbufferStorage(GL.RENDERBUFFER, GL.DEPTH24_STENCIL8, 1920, 1920);
+        GL.renderbufferStorage(GL.RENDERBUFFER, GL.DEPTH24_STENCIL8, SIZEX, SIZEX);
         GL.framebufferRenderbuffer(GL.FRAMEBUFFER, GL.DEPTH_STENCIL_ATTACHMENT, GL.RENDERBUFFER, GeometryPass.normal_depth_rbuffer);
 
         checkFramebuffer(GL, GeometryPass.normal_framebuffer);
@@ -170,27 +164,24 @@ export abstract class GeometryPass {
          */
         GeometryPass.material_framebuffer = GL.createFramebuffer();
         GL.bindFramebuffer(GL.FRAMEBUFFER, GeometryPass.material_framebuffer);
+        GL.activeTexture(GL.TEXTURE0);
 
         GeometryPass.material_texture = GL.createTexture();
         GL.bindTexture(GL.TEXTURE_2D, GeometryPass.material_texture);
-        GL.texImage2D(
+        GL.texStorage2D(
             GL.TEXTURE_2D,
-            0,
+            LEVEL,
             INTERN_FORMAT,
-            1920,
-            1920,
-            0,
-            INPT_FORMAT,
-            TYPE,
-            null
+            SIZEX,
+            SIZEY
         );
-        GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MIN_FILTER, GL.LINEAR);
-        GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MAG_FILTER, GL.LINEAR);
+        GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MIN_FILTER, FILTER);
+        GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MAG_FILTER, FILTER);
         GL.framebufferTexture2D(GL.FRAMEBUFFER, GL.COLOR_ATTACHMENT0, GL.TEXTURE_2D, GeometryPass.material_texture, 0);
 
         GeometryPass.material_depth_rbuffer = GL.createRenderbuffer();
         GL.bindRenderbuffer(GL.RENDERBUFFER, GeometryPass.material_depth_rbuffer);
-        GL.renderbufferStorage(GL.RENDERBUFFER, GL.DEPTH24_STENCIL8, 1920, 1920);
+        GL.renderbufferStorage(GL.RENDERBUFFER, GL.DEPTH24_STENCIL8, SIZEX, SIZEX);
         GL.framebufferRenderbuffer(GL.FRAMEBUFFER, GL.DEPTH_STENCIL_ATTACHMENT, GL.RENDERBUFFER, GeometryPass.material_depth_rbuffer);
 
         checkFramebuffer(GL, GeometryPass.material_framebuffer);

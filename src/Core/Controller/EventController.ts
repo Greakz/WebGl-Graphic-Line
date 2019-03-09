@@ -2,10 +2,12 @@ import {DynamicSceneObject} from "../Scene/DynamicSceneObject";
 import {SceneObject} from "../Scene/SceneObject";
 import {StaticSceneObject} from "../Scene/StaticSceneObject";
 import LogInstance, {LogInterface} from "../Util/LogInstance";
+import {MouseTracker} from "../Event/Mouse/MouseTracker";
 
 export interface EventControllerInterface {
     checkMouseIntersection(): void;
     checkPeriodicEvents(): void;
+    prepareEvents(): void;
     pushSceneObject(sceneObject: SceneObject): void;
     removeSceneObject(sceneObject: SceneObject): void;
 }
@@ -13,8 +15,13 @@ class EventController implements EventControllerInterface {
 
     private static readonly Log: LogInterface = LogInstance;
     private dynamic_scene_objects: DynamicSceneObject[] = [];
+    private mouse_tracker: MouseTracker = new MouseTracker();
 
     constructor(){}
+
+    prepareEvents() {
+        this.mouse_tracker.setUp();
+    }
 
     checkMouseIntersection() {
         // EventController.Log.info("EventController", "Check Intersections");

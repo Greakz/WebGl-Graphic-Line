@@ -39,8 +39,8 @@ export class BasicScene implements Scene
         MainController.SceneController.removeSceneObject(this.exampleCube);
         MainController.SceneController.pushSceneObject(this.exampleCube);
 
-        this.omniLight.position = {x: 15, y: 7, z: 15};
-        // MainController.SceneController.pushSceneLight(this.omniLight);
+        this.omniLight.position = {x: 5, y: 7, z: 5};
+        MainController.SceneController.pushSceneLight(this.omniLight);
 
         this.alternateInit();
     }
@@ -48,20 +48,20 @@ export class BasicScene implements Scene
     private altCubes: DynamicCubeObject[] = [];
     private altLights: OmniLight[] = [];
     private alternateInit() {
-        let genCubes: number = 500;
-        let genLights: number = 15;
+        let genCubes: number = 1000;
+        let genLights: number = 25;
 
         for(let i = 0; i < genCubes; i++) {
             const newCube = new DynamicCubeObject();
             let randomNr: number = Math.random() * 2 * Math.PI;
-            newCube.model.transformation.moveX(Math.sin(randomNr) * 15).moveZ(Math.cos(randomNr) * 15).moveY(Math.cos(Math.random() * 2 * Math.PI)).rotateY(Math.random() * 90).apply();
+            newCube.model.transformation.moveX(Math.sin(randomNr) * 14).moveZ(Math.cos(randomNr) * 18).moveY(Math.cos(Math.random() * 2 * Math.PI)).rotateY(Math.random() * 90).apply();
             this.altCubes.push(newCube);
             MainController.SceneController.pushSceneObject(newCube);
         }
         for(let i = 0; i < genLights; i++) {
             const newLight = new OmniLight();
             let randomNr: number = Math.random() * 2 * Math.PI;
-            newLight.position = {x: Math.abs(Math.sin(randomNr)) * 16.6, y: Math.cos(Math.random() * 2 * Math.PI) + 5, z: Math.abs(Math.cos(randomNr)) * 16.6 };
+            newLight.position = {x: Math.sin(randomNr) * 20, y: Math.cos(Math.random() * 2 * Math.PI) + 5, z: Math.abs(Math.cos(randomNr)) * 14 };
             this.altLights.push(newLight);
             MainController.SceneController.pushSceneLight(newLight);
         }
