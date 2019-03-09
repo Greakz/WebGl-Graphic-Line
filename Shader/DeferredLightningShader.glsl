@@ -101,20 +101,20 @@ vec3 calculateOmniLight(
     float frag_shini
 ) {
     float point_distance = length(omni_light.position - frag_world_position);
-    vec3 attenuation_factor = vec3((1.0 / (omni_light.limit.x + omni_light.limit.y * point_distance + omni_light.limit.z * (point_distance * point_distance))));
-    if(attenuation_factor.x < 0.1) {
-        return vec3(0.0);
-    }
-    vec3 frag_to_point_n = normalize(omni_light.position - frag_world_position);
+    vec3 attenuation_factor = vec3((1.0 / (omni_light.limit.x + (omni_light.limit.y * point_distance) + (omni_light.limit.z * (point_distance * point_distance)))));
+    vec3 frag_to_point_n = normalize(frag_world_position - omni_light.position);
+    // if(attenuation_factor.x < 0.001) {
+    //     return vec3(0.0);
+    // }
     vec3 result = vec3(0.0);
-    result += omni_light.color * omni_light.amb_factor * frag_diff;
+    // result += omni_light.color * omni_light.amb_factor * frag_diff;
     result += calculateDiffuseLight(frag_world_normal, frag_diff, frag_to_point_n, omni_light.color, omni_light.diff_factor);
     result += calculateSpecularLight(frag_world_normal, frag_spec, view_to_frag_n, frag_to_point_n, omni_light.color, omni_light.spec_factor, frag_shini);
     return result * attenuation_factor;
 }
 
 void main(void) {
-    vec4 world_space_position = undo_view_matrix * undo_projection_matrix * vec4((texture(position_map, vTex).rgb  * vec3(2.0) - vec3(1.0)), 1.0);
+    vec4 world_space_position = vec4((texture(position_map, vTex).rgb  * vec3(2.0) - vec3(1.0)), 1.0);
     vec3 world_space_normal = normalize(texture(normal_map, vTex).rgb * vec3(2.0) - vec3(1.0));
 
     vec3 fragment_diffuse_color = texture(albedo_map, vTex).rgb;
@@ -133,7 +133,7 @@ void main(void) {
     vec3 dir_amb_light_res = daylight.color * daylight.amb_factor * fragment_diffuse_color;
     vec3 dir_diff_light_res = calculateDiffuseLight(world_space_normal, fragment_diffuse_color, frag_to_daylight_n, daylight.color, daylight.diff_factor);
     vec3 dir_spec_light_res = calculateSpecularLight(world_space_normal, fragment_specular_color, view_to_frag_n, frag_to_daylight_n, daylight.color, daylight.spec_factor, fragment_shininess_intensity);
-    vec3 final_daylight_color = dir_amb_light_res + dir_diff_light_res+ dir_spec_light_res;
+    vec3 final_daylight_color = dir_amb_light_res + dir_diff_light_res + dir_spec_light_res;
 
     // OMNI AND SPOT LIGHT SETTINGS
     int omni_block_count = int(omni_spot_blockcount_lastblockcount.x);
@@ -147,25 +147,52 @@ void main(void) {
     for(int block_number = 1; block_number <= omni_block_count; block_number++) {
         if(omni_block_count >= block_number) {
             int calc_omni_lights_count = (omni_block_count == block_number) ? omni_count_in_last : NR_LIGHTS_PER_PACK;
-                  for(int i = 0; i < calc_omni_lights_count; i++) {
-                    OmniLight current_omni_light;
-                    switch(block_number) {
-                        case 1:
-                            current_omni_light = omni_lights1[i];
-                            omni_light_result += calculateOmniLight(current_omni_light, world_space_normal.xyz, world_space_position.xyz, view_to_frag_n, fragment_diffuse_color, fragment_specular_color, fragment_shininess_intensity);
-                            break;
-                        case 2:
-                            current_omni_light = omni_lights2[i];
-                            omni_light_result += calculateOmniLight(current_omni_light, world_space_normal.xyz, world_space_position.xyz, view_to_frag_n, fragment_diffuse_color, fragment_specular_color, fragment_shininess_intensity);
-                            break;
-                        case 3:
-                            current_omni_light = omni_lights3[i];
-                            omni_light_result += calculateOmniLight(current_omni_light, world_space_normal.xyz, world_space_position.xyz, view_to_frag_n, fragment_diffuse_color, fragment_specular_color, fragment_shininess_intensity);
-                            break;
-                        default:
-                            break;
-                    }
+            for(int i = 0; i < calc_omni_lights_count; i++) {
+                OmniLight current_omni_light;
+                switch(block_number) {
+                    case 1:
+                        current_omni_light = omni_lights1[i];
+                        omni_light_result +=
+                            calculateOmniLight(
+                                current_omni_light,
+                                world_space_normal.xyz,
+                                world_space_position.xyz,
+                                view_to_frag_n,
+                                fragment_diffuse_color,
+                                fragment_specular_color,
+                                fragment_shininess_intensity
+                            );
+                        break;
+                    case 2:
+                        current_omni_light = omni_lights2[i];
+                        omni_light_result +=
+                            calculateOmniLight(
+                                current_omni_light,
+                                world_space_normal.xyz,
+                                world_space_position.xyz,
+                                view_to_frag_n,
+                                fragment_diffuse_color,
+                                fragment_specular_color,
+                                fragment_shininess_intensity
+                            );
+                        break;
+                    case 3:
+                        current_omni_light = omni_lights3[i];
+                        omni_light_result +=
+                            calculateOmniLight(
+                                current_omni_light,
+                                world_space_normal.xyz,
+                                world_space_position.xyz,
+                                view_to_frag_n,
+                                fragment_diffuse_color,
+                                fragment_specular_color,
+                                fragment_shininess_intensity
+                            );
+                        break;
+                    default:
+                        break;
                 }
+            }
         }
     }
     outColor = vec4(omni_light_result, 1.0);

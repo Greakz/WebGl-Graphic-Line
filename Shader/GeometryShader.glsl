@@ -50,7 +50,7 @@ void main(void) {
             ? specular_color
             : (vTask == 3)
                 ? vec3(model_matrix * mesh_matrix * vec4(VertexNormals, 0.0))
-                : vec3(resultPos.rgb);
+                : vec3(model_matrix * mesh_matrix * vec4(VertexPosition, 1.0));
 
     vShininess = shininess;
     vUseCol = (useTex > 0.5 && useColor > 0.5) ? 1 : (useColor > 0.5) ? 2 : (useTex > 0.5) ? 3 : 0;
@@ -94,10 +94,10 @@ void main(void) {
         final_color = vec4(vec3(calculateColor(texture(specular_texture, vTexPos).rgb, vColor, vUseCol).rgb), vShininess);
    } else if (vTask == 3) {
         // Normal Pass
-        final_color = vec4(vec3(0.5) * normalize(vColor) + vec3(0.5), 1.0);
+        final_color = vec4(vColor, 1.0);
     } else if (vTask == 4) {
         // Position Pass
-        final_color = vec4(vec3(0.5) * vColor + vec3(0.5), 1.0);
+        final_color = vec4(vColor, 1.0);
     } else if (vTask == 5) {
         // Material Pass
         final_color = vec4(vShininess, 0.0, 0.0, 1.0);

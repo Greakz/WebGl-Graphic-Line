@@ -39,8 +39,8 @@ export class BasicScene implements Scene
         MainController.SceneController.removeSceneObject(this.exampleCube);
         MainController.SceneController.pushSceneObject(this.exampleCube);
 
-        this.omniLight.position = {x: 2.5, y: -1.0, z: 0};
-        MainController.SceneController.pushSceneLight(this.omniLight);
+        this.omniLight.position = {x: 15, y: 7, z: 15};
+        // MainController.SceneController.pushSceneLight(this.omniLight);
 
         this.alternateInit();
     }
@@ -49,7 +49,7 @@ export class BasicScene implements Scene
     private altLights: OmniLight[] = [];
     private alternateInit() {
         let genCubes: number = 500;
-        let genLights: number = 5;
+        let genLights: number = 15;
 
         for(let i = 0; i < genCubes; i++) {
             const newCube = new DynamicCubeObject();
@@ -61,7 +61,7 @@ export class BasicScene implements Scene
         for(let i = 0; i < genLights; i++) {
             const newLight = new OmniLight();
             let randomNr: number = Math.random() * 2 * Math.PI;
-            newLight.position = {x: Math.abs(Math.sin(randomNr)) * 16.5, y: Math.abs(Math.cos(randomNr)) * 16.5, z: Math.cos(Math.random() * 2 * Math.PI) + 3};
+            newLight.position = {x: Math.abs(Math.sin(randomNr)) * 16.6, y: Math.cos(Math.random() * 2 * Math.PI) + 5, z: Math.abs(Math.cos(randomNr)) * 16.6 };
             this.altLights.push(newLight);
             MainController.SceneController.pushSceneLight(newLight);
         }

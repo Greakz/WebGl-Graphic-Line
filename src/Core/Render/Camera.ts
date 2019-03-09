@@ -16,8 +16,9 @@ export interface Camera {
 
     getViewMatrix(): mat4;
 
-    bindCamera(GL: WebGL2RenderingContext): void
-    bindForLightningPass(GL: WebGL2RenderingContext): void
+    bingForGeometryShader(GL: WebGL2RenderingContext): void
+    bindForDeferredLightningShader(GL: WebGL2RenderingContext): void
+    bindForLightBulbShader(GL: WebGL2RenderingContext): void
 
     update(time: number): void;
 }
@@ -29,10 +30,11 @@ export class SimpleCamera implements Camera {
     target: vec3 = {x: 0, y: 0.0, z: 0};
 
     nearPlane: number = 0.5;
-    farPlane: number = 100;
+    farPlane: number = 150;
     fovDeg: number = 45;
 
-    protected projection_matrix: mat4;
+    protected proj_mat_a_1: mat4;
+    protected proj_mat_a_v: mat4;
     protected view_matrix: mat4;
     protected undo_projection_matrix: mat4;
     protected undo_view_matrix: mat4;
@@ -47,13 +49,19 @@ export class SimpleCamera implements Camera {
 
     }
     recalculatePerspective() {
-        this.projection_matrix = getPerspectiveMatrix(
+        this.proj_mat_a_1 = getPerspectiveMatrix(
             radians(this.fovDeg),
             1, // MainController.CanvasController.getAspect(),
             this.nearPlane,
             this.farPlane
         );
-        this.undo_projection_matrix = invertMatrix(this.projection_matrix);
+        this.proj_mat_a_v = getPerspectiveMatrix(
+            radians(this.fovDeg),
+            MainController.CanvasController.getAspect(),
+            this.nearPlane,
+            this.farPlane
+        );
+        this.undo_projection_matrix = invertMatrix(this.proj_mat_a_1);
     }
     recalculateViewMatrix() {
         this.view_matrix = lookAtMatrix(
@@ -64,7 +72,7 @@ export class SimpleCamera implements Camera {
         this.undo_view_matrix = invertMatrix(this.view_matrix);
     }
 
-    bindCamera(GL: WebGL2RenderingContext): void {
+    bingForGeometryShader(GL: WebGL2RenderingContext): void {
         // SimpleCamera.Log.info('Camera', 'binding Scene-Camera');
         GL.uniformMatrix4fv(
             MainController.ShaderController.getGeometryShader().uniform_locations.view_matrix,
@@ -74,11 +82,11 @@ export class SimpleCamera implements Camera {
         GL.uniformMatrix4fv(
             MainController.ShaderController.getGeometryShader().uniform_locations.projection_matrix,
             false,
-            new Float32Array(flatMat4(this.projection_matrix))
+            new Float32Array(flatMat4(this.proj_mat_a_1))
         );
     }
 
-    bindForLightningPass(GL: WebGL2RenderingContext) {
+    bindForDeferredLightningShader(GL: WebGL2RenderingContext) {
         GL.uniformMatrix4fv(
             MainController.ShaderController.getDeferredLightningShader().uniform_locations.undo_view_matrix,
             false,
@@ -95,12 +103,25 @@ export class SimpleCamera implements Camera {
         );
     }
 
+    bindForLightBulbShader(GL: WebGL2RenderingContext) {
+        GL.uniformMatrix4fv(
+            MainController.ShaderController.getLightBulbShader().uniform_locations.view_matrix,
+            false,
+            new Float32Array(flatMat4(this.view_matrix))
+        );
+        GL.uniformMatrix4fv(
+            MainController.ShaderController.getLightBulbShader().uniform_locations.projection_matrix,
+            false,
+            new Float32Array(flatMat4(this.proj_mat_a_v))
+        );
+    }
+
     setProjectionMatrix(new_matrix: mat4): void {
-        this.projection_matrix = new_matrix
+        this.proj_mat_a_1 = new_matrix
     }
 
     getProjectionMatrix(): mat4 {
-        return this.projection_matrix
+        return this.proj_mat_a_1;
     }
 
     setViewMatrix(new_matrix: mat4): void {
@@ -112,11 +133,11 @@ export class SimpleCamera implements Camera {
     }
 
     update(time: number) {
-        const position: number = (time * 0.0001) % (2 * Math.PI);
+        const position: number = (time * 0.0006) % (2 * Math.PI);
 
         this.position = {
             x: Math.sin(position) * 50,
-            y: 10,
+            y: 20,
             z: Math.cos(position) * 50
         };
         this.recalculateViewMatrix();

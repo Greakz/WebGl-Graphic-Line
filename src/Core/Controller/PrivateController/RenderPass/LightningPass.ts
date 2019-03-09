@@ -4,6 +4,7 @@ import {DeferredLightningShader} from "../../../Render/Shader/DeferredLightningS
 import {GeometryPass} from "./GeometryPass";
 import {SceneLightInfo} from "../../SceneController";
 import {DayLight} from "../../../Render/Resource/Light/DayLight";
+import {LightBulbShader} from "../../../Render/Shader/LightBulbShader";
 
 export const MAXIMUM_LIGHT_BLOCKS: number = 4;
 export const MAXIMUM_LIGHTS_PER_BLOCK: number = 64;
@@ -18,6 +19,7 @@ export abstract class LightningPass {
 
     static appSetup(): void {
         const GL: WebGL2RenderingContext = MainController.CanvasController.getGL();
+        GL.clearColor(0.0, 0.0, 0.0, 1.0);
 
         // console.log('MAX_VERTEX_UNIFORM_BLOCKS', GL.getParameter(GL.MAX_VERTEX_UNIFORM_BLOCKS));
         // console.log('MAX_FRAGMENT_UNIFORM_BLOCKS', GL.getParameter(GL.MAX_FRAGMENT_UNIFORM_BLOCKS));
@@ -65,6 +67,8 @@ export abstract class LightningPass {
         GL.bindBuffer(GL.UNIFORM_BUFFER, LightningPass.light_buffer);
         GL.bufferData(GL.UNIFORM_BUFFER, new Float32Array(allocateLightUniformSize), GL.DYNAMIC_DRAW);
         GL.bindBuffer(GL.UNIFORM_BUFFER, null);
+
+        LightningPass.lightBulbsAppSetup(GL);
     }
 
     static frameSetup(frame_info: FrameInfo): void {
@@ -107,7 +111,7 @@ export abstract class LightningPass {
 
         // Use The PlaneVao
         // Bind Undo Matrices
-        MainController.SceneController.getSceneCamera().bindForLightningPass(GL);
+        MainController.SceneController.getSceneCamera().bindForDeferredLightningShader(GL);
 
         GL.bindVertexArray(LightningPass.plane_vao);
 
@@ -132,10 +136,16 @@ export abstract class LightningPass {
 
         // Bind Other Light
         GL.drawArrays(GL.TRIANGLES, 0, 6);
+        if(this.draw_light_bulbs > 0) {
+            LightningPass.drawLightBulbs();
+        }
     }
 
     private static bindSceneLights() {
         const scene_light_info: SceneLightInfo = MainController.SceneController.getSceneLightInfo();
+
+        let light_bulb_data: number[] = [];
+        LightningPass.draw_light_bulbs = 0;
 
         let rawOmniData: number[] = [];
         let overflow: number = 0;
@@ -152,6 +162,11 @@ export abstract class LightningPass {
                     l.diff_factor.x, l.diff_factor.y, l.diff_factor.z, 0.0,
                     l.spec_factor.x, l.spec_factor.y, l.spec_factor.z, 0.0,
                 ]);
+                light_bulb_data = light_bulb_data.concat([
+                    l.color.x, l.color.y, l.color.z, 1.0,
+                    l.position.x, l.position.y, l.position.z
+                ]);
+                LightningPass.draw_light_bulbs++;
             } else {
                 overflow++;
             }
@@ -189,13 +204,19 @@ export abstract class LightningPass {
            console.warn("REACHED SPOT LIGHT LIMIT OF " + (MAXIMUM_LIGHT_BLOCKS * MAXIMUM_LIGHTS_PER_BLOCK) + ". Light Requests: " + overflow);
         }
         */
+        const GL: WebGL2RenderingContext = MainController.CanvasController.getGL();
+
+        if(this.draw_light_bulbs > 0) {
+            LightningPass.bufferLightBulbsData(GL, light_bulb_data);
+        }
+
         const settingsData: number[] = [
             needUniformBlocks,
             (rawOmniData.length / (6 * 4)) % (MAXIMUM_LIGHTS_PER_BLOCK),
             0.0,
             0.0
         ];
-        console.log(settingsData)
+        // console.log(rawOmniData)
         const dl: DayLight = MainController.SceneController.getSceneDayLight();
         const daylightData: number[] = [
             dl.direction.x, dl.direction.y, dl.direction.z, 0.0,
@@ -204,12 +225,11 @@ export abstract class LightningPass {
             dl.diffuse_factor.x, dl.diffuse_factor.y, dl.diffuse_factor.z, 0.0,
             dl.specular_factor.x, dl.specular_factor.y, dl.specular_factor.z, 0.0
         ];
-        const GL: WebGL2RenderingContext = MainController.CanvasController.getGL();
-        GL.bindBuffer(GL.UNIFORM_BUFFER, this.light_buffer);
+        GL.bindBuffer(GL.UNIFORM_BUFFER, LightningPass.light_buffer);
         LightningPass.bufferDayLightAndSettingsData(GL, settingsData.concat(daylightData));
         LightningPass.bufferOmniLightData(GL, rawOmniData);
         LightningPass.bufferSpotLightData(GL, []);
-        GL.bindBufferBase(GL.UNIFORM_BUFFER, MainController.ShaderController.getDeferredLightningShader().block_bindings.light, this.light_buffer);
+        GL.bindBufferBase(GL.UNIFORM_BUFFER, MainController.ShaderController.getDeferredLightningShader().block_bindings.light, LightningPass.light_buffer);
     }
 
     private static bufferDayLightAndSettingsData(GL: WebGL2RenderingContext, data: number[]) {
@@ -225,5 +245,68 @@ export abstract class LightningPass {
             +   4 * 5       // DayLight = 5 * vec4
             +   MAXIMUM_LIGHTS_PER_BLOCK * MAXIMUM_LIGHT_BLOCKS * 6 * 4; // Omni = 6 * vec4
         GL.bufferSubData(GL.UNIFORM_BUFFER, floatOffsets * 4, new Float32Array(data));
+    }
+
+    /**
+     * METHODS for showing light_bulb meshes!
+     */
+    private static light_bulb_vertex_buffer: WebGLBuffer;
+    private static light_bulb_u_buffer: WebGLBuffer;
+    private static light_bulb_vao: WebGLVertexArrayObject;
+    private static draw_light_bulbs: number = 0;
+
+    private static lightBulbsAppSetup(GL: WebGL2RenderingContext) {
+        LightningPass.light_bulb_vao = GL.createVertexArray();
+        LightningPass.light_bulb_vertex_buffer = GL.createBuffer();
+        LightningPass.light_bulb_u_buffer = GL.createBuffer();
+
+        const lightBulbShader: LightBulbShader = MainController.ShaderController.getLightBulbShader();
+        GL.useProgram(lightBulbShader.program);
+
+        GL.bindVertexArray(LightningPass.light_bulb_vao);
+        GL.bindBuffer(GL.ARRAY_BUFFER, LightningPass.light_bulb_vertex_buffer);
+        GL.bufferData(GL.ARRAY_BUFFER, new Float32Array([
+            // top pyramid
+            0.0, 0.2, 0.0,      -0.2, 0.0, 0.0,         0.0, 0.0, 0.2,
+            0.0, 0.2, 0.0,      0.0, 0.0, 0.2,          0.2, 0.0, 0.0,
+            0.0, 0.2, 0.0,      0.2, 0.0, 0.0,          0.0, 0.0, -0.2,
+            0.0, 0.2, 0.0,      0.0, 0.0, -0.2,         -0.2, 0.0, 0.0,
+
+            // bottom pyramid
+            0.0, -0.2, 0.0,     0.0, 0.0, 0.2,      -0.2, 0.0, 0.0,
+            0.0, -0.2, 0.0,     0.2, 0.0, 0.0,      0.0, 0.0, 0.2,
+            0.0, -0.2, 0.0,     0.0, 0.0, -0.2,     0.2, 0.0, 0.0,
+            0.0, -0.2, 0.0,     -0.2, 0.0, 0.0,     0.0, 0.0, -0.2,
+        ]), GL.STATIC_DRAW);
+        GL.enableVertexAttribArray(lightBulbShader.attribute_pointer.vertex_position);
+        GL.vertexAttribPointer(lightBulbShader.attribute_pointer.vertex_position, 3, GL.FLOAT, false, 0, 0);
+
+        GL.bindBuffer(GL.ARRAY_BUFFER, LightningPass.light_bulb_u_buffer);
+        GL.bufferData(GL.ARRAY_BUFFER, new Float32Array(28), GL.DYNAMIC_DRAW);
+
+        GL.enableVertexAttribArray(lightBulbShader.attribute_pointer.bulb_color);
+        GL.vertexAttribPointer(lightBulbShader.attribute_pointer.bulb_color, 4, GL.FLOAT, false, 7 * 4, 0);
+        GL.vertexAttribDivisor(lightBulbShader.attribute_pointer.bulb_color, 1);
+
+        GL.enableVertexAttribArray(lightBulbShader.attribute_pointer.bulb_position);
+        GL.vertexAttribPointer(lightBulbShader.attribute_pointer.bulb_position, 3, GL.FLOAT, false, 7 * 4, 4 * 4);
+        GL.vertexAttribDivisor(lightBulbShader.attribute_pointer.bulb_position, 1);
+
+        GL.bindBuffer(GL.ARRAY_BUFFER, null);
+        GL.bindVertexArray(null);
+    }
+
+    private static bufferLightBulbsData(GL: WebGL2RenderingContext, data: number[]) {
+        GL.bindBuffer(GL.ARRAY_BUFFER, LightningPass.light_bulb_u_buffer);
+        GL.bufferData(GL.ARRAY_BUFFER, new Float32Array(data), GL.DYNAMIC_DRAW);
+        GL.bindBuffer(GL.ARRAY_BUFFER, null);
+    }
+
+    public static drawLightBulbs() {
+        const GL: WebGL2RenderingContext = MainController.CanvasController.getGL();
+        MainController.ShaderController.useLightBulbShader();
+        GL.bindVertexArray(this.light_bulb_vao);
+        MainController.SceneController.getSceneCamera().bindForLightBulbShader(GL);
+        GL.drawArraysInstanced(GL.TRIANGLES, 0, 24, LightningPass.draw_light_bulbs);
     }
 }

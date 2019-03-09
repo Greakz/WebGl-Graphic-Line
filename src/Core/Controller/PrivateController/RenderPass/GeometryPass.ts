@@ -37,6 +37,11 @@ export abstract class GeometryPass {
          * Position FRAMEBUFFER
          * RGB = XYZ from ScreenSpace pressed
          */
+
+        const INTERN_FORMAT = GL.RGB;
+        const INPT_FORMAT = GL.RGB;
+        const TYPE = GL.UNSIGNED_BYTE;
+
         GeometryPass.position_framebuffer = GL.createFramebuffer();
         GL.bindFramebuffer(GL.FRAMEBUFFER, GeometryPass.position_framebuffer);
 
@@ -45,12 +50,12 @@ export abstract class GeometryPass {
         GL.texImage2D(
             GL.TEXTURE_2D,
             0,
-            GL.RGBA,
+            INTERN_FORMAT,
             1920,
             1920,
             0,
-            GL.RGBA,
-            GL.UNSIGNED_BYTE,
+            INPT_FORMAT,
+            TYPE,
             null
         );
         GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MIN_FILTER, GL.LINEAR);
@@ -76,12 +81,12 @@ export abstract class GeometryPass {
         GL.texImage2D(
             GL.TEXTURE_2D,
             0,
-            GL.RGBA,
+            INTERN_FORMAT,
             1920,
             1920,
             0,
-            GL.RGBA,
-            GL.UNSIGNED_BYTE,
+            INPT_FORMAT,
+            TYPE,
             null
         );
         GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MIN_FILTER, GL.LINEAR);
@@ -108,12 +113,12 @@ export abstract class GeometryPass {
         GL.texImage2D(
             GL.TEXTURE_2D,
             0,
-            GL.RGBA,
+            INTERN_FORMAT,
             1920,
             1920,
             0,
-            GL.RGBA,
-            GL.UNSIGNED_BYTE,
+            INPT_FORMAT,
+            TYPE,
             null
         );
         GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MIN_FILTER, GL.LINEAR);
@@ -139,12 +144,12 @@ export abstract class GeometryPass {
         GL.texImage2D(
             GL.TEXTURE_2D,
             0,
-            GL.RGBA,
+            INTERN_FORMAT,
             1920,
             1920,
             0,
-            GL.RGBA,
-            GL.UNSIGNED_BYTE,
+            INPT_FORMAT,
+            TYPE,
             null
         );
         GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MIN_FILTER, GL.LINEAR);
@@ -171,12 +176,12 @@ export abstract class GeometryPass {
         GL.texImage2D(
             GL.TEXTURE_2D,
             0,
-            GL.RGBA,
+            INTERN_FORMAT,
             1920,
             1920,
             0,
-            GL.RGBA,
-            GL.UNSIGNED_BYTE,
+            INPT_FORMAT,
+            TYPE,
             null
         );
         GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MIN_FILTER, GL.LINEAR);
@@ -231,7 +236,7 @@ export abstract class GeometryPass {
         GL.clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT);
 
         // Set Data for Camera
-        MainController.SceneController.getSceneCamera().bindCamera(GL);
+        MainController.SceneController.getSceneCamera().bingForGeometryShader(GL);
 
         render_queue.forEach(
             (render_queue_mesh_entry: RenderQueueMeshEntry) => {
