@@ -112,6 +112,31 @@ vec3 calculateOmniLight(
     result += calculateSpecularLight(frag_world_normal, frag_spec, view_to_frag_n, light_direction, omni_light.color, omni_light.spec_factor, frag_shini);
     return result * attenuation_factor;
 }
+vec3 calculateSpotLight(
+    SpotLight spot_light,
+    vec3 frag_world_normal,
+    vec3 frag_world_position,
+    vec3 view_to_frag_n,
+    vec3 frag_diff,
+    vec3 frag_spec,
+    float frag_shini
+) {
+    vec3 light_dir_unit = normalize(spot_light.position - frag_world_position);
+    float theta = dot(light_dir_unit, normalize(-spot_light.direction)); // Theta = winkel zum fragementhit vom spotinneren
+    if(theta > spot_light.cutoff.y) {
+        float epsilon = spot_light.cutoff.x - spot_light.cutoff.y;
+        float intensity = clamp((theta - spot_light.cutoff.y) / epsilon, 0.0, 1.0);
+        float spot_distance = length(spot_light.position - frag_world_position);
+        float attenuation = 1.0 / (spot_light.limit.x + spot_light.limit.y * spot_distance + spot_light.limit.z * (spot_distance * spot_distance));
+
+        vec3 result = vec3(0.0);
+        // amb could also be calced
+        result += vec3(intensity * attenuation) * calculateDiffuseLight(frag_world_normal, frag_diff, light_dir_unit, spot_light.color, spot_light.diff_factor);
+        result += vec3(intensity * attenuation) * calculateSpecularLight(frag_world_normal, frag_spec, view_to_frag_n, light_dir_unit, spot_light.color, spot_light.spec_factor, frag_shini);
+        return result;
+    }
+    return vec3(0.0);
+}
 
 void main(void) {
     vec3 world_space_position = texture(position_map, vTex).rgb;
@@ -189,11 +214,92 @@ void main(void) {
                                 fragment_shininess_intensity
                             );
                         break;
+                    case 4:
+                        current_omni_light = omni_lights4[i];
+                        omni_light_result +=
+                            calculateOmniLight(
+                                current_omni_light,
+                                world_space_normal.xyz,
+                                world_space_position.xyz,
+                                view_to_frag_n,
+                                fragment_diffuse_color,
+                                fragment_specular_color,
+                                fragment_shininess_intensity
+                            );
+                        break;
                     default:
                         break;
                 }
             }
         }
     }
-    outColor = vec4(omni_light_result, 1.0);
+
+    // CALCULATE SPOT LIGHT
+    // Do this stuff inline because its fast as fuck boii
+    vec3 spot_light_result = vec3(0.0);
+    for(int block_number = 1; block_number <= spot_block_count; block_number++) {
+        if(spot_block_count >= block_number) {
+            int calc_spot_lights_count = (spot_block_count == block_number) ? spot_count_in_last : NR_LIGHTS_PER_PACK;
+            for(int i = 0; i < calc_spot_lights_count; i++) {
+                SpotLight current_spot_light;
+                switch(block_number) {
+                    case 1:
+                        current_spot_light = spot_lights1[i];
+                        spot_light_result +=
+                            calculateSpotLight(
+                                current_spot_light,
+                                world_space_normal.xyz,
+                                world_space_position.xyz,
+                                view_to_frag_n,
+                                fragment_diffuse_color,
+                                fragment_specular_color,
+                                fragment_shininess_intensity
+                            );
+                        break;
+                    case 2:
+                        current_spot_light = spot_lights2[i];
+                        spot_light_result +=
+                            calculateSpotLight(
+                                current_spot_light,
+                                world_space_normal.xyz,
+                                world_space_position.xyz,
+                                view_to_frag_n,
+                                fragment_diffuse_color,
+                                fragment_specular_color,
+                                fragment_shininess_intensity
+                            );
+                        break;
+                    case 3:
+                        current_spot_light = spot_lights3[i];
+                        spot_light_result +=
+                            calculateSpotLight(
+                                current_spot_light,
+                                world_space_normal.xyz,
+                                world_space_position.xyz,
+                                view_to_frag_n,
+                                fragment_diffuse_color,
+                                fragment_specular_color,
+                                fragment_shininess_intensity
+                            );
+                        break;
+                    case 4:
+                        current_spot_light = spot_lights4[i];
+                        spot_light_result +=
+                            calculateSpotLight(
+                                current_spot_light,
+                                world_space_normal.xyz,
+                                world_space_position.xyz,
+                                view_to_frag_n,
+                                fragment_diffuse_color,
+                                fragment_specular_color,
+                                fragment_shininess_intensity
+                            );
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+    }
+    outColor = vec4(final_daylight_color + omni_light_result + spot_light_result, 1.0);
 }

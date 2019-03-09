@@ -12,4 +12,8 @@ export class OmniLight {
     spec_factor: vec3 = {x: 1, y: 1, z: 1};
 
     readonly scene_light_id: number = MainController.getNextSceneLightId();
+
+    bulbOpacity(): number {
+        return 0.2
+    }
 }

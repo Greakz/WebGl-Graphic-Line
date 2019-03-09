@@ -51,15 +51,22 @@ export class SimpleCamera implements Camera {
 
     }
     recalculatePerspective() {
-        this.calced_aspect = MainController.CanvasController.getAspect()
+        this.calced_aspect = MainController.CanvasController.getAspect();
         this.proj_mat_a_1 = getPerspectiveMatrix(
             radians(this.fovDeg),
-            1, // MainController.CanvasController.getAspect(),
+            1,
             this.nearPlane,
             this.farPlane
         );
+        let fovY;
+        if (this.calced_aspect > 1) {
+            const height = 1 / this.calced_aspect;
+            fovY = this.fovDeg * height;
+        } else {
+            fovY = this.fovDeg;
+        }
         this.proj_mat_a_v = getPerspectiveMatrix(
-            radians(this.fovDeg),
+            radians(fovY),
             this.calced_aspect,
             this.nearPlane,
             this.farPlane
@@ -140,7 +147,7 @@ export class SimpleCamera implements Camera {
 
         this.position = {
             x: Math.sin(position) * 50,
-            y: 20,
+            y: 34,
             z: Math.cos(position) * 50
         };
         this.recalculateViewMatrix();

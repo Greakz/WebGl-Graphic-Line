@@ -6,7 +6,8 @@ import {SceneLightInfo} from "../../SceneController";
 import {DayLight} from "../../../Render/Resource/Light/DayLight";
 import {LightBulbShader} from "../../../Render/Shader/LightBulbShader";
 
-export const MAXIMUM_LIGHT_BLOCKS: number = 4;
+export const MAXIMUM_OMNI_LIGHT_BLOCKS: number = 4;
+export const MAXIMUM_SPOT_LIGHT_BLOCKS: number = 4;
 export const MAXIMUM_LIGHTS_PER_BLOCK: number = 64;
 
 export abstract class LightningPass {
@@ -61,8 +62,8 @@ export abstract class LightningPass {
         const allocateLightUniformSize =
             4           // Flag = 1 * vec4
         +   4 * 5       // DayLight = 5 * vec4
-        +   MAXIMUM_LIGHTS_PER_BLOCK * MAXIMUM_LIGHT_BLOCKS * 6 * 4 // OmniLight = 6 * vec4
-        +   MAXIMUM_LIGHTS_PER_BLOCK * MAXIMUM_LIGHT_BLOCKS * 8 * 4; // SpotLight = 8 * vec4
+        +   MAXIMUM_LIGHTS_PER_BLOCK * MAXIMUM_OMNI_LIGHT_BLOCKS * 6 * 4 // OmniLight = 6 * vec4
+        +   MAXIMUM_LIGHTS_PER_BLOCK * MAXIMUM_OMNI_LIGHT_BLOCKS * 8 * 4; // SpotLight = 8 * vec4
         LightningPass.light_buffer = GL.createBuffer();
         GL.bindBuffer(GL.UNIFORM_BUFFER, LightningPass.light_buffer);
         GL.bufferData(GL.UNIFORM_BUFFER, new Float32Array(allocateLightUniformSize), GL.DYNAMIC_DRAW);
@@ -149,76 +150,73 @@ export abstract class LightningPass {
 
         let rawOmniData: number[] = [];
         let overflow: number = 0;
-        let needUniformBlocks: number = 0;
+        let needOmniUniformBlocks: number = 0;
         for(let i = 0; i < scene_light_info.omni_lights.length; i++) {
-            needUniformBlocks = Math.floor(i / MAXIMUM_LIGHTS_PER_BLOCK) + 1;
-            if(needUniformBlocks < MAXIMUM_LIGHT_BLOCKS) {
+            needOmniUniformBlocks = Math.floor(i / MAXIMUM_LIGHTS_PER_BLOCK) + 1;
+            if(needOmniUniformBlocks <= MAXIMUM_OMNI_LIGHT_BLOCKS) {
                 const l = scene_light_info.omni_lights[i];
-                rawOmniData = rawOmniData.concat([
+                rawOmniData.push(
                     l.position.x, l.position.y, l.position.z, 0.0,
                     l.constant, l.linear, l.quadric, 0.0,
                     l.color.x, l.color.y, l.color.z, 0.0,
                     l.amb_factor.x, l.amb_factor.y, l.amb_factor.z, 0.0,
                     l.diff_factor.x, l.diff_factor.y, l.diff_factor.z, 0.0,
-                    l.spec_factor.x, l.spec_factor.y, l.spec_factor.z, 0.0,
-                ]);
-                light_bulb_data = light_bulb_data.concat([
-                    l.color.x, l.color.y, l.color.z, 1.0,
+                    l.spec_factor.x, l.spec_factor.y, l.spec_factor.z, 0.0
+                );
+                light_bulb_data.push(
+                    l.color.x, l.color.y, l.color.z, l.bulbOpacity(),
                     l.position.x, l.position.y, l.position.z
-                ]);
+                );
                 LightningPass.draw_light_bulbs++;
             } else {
                 overflow++;
             }
         }
         if(overflow > 0) {
-            console.warn("REACHED OMNI LIGHT LIMIT OF " + (MAXIMUM_LIGHT_BLOCKS * MAXIMUM_LIGHTS_PER_BLOCK) + ". Light Requests: " + overflow);
+            console.warn("REACHED OMNI LIGHT LIMIT OF " + (MAXIMUM_OMNI_LIGHT_BLOCKS * MAXIMUM_LIGHTS_PER_BLOCK) + ". Light Requests OVERFLOW: " + overflow);
             // overflow = 0;
         }
-        let rawSpotData: number[][] = [];
-        /*
-        ACTIVATE SPOT LIGHTS LATER
-
+        let rawSpotData: number[] = [];
+        overflow = 0;
+        let needSpotUniformBlocks = 0;
         for(let i = 0; i < scene_light_info.spot_lights.length; i++) {
-           const block = Math.floor(i / MAXIMUM_LIGHTS_PER_BLOCK);
-           if(rawSpotData.length <= block) {
-               rawSpotData.push([]);
-           }
-           if(block < 8) {
+           needSpotUniformBlocks = Math.floor(i / MAXIMUM_LIGHTS_PER_BLOCK) + 1;
+           if(needSpotUniformBlocks < MAXIMUM_SPOT_LIGHT_BLOCKS) {
                const l = scene_light_info.spot_lights[i];
-               rawSpotData[block].concat([
+               rawSpotData.push(
                    l.position.x, l.position.y, l.position.z, 0.0,
                    l.direction.x, l.direction.y, l.direction.z, 0.0,
-                   l.cutoff.x, l.cutoff.y, 0.0, 0.0,
-                   l.limit.x, l.limit.y, l.limit.z, 0.0,
+                   l.inner_cutoff, l.outer_cutoff, 0.0, 0.0,
+                   l.constant, l.linear, l.quadric, 0.0,
                    l.color.x, l.color.y, l.color.z, 0.0,
                    l.amb_factor.x, l.amb_factor.y, l.amb_factor.z, 0.0,
                    l.diff_factor.x, l.diff_factor.y, l.diff_factor.z, 0.0,
                    l.spec_factor.x, l.spec_factor.y, l.spec_factor.z, 0.0,
-               ]);
+               );
+               light_bulb_data.push(
+                   l.color.x, l.color.y, l.color.z, l.bulbOpacity(),
+                   l.position.x, l.position.y, l.position.z
+               );
+               LightningPass.draw_light_bulbs++;
            } else {
                overflow++;
            }
         }
         if(overflow > 0) {
-           console.warn("REACHED SPOT LIGHT LIMIT OF " + (MAXIMUM_LIGHT_BLOCKS * MAXIMUM_LIGHTS_PER_BLOCK) + ". Light Requests: " + overflow);
+           console.warn("REACHED SPOT LIGHT LIMIT OF " + (MAXIMUM_OMNI_LIGHT_BLOCKS * MAXIMUM_LIGHTS_PER_BLOCK) + ". Light Requests: " + overflow);
         }
-        */
         const GL: WebGL2RenderingContext = MainController.CanvasController.getGL();
 
         if(this.draw_light_bulbs > 0) {
             LightningPass.bufferLightBulbsData(GL, light_bulb_data);
         }
 
-        const settingsData: number[] = [
-            needUniformBlocks,
-            (rawOmniData.length / (6 * 4)) % (MAXIMUM_LIGHTS_PER_BLOCK),
-            0.0,
-            0.0
-        ];
-        // console.log(rawOmniData)
         const dl: DayLight = MainController.SceneController.getSceneDayLight();
-        const daylightData: number[] = [
+        const settingsDaylightData: number[] = [
+            needOmniUniformBlocks,
+            (rawOmniData.length / (6 * 4)) % (MAXIMUM_LIGHTS_PER_BLOCK),
+            needSpotUniformBlocks,
+            (rawSpotData.length / (8 * 4)) % (MAXIMUM_LIGHTS_PER_BLOCK),
             dl.direction.x, dl.direction.y, dl.direction.z, 0.0,
             dl.color.x, dl.color.y, dl.color.z, 0.0,
             dl.amb_factor.x, dl.amb_factor.y, dl.amb_factor.z, 0.0,
@@ -226,9 +224,9 @@ export abstract class LightningPass {
             dl.specular_factor.x, dl.specular_factor.y, dl.specular_factor.z, 0.0
         ];
         GL.bindBuffer(GL.UNIFORM_BUFFER, LightningPass.light_buffer);
-        LightningPass.bufferDayLightAndSettingsData(GL, settingsData.concat(daylightData));
+        LightningPass.bufferDayLightAndSettingsData(GL, settingsDaylightData);
         LightningPass.bufferOmniLightData(GL, rawOmniData);
-        LightningPass.bufferSpotLightData(GL, []);
+        LightningPass.bufferSpotLightData(GL, rawSpotData);
         GL.bindBufferBase(GL.UNIFORM_BUFFER, MainController.ShaderController.getDeferredLightningShader().block_bindings.light, LightningPass.light_buffer);
     }
 
@@ -243,7 +241,7 @@ export abstract class LightningPass {
     private static bufferSpotLightData(GL, data: number[]) {
         const floatOffsets = 4    // Flag = 1 * vec4
             +   4 * 5       // DayLight = 5 * vec4
-            +   MAXIMUM_LIGHTS_PER_BLOCK * MAXIMUM_LIGHT_BLOCKS * 6 * 4; // Omni = 6 * vec4
+            +   MAXIMUM_LIGHTS_PER_BLOCK * MAXIMUM_OMNI_LIGHT_BLOCKS * 6 * 4; // Omni = 6 * vec4
         GL.bufferSubData(GL.UNIFORM_BUFFER, floatOffsets * 4, new Float32Array(data));
     }
 
@@ -296,15 +294,16 @@ export abstract class LightningPass {
         GL.bindVertexArray(null);
     }
 
-    private static bufferLightBulbsData(GL: WebGL2RenderingContext, data: number[]) {
+    private static bufferLightBulbsData(GL: WebGL2RenderingContext, omni_data: number[]) {
         GL.bindBuffer(GL.ARRAY_BUFFER, LightningPass.light_bulb_u_buffer);
-        GL.bufferData(GL.ARRAY_BUFFER, new Float32Array(data), GL.DYNAMIC_DRAW);
+        GL.bufferData(GL.ARRAY_BUFFER, new Float32Array(omni_data), GL.DYNAMIC_DRAW);
         GL.bindBuffer(GL.ARRAY_BUFFER, null);
     }
 
     public static drawLightBulbs() {
         const GL: WebGL2RenderingContext = MainController.CanvasController.getGL();
         MainController.ShaderController.useLightBulbShader();
+        GL.enable(GL.BLEND);
         GL.bindVertexArray(this.light_bulb_vao);
         MainController.SceneController.getSceneCamera().bindForLightBulbShader(GL);
         GL.drawArraysInstanced(GL.TRIANGLES, 0, 24, LightningPass.draw_light_bulbs);

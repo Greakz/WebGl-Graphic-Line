@@ -293,15 +293,18 @@ export abstract class GeometryPass {
             GeometryPass.setMeshAndModelAttributePointer(GL);
         }
 
+        let bufferData: number[] = [];
         // Collect Data to buffer
-        let bufferData: number[] = taskList.reduce(
-            (acc: number[], task: DrawMesh, index: number, list: DrawMesh[]) => {
+        taskList.forEach(
+            (task: DrawMesh, index: number, list: DrawMesh[]) => {
                 // Prepare Current rendering
-                let mesh_matrix: mat4 = task.related_mesh.transformation.getMatrix();
-                let model_matrix: mat4 = task.related_model.transformation.getMatrix();
-                return acc.concat(flatMat4(model_matrix).concat(flatMat4(mesh_matrix)));
-            },
-            []
+                for(let i = 0; i < 16; i++) {
+                    bufferData.push(task.related_mesh.transformation.getMatrix()[i]);
+                }
+                for(let i = 0; i < 16; i++) {
+                    bufferData.push(task.related_model.transformation.getMatrix()[i]);
+                }
+            }
         );
 
         // Buffer Data

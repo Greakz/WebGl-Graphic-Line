@@ -5,6 +5,7 @@ import {DynamicCubeObject} from "./SceneObjects/Dynamic/DynamicCubeObject";
 import { Camera, SimpleCamera } from '../../Core/Render/Camera'
 import {DayLight} from "../../Core/Render/Resource/Light/DayLight";
 import {OmniLight} from "../../Core/Render/Resource/Light/OmniLight";
+import {SpotLight} from "../../Core/Render/Resource/Light/SpotLight";
 
 export class BasicScene implements Scene
 {
@@ -46,10 +47,12 @@ export class BasicScene implements Scene
     }
 
     private altCubes: DynamicCubeObject[] = [];
-    private altLights: OmniLight[] = [];
+    private altOmniLights: OmniLight[] = [];
+    private altSpotLights: SpotLight[] = [];
     private alternateInit() {
-        let genCubes: number = 1000;
-        let genLights: number = 25;
+        let genCubes: number = 400;
+        let genOmniLights: number = 25;
+        let genSpotLights: number = 25;
 
         for(let i = 0; i < genCubes; i++) {
             const newCube = new DynamicCubeObject();
@@ -58,11 +61,18 @@ export class BasicScene implements Scene
             this.altCubes.push(newCube);
             MainController.SceneController.pushSceneObject(newCube);
         }
-        for(let i = 0; i < genLights; i++) {
+        for(let i = 0; i < genOmniLights; i++) {
             const newLight = new OmniLight();
             let randomNr: number = Math.random() * 2 * Math.PI;
-            newLight.position = {x: Math.sin(randomNr) * 20, y: Math.cos(Math.random() * 2 * Math.PI) + 5, z: Math.abs(Math.cos(randomNr)) * 14 };
-            this.altLights.push(newLight);
+            newLight.position = {x: Math.sin(randomNr) * 16, y: Math.cos(Math.random() * 2 * Math.PI) + 1, z: Math.abs(Math.cos(randomNr)) * 16 };
+            this.altOmniLights.push(newLight);
+            MainController.SceneController.pushSceneLight(newLight);
+        }
+        for(let i = 0; i < genSpotLights; i++) {
+            const newLight = new SpotLight();
+            let randomNr: number = Math.random() * 2 * Math.PI;
+            newLight.position = {x: Math.sin(randomNr) * 16, y: Math.cos(Math.random() * 2 * Math.PI) + 3, z: Math.abs(Math.cos(randomNr)) * -16 };
+            this.altSpotLights.push(newLight);
             MainController.SceneController.pushSceneLight(newLight);
         }
     }

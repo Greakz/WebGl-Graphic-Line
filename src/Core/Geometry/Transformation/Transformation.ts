@@ -6,6 +6,7 @@ import { getRotationXMatrix, getRotationYMatrix, getRotationZMatrix } from '../M
 import { getScalingMatrix } from '../Matrix/scaling';
 import { radians } from '../radians';
 import { scaleVec3 } from '../Vector/scale';
+import {flatMat4} from "../Matrix/flatten";
 
 export class Transformation {
 
@@ -16,6 +17,7 @@ export class Transformation {
     private rotation: vec3;
     private scaling: vec3;
     private generated_matrix: mat4;
+    private generated_flat_matrix: number[];
 
     constructor() {
         this.translation = Transformation.zeroVec();
@@ -52,8 +54,12 @@ export class Transformation {
             getRotationYMatrix(radians(this.rotation.y)),
             getScalingMatrix(this.scaling.x, this.scaling.y, this.scaling.z),
         ]);
+        this.generated_flat_matrix = flatMat4(this.generated_matrix);
     }
-    getMatrix(): mat4 {
+    getMatrixMat4(): mat4 {
         return this.generated_matrix;
+    }
+    getMatrix(): number[] {
+        return this.generated_flat_matrix;
     }
 }
