@@ -37,7 +37,7 @@ void main(void) {
 
     outCombine = vec4(combine_pixel, 1.0);
     float added_comps = getAddedComponents(combine_pixel);
-    if(added_comps > 1.0) {
+    if(added_comps > 2.0) {
         outBrightness = vec4(combine_pixel * vec3(added_comps / 3.0), 1.0);
     } else {
         outBrightness = vec4(vec3(0.0), 1.0);

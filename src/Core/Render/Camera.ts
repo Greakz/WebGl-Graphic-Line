@@ -149,7 +149,7 @@ export class SimpleCamera implements Camera {
     }
 
     update(time: number) {
-        const position: number = (time * 0.0006) % (2 * Math.PI);
+        const position: number = (time * 0.0001) % (2 * Math.PI);
 
         this.position = {
             x: Math.sin(position) * 50,

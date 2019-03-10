@@ -6,6 +6,8 @@ import {Texture} from "../../Render/Resource/Texture/Texture";
 import {Image} from "../../Render/Resource/Image/Image";
 import {GeometryPass} from "./RenderPass/GeometryPass";
 import {LightningPass} from "./RenderPass/LightningPass";
+import {OutputShader} from "../../Render/Shader/OutputShader";
+import {OutputPass} from "./RenderPass/OutputPass";
 
 export interface GraphicOptions {
 
@@ -23,6 +25,8 @@ export interface RenderControllerInterface {
     framebufferDebugPass(): void;
 
     lightningPass(): void;
+
+    outputPass(): void;
 
     postProcessPass(): void;
 
@@ -73,6 +77,7 @@ class RenderController implements RenderControllerInterface {
     public prepareRenderPasses() {
         GeometryPass.appSetup();
         LightningPass.appSetup();
+        OutputPass.appSetup();
     }
 
     public initRenderPassRun() {
@@ -100,6 +105,7 @@ class RenderController implements RenderControllerInterface {
         };
         GeometryPass.frameSetup(this.frame_info);
         LightningPass.frameSetup(this.frame_info);
+        OutputPass.frameSetup(this.frame_info);
     }
 
     public framebufferDebugPass() {
@@ -121,7 +127,11 @@ class RenderController implements RenderControllerInterface {
     }
 
     public lightningPass() {
-        LightningPass.runPass([], this.frame_info);
+        LightningPass.runPass(this.frame_info);
+    }
+
+    public outputPass() {
+        OutputPass.runPass(this.frame_info);
     }
 
     public postProcessPass() {

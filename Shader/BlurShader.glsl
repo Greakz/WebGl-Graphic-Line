@@ -43,7 +43,7 @@ void main(void) {
         }
     } else {
         // perform horizontal blur;
-        for(int i = -2; i <= 2; i++) {
+        for(int i = -4; i <= 4; i++) {
             vec2 texPos = vTex + (pixel_size * vec2(float(i), 0.0));
             result += texture(source, texPos).rgb * vec3(weights[abs(i)]);
         }

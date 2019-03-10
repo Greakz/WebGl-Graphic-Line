@@ -96,7 +96,8 @@ export class MainController {
         // MainController.RenderController.shadowPass();
         MainController.RenderController.geometryPass();
         MainController.RenderController.lightningPass();
-        MainController.RenderController.framebufferDebugPass();
+        // MainController.RenderController.framebufferDebugPass();
+        MainController.RenderController.outputPass();
         // MainController.RenderController.postProcessPass();
 
         // MainController.Log.info("MainController", "Finishing Frame")

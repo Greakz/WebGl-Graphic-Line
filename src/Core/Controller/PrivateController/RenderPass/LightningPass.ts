@@ -310,7 +310,7 @@ export abstract class LightningPass {
         GL.bindBuffer(GL.ARRAY_BUFFER, null);
     }
 
-    static runPass(light_queue: LightQueueEntry[], frame_info: FrameInfo): void {
+    static runPass(frame_info: FrameInfo): void {
         const GL: WebGL2RenderingContext = MainController.CanvasController.getGL();
 
         GL.bindFramebuffer(GL.FRAMEBUFFER, LightningPass.light_calculation_framebuffer);
