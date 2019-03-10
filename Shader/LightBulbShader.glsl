@@ -12,9 +12,9 @@ out vec4 vColor;
 
 void main(void) {
     mat4 model_matrix = mat4(
-        vec4(1.0, 0.0, 0.0, 0.0),
-        vec4(0.0, 1.0, 0.0, 0.0),
-        vec4(0.0, 0.0, 1.0, 0.0),
+        vec4(BulbColor.w, 0.0, 0.0, 0.0),
+        vec4(0.0, BulbColor.w, 0.0, 0.0),
+        vec4(0.0, 0.0, BulbColor.w, 0.0),
         vec4(BulbPosition, 1.0)
        );
 
@@ -43,16 +43,8 @@ void main(void) {
     float selfDepth = linearizeDepth(gl_FragCoord.z) / far_plane;
     ivec2 texPos = ivec2(gl_FragCoord.xy);
     float texFetch = texelFetch(position_map, texPos, 0).w;
-
     if(selfDepth > texFetch) {
         discard;
     }
-    /*
-    if(gl_FragCoord.x < 960.0) {
-        outColor = vec4(selfDepth);
-    } else {
-        outColor = vec4(texFetch);
-    }
-    */
     outColor = vColor;
 }

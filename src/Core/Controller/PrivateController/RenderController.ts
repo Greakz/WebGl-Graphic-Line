@@ -105,10 +105,10 @@ class RenderController implements RenderControllerInterface {
     public framebufferDebugPass() {
         MainController.ShaderController.getFramebufferDebugShader().textureDebugPass(
             [
-                LightningPass.light_calculation_result,
-                LightningPass.light_bulb_result,
+                LightningPass.light_blurred_horiz,
+                LightningPass.light_blurred_result,
                 LightningPass.light_combine_result,
-                LightningPass.light_brightness_result
+                LightningPass.light_final_result
             ]
         );
     }

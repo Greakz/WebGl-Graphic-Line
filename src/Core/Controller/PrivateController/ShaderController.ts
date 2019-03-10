@@ -6,6 +6,8 @@ import {FramebufferDebugShader} from "../../Render/Shader/FramebufferDebugShader
 import {DeferredLightningShader} from "../../Render/Shader/DeferredLightningShader";
 import {LightBulbShader} from "../../Render/Shader/LightBulbShader";
 import {CombineLightningShader} from "../../Render/Shader/CombineLightningShader";
+import {BlurShader} from "../../Render/Shader/BlurShader";
+import {FinalizeLightningShader} from "../../Render/Shader/FinalizeLightningShader";
 
 export interface ShaderControllerInterface {
     loadShader(): void;
@@ -24,6 +26,12 @@ export interface ShaderControllerInterface {
 
     useCombineLightningShader(): void;
     getCombineLightningShader(): CombineLightningShader;
+
+    useBlurShader(): void;
+    getBlurShader(): BlurShader;
+
+    useFinalizeLightningShader(): void;
+    getFinalizeLightningShader(): FinalizeLightningShader;
 }
 
 class ShaderController implements ShaderControllerInterface{
@@ -34,6 +42,8 @@ class ShaderController implements ShaderControllerInterface{
     private deferred_lightning_shader: DeferredLightningShader;
     private light_bulb_shader: LightBulbShader;
     private combine_lightning_shader: CombineLightningShader;
+    private blur_shader: BlurShader;
+    private finalize_lightning_shader: FinalizeLightningShader;
 
     constructor(){}
 
@@ -44,6 +54,8 @@ class ShaderController implements ShaderControllerInterface{
         this.deferred_lightning_shader = new DeferredLightningShader(GL);
         this.light_bulb_shader = new LightBulbShader(GL);
         this.combine_lightning_shader = new CombineLightningShader(GL);
+        this.blur_shader = new BlurShader(GL);
+        this.finalize_lightning_shader = new FinalizeLightningShader(GL);
     }
 
     getGeometryShader(): GeometryShader {
@@ -80,6 +92,20 @@ class ShaderController implements ShaderControllerInterface{
     }
     useCombineLightningShader(): void {
         MainController.CanvasController.getGL().useProgram(this.combine_lightning_shader.program);
+    }
+
+    getBlurShader(): BlurShader{
+        return this.blur_shader;
+    }
+    useBlurShader(): void {
+        MainController.CanvasController.getGL().useProgram(this.blur_shader.program);
+    }
+
+    getFinalizeLightningShader(): FinalizeLightningShader{
+        return this.finalize_lightning_shader;
+    }
+    useFinalizeLightningShader(): void {
+        MainController.CanvasController.getGL().useProgram(this.finalize_lightning_shader.program);
     }
 }
 

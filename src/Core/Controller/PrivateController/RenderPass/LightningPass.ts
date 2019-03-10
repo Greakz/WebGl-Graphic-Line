@@ -22,22 +22,30 @@ export abstract class LightningPass {
 
     //////////////////////////////
     //  GENERATED IN LIGHTNING PASS
+    //  Calculation = Calculate all the light
+    //  Bulbs = Volumes of lights sources
+    //  Combine = Bulbs, Light Calculation, Stencil Borders
+    //  Brightness = every screen fragment that hits a brightness level over an threshold
     //////////////////////////////
-    // todo use brightness result to add bloom effect later
-    // static light_brightness_result: WebGLTexture;
     static light_calculation_framebuffer: WebGLFramebuffer;
     static light_calculation_result: WebGLTexture;
     static light_bulb_framebuffer: WebGLFramebuffer;
     static light_bulb_result: WebGLTexture;
 
-    /////////////////////////////
-    //  OUTPUT OF LIGHTNING PASS
-    //  Combine = Bulbs, Light Calculation, Stencil Borders
-    //  todo Brightness = every screen fragment that hits a brightness level over an threshold
-    /////////////////////////////
     static light_combine_framebuffer: WebGLFramebuffer;
     static light_combine_result: WebGLTexture;
     static light_brightness_result: WebGLTexture;
+
+    static light_blur_horiz_framebuffer: WebGLFramebuffer;
+    static light_blur_result_framebuffer: WebGLFramebuffer;
+    static light_blurred_horiz: WebGLTexture;
+    static light_blurred_result: WebGLTexture;
+
+    /////////////////////////////
+    //  OUTPUT OF LIGHTNING PASS
+    /////////////////////////////
+    static light_final_framebuffer: WebGLFramebuffer;
+    static light_final_result: WebGLTexture;
 
     static appSetup(): void {
         const GL: WebGL2RenderingContext = MainController.CanvasController.getGL();
@@ -53,6 +61,9 @@ export abstract class LightningPass {
         LightningPass.plane_texture_buffer = GL.createBuffer();
         LightningPass.plane_vertex_buffer = GL.createBuffer();
         LightningPass.plane_vao = GL.createVertexArray();
+        ////////////////////////////////
+        // BIND PLANE VAO STUFF FOR DEFERRED LIGHTNING SHADER
+        ////////////////////////////////
         const deferred_lightning_shader: DeferredLightningShader = MainController.ShaderController.getDeferredLightningShader();
         MainController.ShaderController.useDeferredLightningShader();
 
@@ -88,6 +99,32 @@ export abstract class LightningPass {
         GL.bindBuffer(GL.ARRAY_BUFFER, LightningPass.plane_texture_buffer);
         GL.enableVertexAttribArray(combine_lightning_shader.attribute_pointer.texture_position);
         GL.vertexAttribPointer(combine_lightning_shader.attribute_pointer.texture_position, 2, GL.FLOAT, false, 0, 0);
+
+
+        ////////////////////////////////
+        // BIND PLANE VAO STUFF FOR BLUR SHADER
+        ////////////////////////////////
+        MainController.ShaderController.useBlurShader();
+        const blur_shader = MainController.ShaderController.getBlurShader();
+        GL.bindBuffer(GL.ARRAY_BUFFER, LightningPass.plane_vertex_buffer);
+        GL.enableVertexAttribArray(blur_shader.attribute_pointer.vertex_position);
+        GL.vertexAttribPointer(blur_shader.attribute_pointer.vertex_position, 3, GL.FLOAT, false, 0, 0);
+        GL.bindBuffer(GL.ARRAY_BUFFER, LightningPass.plane_texture_buffer);
+        GL.enableVertexAttribArray(blur_shader.attribute_pointer.texture_position);
+        GL.vertexAttribPointer(blur_shader.attribute_pointer.texture_position, 2, GL.FLOAT, false, 0, 0);
+
+
+        ////////////////////////////////
+        // BIND PLANE VAO STUFF FOR FINAL LIGHTNING SHADER
+        ////////////////////////////////
+        MainController.ShaderController.useFinalizeLightningShader();
+        const finalize_light_shader = MainController.ShaderController.getFinalizeLightningShader();
+        GL.bindBuffer(GL.ARRAY_BUFFER, LightningPass.plane_vertex_buffer);
+        GL.enableVertexAttribArray(finalize_light_shader.attribute_pointer.vertex_position);
+        GL.vertexAttribPointer(finalize_light_shader.attribute_pointer.vertex_position, 3, GL.FLOAT, false, 0, 0);
+        GL.bindBuffer(GL.ARRAY_BUFFER, LightningPass.plane_texture_buffer);
+        GL.enableVertexAttribArray(finalize_light_shader.attribute_pointer.texture_position);
+        GL.vertexAttribPointer(finalize_light_shader.attribute_pointer.texture_position, 2, GL.FLOAT, false, 0, 0);
 
         GL.bindBuffer(GL.ARRAY_BUFFER, null);
         GL.bindVertexArray(null);
@@ -192,6 +229,66 @@ export abstract class LightningPass {
         GL.drawBuffers([GL.COLOR_ATTACHMENT0, GL.COLOR_ATTACHMENT1]);
 
         ////////////////////////////////
+        // PREPARE BLUR FRAMEBUFFER AND TEXTURES
+        ////////////////////////////////
+        LightningPass.light_blur_horiz_framebuffer = GL.createFramebuffer();
+        GL.bindFramebuffer(GL.FRAMEBUFFER, LightningPass.light_blur_horiz_framebuffer);
+
+        LightningPass.light_blurred_horiz = GL.createTexture();
+        GL.bindTexture(GL.TEXTURE_2D, LightningPass.light_blurred_horiz);
+
+        GL.pixelStorei(GL.UNPACK_FLIP_Y_WEBGL, 0);
+        GL.texStorage2D(
+            GL.TEXTURE_2D,
+            LEVEL,
+            INTERN_FORMAT,
+            SIZEX,
+            SIZEY
+        );
+        GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MIN_FILTER, FILTER);
+        GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MAG_FILTER, FILTER);
+        GL.framebufferTexture2D(GL.FRAMEBUFFER, GL.COLOR_ATTACHMENT0, GL.TEXTURE_2D, LightningPass.light_blurred_horiz, 0);
+
+        LightningPass.light_blur_result_framebuffer = GL.createFramebuffer();
+        GL.bindFramebuffer(GL.FRAMEBUFFER, LightningPass.light_blur_result_framebuffer);
+
+        LightningPass.light_blurred_result = GL.createTexture();
+        GL.bindTexture(GL.TEXTURE_2D, LightningPass.light_blurred_result);
+
+        GL.pixelStorei(GL.UNPACK_FLIP_Y_WEBGL, 0);
+        GL.texStorage2D(
+            GL.TEXTURE_2D,
+            LEVEL,
+            INTERN_FORMAT,
+            SIZEX,
+            SIZEY
+        );
+        GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MIN_FILTER, FILTER);
+        GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MAG_FILTER, FILTER);
+        GL.framebufferTexture2D(GL.FRAMEBUFFER, GL.COLOR_ATTACHMENT0, GL.TEXTURE_2D, LightningPass.light_blurred_result, 0);
+
+        ////////////////////////////////
+        // PREPARE FINAL RESULT FRAMEBUFFER AND TEXTURES
+        ////////////////////////////////
+        LightningPass.light_final_framebuffer = GL.createFramebuffer();
+        GL.bindFramebuffer(GL.FRAMEBUFFER, LightningPass.light_final_framebuffer);
+
+        LightningPass.light_final_result = GL.createTexture();
+        GL.bindTexture(GL.TEXTURE_2D, LightningPass.light_final_result);
+
+        GL.pixelStorei(GL.UNPACK_FLIP_Y_WEBGL, 0);
+        GL.texStorage2D(
+            GL.TEXTURE_2D,
+            LEVEL,
+            INTERN_FORMAT,
+            SIZEX,
+            SIZEY
+        );
+        GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MIN_FILTER, FILTER);
+        GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MAG_FILTER, FILTER);
+        GL.framebufferTexture2D(GL.FRAMEBUFFER, GL.COLOR_ATTACHMENT0, GL.TEXTURE_2D, LightningPass.light_final_result, 0);
+
+        ////////////////////////////////
         // CLEAR BINDINGS AFTER INITIALISATION
         ////////////////////////////////
         GL.bindFramebuffer(GL.FRAMEBUFFER, null);
@@ -263,6 +360,8 @@ export abstract class LightningPass {
         GL.bindFramebuffer(GL.FRAMEBUFFER, null);
 
         LightningPass.combineBulbAndCalcResult();
+        LightningPass.blurBrightnessResult();
+        LightningPass.finalizeLightResult();
     }
 
     private static bindSceneLights() {
@@ -451,6 +550,53 @@ export abstract class LightningPass {
         GL.bindTexture(GL.TEXTURE_2D, LightningPass.light_bulb_result);
 
         GL.drawArrays(GL.TRIANGLES, 0, 6);
+        GL.bindFramebuffer(GL.FRAMEBUFFER, null);
+    }
+
+    private static blurBrightnessResult() {
+        const GL: WebGL2RenderingContext = MainController.CanvasController.getGL();
+        MainController.ShaderController.useBlurShader();
+        const blur_shader = MainController.ShaderController.getBlurShader();
+
+        GL.bindFramebuffer(GL.FRAMEBUFFER, LightningPass.light_blur_horiz_framebuffer);
+        GL.bindVertexArray(LightningPass.plane_vao);
+        // Perform Horizontal Blur
+        GL.activeTexture(GL.TEXTURE0);
+        GL.bindTexture(GL.TEXTURE_2D, this.light_brightness_result);
+        GL.uniform1i(
+            blur_shader.uniform_locations.vertical,
+            0
+        );
+        GL.drawArrays(GL.TRIANGLES, 0, 6);
+
+        GL.bindFramebuffer(GL.FRAMEBUFFER, LightningPass.light_blur_result_framebuffer);
+        GL.bindVertexArray(LightningPass.plane_vao);
+        // Perform Vertical Blur
+        GL.activeTexture(GL.TEXTURE0);
+        GL.bindTexture(GL.TEXTURE_2D, this.light_blurred_horiz);
+        GL.uniform1i(
+            blur_shader.uniform_locations.vertical,
+            1
+        );
+        GL.drawArrays(GL.TRIANGLES, 0, 6);
+
+        GL.bindFramebuffer(GL.FRAMEBUFFER, null);
+    }
+
+    private static finalizeLightResult() {
+        const GL: WebGL2RenderingContext = MainController.CanvasController.getGL();
+        MainController.ShaderController.useFinalizeLightningShader();
+
+        GL.bindFramebuffer(GL.FRAMEBUFFER, LightningPass.light_final_framebuffer);
+        GL.bindVertexArray(LightningPass.plane_vao);
+
+        GL.activeTexture(GL.TEXTURE0);
+        GL.bindTexture(GL.TEXTURE_2D, this.light_calculation_result);
+        GL.activeTexture(GL.TEXTURE1);
+        GL.bindTexture(GL.TEXTURE_2D, this.light_blurred_result);
+
+        GL.drawArrays(GL.TRIANGLES, 0, 6);
+
         GL.bindFramebuffer(GL.FRAMEBUFFER, null);
     }
 }

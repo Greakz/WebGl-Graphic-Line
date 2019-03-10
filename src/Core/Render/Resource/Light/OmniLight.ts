@@ -14,6 +14,6 @@ export class OmniLight {
     readonly scene_light_id: number = MainController.getNextSceneLightId();
 
     bulbOpacity(): number {
-        return 0.2
+        return ((this.constant + this.linear + this.quadric) / 3)
     }
 }

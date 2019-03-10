@@ -36,8 +36,9 @@ void main(void) {
     vec3 combine_pixel = max(light_calc_pixel, vec3(0.0)) + max(light_bulb_pixel, vec3(0.0));
 
     outCombine = vec4(combine_pixel, 1.0);
-    if(getAddedComponents(combine_pixel) > 1.8) {
-        outBrightness = vec4(combine_pixel, 1.0);
+    float added_comps = getAddedComponents(combine_pixel);
+    if(added_comps > 1.0) {
+        outBrightness = vec4(combine_pixel * vec3(added_comps / 3.0), 1.0);
     } else {
         outBrightness = vec4(vec3(0.0), 1.0);
     }

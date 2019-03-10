@@ -65,6 +65,7 @@ export class BasicScene implements Scene
             const newLight = new OmniLight();
             let randomNr: number = Math.random() * 2 * Math.PI;
             newLight.position = {x: Math.sin(randomNr) * 16, y: Math.cos(Math.random() * 2 * Math.PI) + 1, z: Math.abs(Math.cos(randomNr)) * 16 };
+            newLight.color = {x: Math.random() * 0.5 + 0.5, y: Math.random() * 0.5 + 0.5, z: Math.random() * 0.5 + 0.5};
             this.altOmniLights.push(newLight);
             MainController.SceneController.pushSceneLight(newLight);
         }
@@ -72,6 +73,7 @@ export class BasicScene implements Scene
             const newLight = new SpotLight();
             let randomNr: number = Math.random() * 2 * Math.PI;
             newLight.position = {x: Math.sin(randomNr) * 16, y: Math.cos(Math.random() * 2 * Math.PI) + 3, z: Math.abs(Math.cos(randomNr)) * -16 };
+            newLight.color = {x: Math.random() * 0.6 + 0.5, y: Math.random() * 0.6 + 0.5, z: Math.random() * 0.6 + 0.5};
             this.altSpotLights.push(newLight);
             MainController.SceneController.pushSceneLight(newLight);
         }

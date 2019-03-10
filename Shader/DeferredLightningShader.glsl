@@ -80,8 +80,7 @@ uniform lights {
 // output
 layout(location = 0) out vec4 outColor;
 
-float linearizeDepth(float depth)
-{
+float linearizeDepth(float depth) {
     float near_plane = 0.5;
     float far_plane = 200.0;
     float z = depth * 2.0 - 1.0; // back to NDC
@@ -121,15 +120,13 @@ vec3 calculateOmniLight(
     return result * attenuation_factor;
 }
 
-vec3 calculateSpotLight(
-    SpotLight spot_light,
-    vec3 frag_world_normal,
-    vec3 frag_world_position,
-    vec3 view_to_frag_n,
-    vec3 frag_diff,
-    vec3 frag_spec,
-    float frag_shini
-) {
+vec3 calculateSpotLight(SpotLight spot_light,
+                        vec3 frag_world_normal,
+                        vec3 frag_world_position,
+                        vec3 view_to_frag_n,
+                        vec3 frag_diff,
+                        vec3 frag_spec,
+                        float frag_shini) {
     vec3 light_dir_unit = normalize(spot_light.position - frag_world_position);
     float theta = dot(light_dir_unit, normalize(-spot_light.direction)); // Theta = winkel zum fragementhit vom spotinneren
     if(theta > spot_light.cutoff.y) {
