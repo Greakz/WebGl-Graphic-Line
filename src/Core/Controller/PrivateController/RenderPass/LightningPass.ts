@@ -21,7 +21,7 @@ export abstract class LightningPass {
     static light_buffer: WebGLBuffer;
 
     //////////////////////////////
-    //  OUTPUT OF LIGHTNING PASS
+    //  GENERATED IN LIGHTNING PASS
     //////////////////////////////
     // todo use brightness result to add bloom effect later
     // static light_brightness_result: WebGLTexture;
@@ -29,6 +29,15 @@ export abstract class LightningPass {
     static light_calculation_result: WebGLTexture;
     static light_bulb_framebuffer: WebGLFramebuffer;
     static light_bulb_result: WebGLTexture;
+
+    /////////////////////////////
+    //  OUTPUT OF LIGHTNING PASS
+    //  Combine = Bulbs, Light Calculation, Stencil Borders
+    //  todo Brightness = every screen fragment that hits a brightness level over an threshold
+    /////////////////////////////
+    static light_combine_framebuffer: WebGLFramebuffer;
+    static light_combine_result: WebGLTexture;
+    static light_brightness_result: WebGLTexture;
 
     static appSetup(): void {
         const GL: WebGL2RenderingContext = MainController.CanvasController.getGL();
@@ -48,6 +57,7 @@ export abstract class LightningPass {
         MainController.ShaderController.useDeferredLightningShader();
 
         GL.bindVertexArray(LightningPass.plane_vao);
+
         GL.bindBuffer(GL.ARRAY_BUFFER, LightningPass.plane_vertex_buffer);
         GL.bufferData(GL.ARRAY_BUFFER, new Float32Array([
             -1.0, 1.0, 0.0,
@@ -57,6 +67,7 @@ export abstract class LightningPass {
             1.0, -1.0, 0.0,
             1.0, 1.0, 0.0,
         ]), GL.STATIC_DRAW);
+
         GL.enableVertexAttribArray(deferred_lightning_shader.attribute_pointer.vertex_position);
         GL.vertexAttribPointer(deferred_lightning_shader.attribute_pointer.vertex_position, 3, GL.FLOAT, false, 0, 0);
 
@@ -64,6 +75,19 @@ export abstract class LightningPass {
         GL.bufferData(GL.ARRAY_BUFFER, new Float32Array(12), GL.DYNAMIC_DRAW);
         GL.enableVertexAttribArray(deferred_lightning_shader.attribute_pointer.texture_position);
         GL.vertexAttribPointer(deferred_lightning_shader.attribute_pointer.texture_position, 2, GL.FLOAT, false, 0, 0);
+
+
+        ////////////////////////////////
+        // BIND PLANE VAO STUFF FOR COMBINE SHADER
+        ////////////////////////////////
+        MainController.ShaderController.useCombineLightningShader();
+        const combine_lightning_shader = MainController.ShaderController.getCombineLightningShader();
+        GL.bindBuffer(GL.ARRAY_BUFFER, LightningPass.plane_vertex_buffer);
+        GL.enableVertexAttribArray(combine_lightning_shader.attribute_pointer.vertex_position);
+        GL.vertexAttribPointer(combine_lightning_shader.attribute_pointer.vertex_position, 3, GL.FLOAT, false, 0, 0);
+        GL.bindBuffer(GL.ARRAY_BUFFER, LightningPass.plane_texture_buffer);
+        GL.enableVertexAttribArray(combine_lightning_shader.attribute_pointer.texture_position);
+        GL.vertexAttribPointer(combine_lightning_shader.attribute_pointer.texture_position, 2, GL.FLOAT, false, 0, 0);
 
         GL.bindBuffer(GL.ARRAY_BUFFER, null);
         GL.bindVertexArray(null);
@@ -84,7 +108,7 @@ export abstract class LightningPass {
         LightningPass.lightBulbsAppSetup(GL);
 
         ////////////////////////////////
-        // PREPARE FRAMEBUFFER AND TEXTURES
+        // PREPARE INITIAL CALCULATION FRAMEBUFFER AND TEXTURES
         ////////////////////////////////
         const SIZEX = 1920;
         const SIZEY = 1920;
@@ -128,21 +152,62 @@ export abstract class LightningPass {
         GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MAG_FILTER, FILTER);
         GL.framebufferTexture2D(GL.FRAMEBUFFER, GL.COLOR_ATTACHMENT0, GL.TEXTURE_2D, LightningPass.light_bulb_result, 0);
 
+
+        ////////////////////////////////
+        // PREPARE COMBINE AND BRIGHTNESS FRAMEBUFFER AND TEXTURES
+        ////////////////////////////////
+        LightningPass.light_combine_framebuffer = GL.createFramebuffer();
+        GL.bindFramebuffer(GL.FRAMEBUFFER, LightningPass.light_combine_framebuffer);
+
+        LightningPass.light_combine_result = GL.createTexture();
+        GL.bindTexture(GL.TEXTURE_2D, LightningPass.light_combine_result);
+
+        GL.pixelStorei(GL.UNPACK_FLIP_Y_WEBGL, 0);
+        GL.texStorage2D(
+            GL.TEXTURE_2D,
+            LEVEL,
+            INTERN_FORMAT,
+            SIZEX,
+            SIZEY
+        );
+        GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MIN_FILTER, FILTER);
+        GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MAG_FILTER, FILTER);
+        GL.framebufferTexture2D(GL.FRAMEBUFFER, GL.COLOR_ATTACHMENT0, GL.TEXTURE_2D, LightningPass.light_combine_result, 0);
+
+        LightningPass.light_brightness_result = GL.createTexture();
+        GL.bindTexture(GL.TEXTURE_2D, LightningPass.light_brightness_result);
+
+        GL.pixelStorei(GL.UNPACK_FLIP_Y_WEBGL, 0);
+        GL.texStorage2D(
+            GL.TEXTURE_2D,
+            LEVEL,
+            INTERN_FORMAT,
+            SIZEX,
+            SIZEY
+        );
+        GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MIN_FILTER, FILTER);
+        GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MAG_FILTER, FILTER);
+        GL.framebufferTexture2D(GL.FRAMEBUFFER, GL.COLOR_ATTACHMENT1, GL.TEXTURE_2D, LightningPass.light_brightness_result, 0);
+
+        GL.drawBuffers([GL.COLOR_ATTACHMENT0, GL.COLOR_ATTACHMENT1]);
+
+        ////////////////////////////////
+        // CLEAR BINDINGS AFTER INITIALISATION
+        ////////////////////////////////
         GL.bindFramebuffer(GL.FRAMEBUFFER, null);
         GL.bindTexture(GL.TEXTURE_2D, null);
-
     }
 
     static frameSetup(frame_info: FrameInfo): void {
         const GL: WebGL2RenderingContext = MainController.CanvasController.getGL();
         GL.bindBuffer(GL.ARRAY_BUFFER, LightningPass.plane_texture_buffer);
         const texData = [
-            frame_info.tex_left, frame_info.tex_top,
-            frame_info.tex_left, frame_info.tex_bottom,
-            frame_info.tex_right, frame_info.tex_top,
-            frame_info.tex_left, frame_info.tex_bottom,
-            frame_info.tex_right, frame_info.tex_bottom,
-            frame_info.tex_right, frame_info.tex_top,
+            0.0, 1.0,
+            0.0, 0.0,
+            1.0, 1.0,
+            0.0, 0.0,
+            1.0, 0.0,
+            1.0, 1.0,
         ];
         GL.bufferData(GL.ARRAY_BUFFER, new Float32Array(texData), GL.DYNAMIC_DRAW);
         GL.bindBuffer(GL.ARRAY_BUFFER, null);
@@ -151,7 +216,7 @@ export abstract class LightningPass {
     static runPass(light_queue: LightQueueEntry[], frame_info: FrameInfo): void {
         const GL: WebGL2RenderingContext = MainController.CanvasController.getGL();
 
-        GL.bindFramebuffer(GL.FRAMEBUFFER, this.light_calculation_framebuffer);
+        GL.bindFramebuffer(GL.FRAMEBUFFER, LightningPass.light_calculation_framebuffer);
         GL.clearColor(0.0, 0.0, 0.0, 1.0);
         GL.viewport(0, 0, 1920, 1920);
         GL.clear(GL.COLOR_BUFFER_BIT);
@@ -187,15 +252,17 @@ export abstract class LightningPass {
         GL.drawArrays(GL.TRIANGLES, 0, 6);
 
         // Light Bulbs
-        GL.bindFramebuffer(GL.FRAMEBUFFER, this.light_bulb_framebuffer);
+        GL.bindFramebuffer(GL.FRAMEBUFFER, LightningPass.light_bulb_framebuffer);
         GL.clearColor(0.0, 0.0, 0.0, 1.0);
         GL.viewport(0, 0, 1920, 1920);
         GL.clear(GL.COLOR_BUFFER_BIT);
 
-        if(this.draw_light_bulbs > 0) {
+        if(LightningPass.draw_light_bulbs > 0) {
             LightningPass.drawLightBulbs();
         }
         GL.bindFramebuffer(GL.FRAMEBUFFER, null);
+
+        LightningPass.combineBulbAndCalcResult();
     }
 
     private static bindSceneLights() {
@@ -263,7 +330,7 @@ export abstract class LightningPass {
         }
         const GL: WebGL2RenderingContext = MainController.CanvasController.getGL();
 
-        if(this.draw_light_bulbs > 0) {
+        if(LightningPass.draw_light_bulbs > 0) {
             LightningPass.bufferLightBulbsData(GL, light_bulb_data);
         }
 
@@ -359,8 +426,31 @@ export abstract class LightningPass {
     public static drawLightBulbs() {
         const GL: WebGL2RenderingContext = MainController.CanvasController.getGL();
         MainController.ShaderController.useLightBulbShader();
-        GL.bindVertexArray(this.light_bulb_vao);
+        GL.bindVertexArray(LightningPass.light_bulb_vao);
         MainController.SceneController.getSceneCamera().bindForLightBulbShader(GL);
         GL.drawArraysInstanced(GL.TRIANGLES, 0, 24, LightningPass.draw_light_bulbs);
+    }
+
+    /**
+     * COMBINATION
+     *  AND
+     *   BRIGHTNESS
+     *
+     *      PASS!
+     */
+    private static combineBulbAndCalcResult() {
+        const GL: WebGL2RenderingContext = MainController.CanvasController.getGL();
+        GL.bindFramebuffer(GL.FRAMEBUFFER, LightningPass.light_combine_framebuffer);
+        MainController.ShaderController.useCombineLightningShader();
+        GL.bindVertexArray(LightningPass.plane_vao);
+
+        GL.activeTexture(GL.TEXTURE0);
+        GL.bindTexture(GL.TEXTURE_2D, LightningPass.light_calculation_result);
+
+        GL.activeTexture(GL.TEXTURE1);
+        GL.bindTexture(GL.TEXTURE_2D, LightningPass.light_bulb_result);
+
+        GL.drawArrays(GL.TRIANGLES, 0, 6);
+        GL.bindFramebuffer(GL.FRAMEBUFFER, null);
     }
 }

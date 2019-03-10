@@ -5,6 +5,7 @@ import {MainController} from "../MainController";
 import {FramebufferDebugShader} from "../../Render/Shader/FramebufferDebugShader";
 import {DeferredLightningShader} from "../../Render/Shader/DeferredLightningShader";
 import {LightBulbShader} from "../../Render/Shader/LightBulbShader";
+import {CombineLightningShader} from "../../Render/Shader/CombineLightningShader";
 
 export interface ShaderControllerInterface {
     loadShader(): void;
@@ -20,6 +21,9 @@ export interface ShaderControllerInterface {
 
     useLightBulbShader(): void;
     getLightBulbShader(): LightBulbShader;
+
+    useCombineLightningShader(): void;
+    getCombineLightningShader(): CombineLightningShader;
 }
 
 class ShaderController implements ShaderControllerInterface{
@@ -29,6 +33,7 @@ class ShaderController implements ShaderControllerInterface{
     private fragment_debug_shader: FramebufferDebugShader;
     private deferred_lightning_shader: DeferredLightningShader;
     private light_bulb_shader: LightBulbShader;
+    private combine_lightning_shader: CombineLightningShader;
 
     constructor(){}
 
@@ -38,6 +43,7 @@ class ShaderController implements ShaderControllerInterface{
         this.fragment_debug_shader = new FramebufferDebugShader(GL);
         this.deferred_lightning_shader = new DeferredLightningShader(GL);
         this.light_bulb_shader = new LightBulbShader(GL);
+        this.combine_lightning_shader = new CombineLightningShader(GL);
     }
 
     getGeometryShader(): GeometryShader {
@@ -61,11 +67,19 @@ class ShaderController implements ShaderControllerInterface{
     useDeferredLightningShader(): void {
         MainController.CanvasController.getGL().useProgram(this.deferred_lightning_shader.program);
     }
+
     getLightBulbShader(): LightBulbShader{
         return this.light_bulb_shader;
     }
     useLightBulbShader(): void {
         MainController.CanvasController.getGL().useProgram(this.light_bulb_shader.program);
+    }
+
+    getCombineLightningShader(): CombineLightningShader{
+        return this.combine_lightning_shader;
+    }
+    useCombineLightningShader(): void {
+        MainController.CanvasController.getGL().useProgram(this.combine_lightning_shader.program);
     }
 }
 

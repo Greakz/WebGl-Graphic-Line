@@ -311,12 +311,12 @@ void main(void) {
         }
     }
     outColor = vec4(final_daylight_color + omni_light_result + spot_light_result, 1.0);
-    /*
+/*
     float linDep = linearizeDepth(texture(position_map, vTex).w);
     if(linDep < 1.0) {
         outColor = vec4(vec3(linDep), 1.0);
     } else {
         outColor = vec4(0.0, 0.0, 0.0, 1.0);
     }
-    */
+*/
 }

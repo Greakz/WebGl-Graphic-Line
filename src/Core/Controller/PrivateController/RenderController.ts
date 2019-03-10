@@ -107,8 +107,8 @@ class RenderController implements RenderControllerInterface {
             [
                 LightningPass.light_calculation_result,
                 LightningPass.light_bulb_result,
-                GeometryPass.specular_texture,
-                GeometryPass.material_texture
+                LightningPass.light_combine_result,
+                LightningPass.light_brightness_result
             ]
         );
     }

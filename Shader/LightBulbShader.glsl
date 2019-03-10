@@ -40,14 +40,19 @@ float linearizeDepth(float depth)
 }
 
 void main(void) {
-    float selfDepth = linearizeDepth(gl_FragCoord.z);
+    float selfDepth = linearizeDepth(gl_FragCoord.z) / far_plane;
     ivec2 texPos = ivec2(gl_FragCoord.xy);
     float texFetch = texelFetch(position_map, texPos, 0).w;
-    float fragmentScreenDepth = linearizeDepth(texFetch);
 
-    if(selfDepth > fragmentScreenDepth) {
+    if(selfDepth > texFetch) {
         discard;
     }
-
-    outColor = vec4(vec3(1.0), 1.0);
+    /*
+    if(gl_FragCoord.x < 960.0) {
+        outColor = vec4(selfDepth);
+    } else {
+        outColor = vec4(texFetch);
+    }
+    */
+    outColor = vColor;
 }

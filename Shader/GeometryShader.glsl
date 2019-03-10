@@ -97,10 +97,10 @@ float linearizeDepth(float depth)
 }
 
 void main(void) {
-    float c = linearizeDepth(gl_FragCoord.z) / far_plane;  // convert to linear values
-    outPosition = vec4(vPosition, c);
+    float linearizedDepth = linearizeDepth(gl_FragCoord.z) / far_plane;  // convert to linear values
+    outPosition = vec4(vPosition, linearizedDepth);
     outNormal = vec4(vNormal, 1.0);
     outAlbedo =  vec4(calculateColor(texture(albedo_texture, vTexPos).rgb, vColor, vUseCol).rgb, 1.0);
     outSpecular = vec4(calculateColor(texture(specular_texture, vTexPos).rgb, vSpecular, vUseCol).rgb, 1.0);
-    outMaterial = vec4(vShininess, c, 0.0, 1.0);
+    outMaterial = vec4(vShininess, linearizedDepth, 0.0, 1.0);
 }
