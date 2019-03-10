@@ -16,7 +16,8 @@ void main(void) {
 precision mediump float;
 in vec2 vTex;
 
-const float weights[5] = float[5](0.2, 0.2, 0.2, 0.2, 0.2);
+const float weights[5] = float[5](0.3, 0.2, 0.15, 0.2, 0.2);
+const int range = 2;
 
 uniform sampler2D source;
 uniform int vertical;
@@ -37,13 +38,13 @@ void main(void) {
     vec3 result = vec3(0.0);
     if(vertical == 1) {
         // perform vertical blur;
-        for(int i = -4; i <= 4; i++) {
+        for(int i = -range; i <= range; i++) {
             vec2 texPos = vTex + (pixel_size * vec2(0.0, float(i)));
             result += texture(source, texPos).rgb * vec3(weights[abs(i)]);
         }
     } else {
         // perform horizontal blur;
-        for(int i = -4; i <= 4; i++) {
+        for(int i = -range; i <= range; i++) {
             vec2 texPos = vTex + (pixel_size * vec2(float(i), 0.0));
             result += texture(source, texPos).rgb * vec3(weights[abs(i)]);
         }

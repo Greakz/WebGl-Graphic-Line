@@ -57,14 +57,23 @@ export class BasicScene implements Scene
         for(let i = 0; i < genCubes; i++) {
             const newCube = new DynamicCubeObject();
             let randomNr: number = Math.random() * 2 * Math.PI;
-            newCube.model.transformation.moveX(Math.sin(randomNr) * 14).moveZ(Math.cos(randomNr) * 18).moveY(Math.cos(Math.random() * 2 * Math.PI)).rotateY(Math.random() * 90).apply();
+            newCube.model.transformation
+                .moveX(Math.sin(randomNr) * (Math.random() * 20 + 5))
+                .moveZ(Math.cos(randomNr) * (Math.random() * 20 + 5))
+                .moveY(Math.cos(Math.random() * 2 * Math.PI) * 0.1 - 2)
+                .rotateY(Math.random() * 90)
+                .apply();
             this.altCubes.push(newCube);
             MainController.SceneController.pushSceneObject(newCube);
         }
         for(let i = 0; i < genOmniLights; i++) {
             const newLight = new OmniLight();
             let randomNr: number = Math.random() * 2 * Math.PI;
-            newLight.position = {x: Math.sin(randomNr) * 16, y: Math.cos(Math.random() * 2 * Math.PI) + 1, z: Math.abs(Math.cos(randomNr)) * 16 };
+            newLight.position = {
+                x: Math.sin(randomNr) * (Math.random() * 5 + 10),
+                y: Math.cos(Math.random() * 2 * Math.PI) * 0.5,
+                z: Math.abs(Math.cos(randomNr)) * (Math.random() * 5 + 10)
+            };
             newLight.color = {x: Math.random() * 0.5 + 0.5, y: Math.random() * 0.5 + 0.5, z: Math.random() * 0.5 + 0.5};
             this.altOmniLights.push(newLight);
             MainController.SceneController.pushSceneLight(newLight);
@@ -72,7 +81,11 @@ export class BasicScene implements Scene
         for(let i = 0; i < genSpotLights; i++) {
             const newLight = new SpotLight();
             let randomNr: number = Math.random() * 2 * Math.PI;
-            newLight.position = {x: Math.sin(randomNr) * 16, y: Math.cos(Math.random() * 2 * Math.PI) + 3, z: Math.abs(Math.cos(randomNr)) * -16 };
+            newLight.position = {
+                x: Math.sin(randomNr) * (Math.random() * 5 + 10),
+                y: Math.cos(Math.random() * 2 * Math.PI) * 0.5,
+                z: Math.abs(Math.cos(randomNr)) * -(Math.random() * 5 + 10)
+            };
             newLight.color = {x: Math.random() * 0.6 + 0.5, y: Math.random() * 0.6 + 0.5, z: Math.random() * 0.6 + 0.5};
             this.altSpotLights.push(newLight);
             MainController.SceneController.pushSceneLight(newLight);
