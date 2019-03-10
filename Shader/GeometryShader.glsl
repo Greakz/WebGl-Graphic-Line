@@ -22,56 +22,62 @@ uniform mat4 view_matrix;
 uniform mat4 projection_matrix;
 
 out vec3 vColor;
-out float vShininess;
+out vec3 vSpecular;
 out vec2 vTexPos;
+out vec3 vNormal;
+out vec3 vPosition;
+out float vFragDepth;
+flat out float vShininess;
 flat out int vUseCol;
-flat out int vTask;
 
 void main(void) {
 
+    // Depearse shit
     float shininess = shini_ucolor_utex.x;
     float useColor = shini_ucolor_utex.y;
     float useTex = shini_ucolor_utex.z;
     float passTask = shini_ucolor_utex.w;
-    // position!
-    vec4 resultPos = projection_matrix * view_matrix * model_matrix * mesh_matrix * vec4(VertexPosition, 1.0);
-    gl_Position = resultPos;
+
+    // calc world and screen space pos
+    vec4 world_pos =  model_matrix * mesh_matrix * vec4(VertexPosition, 1.0);
+    vec4 screen_pos = projection_matrix * view_matrix * world_pos;
+    gl_Position = screen_pos;
+
+    // Perform Z-Linearization
+
+    // give relevant data to fragment shader
     vTexPos = TexturePosition;
-    vTask =
-            (passTask > 4.5) ? 5 : // Material Pass
-            (passTask > 3.5) ? 4 : // Position Pass
-            (passTask > 2.5) ? 3 : // Normal Pass
-            (passTask > 1.5) ? 2 : // Specular Pass
-            (passTask > 0.5) ? 1 : // Albedo Pass
-            0;
-    vColor = (vTask == 1)
-        ? albedo_color
-        : (vTask == 2)
-            ? specular_color
-            : (vTask == 3)
-                ? vec3(model_matrix * mesh_matrix * vec4(VertexNormals, 0.0))
-                : vec3(model_matrix * mesh_matrix * vec4(VertexPosition, 1.0));
-
+    vColor = albedo_color;
+    vSpecular = specular_color;
     vShininess = shininess;
+    vNormal = vec3(model_matrix * mesh_matrix * vec4(VertexNormals, 0.0));
+    vPosition = world_pos.xyz;
+    vFragDepth = screen_pos.z;
     vUseCol = (useTex > 0.5 && useColor > 0.5) ? 1 : (useColor > 0.5) ? 2 : (useTex > 0.5) ? 3 : 0;
-
-
-
-
 }
 //#FRAGMENT-SHADER#//
 #version 300 es
 precision mediump float;
 in vec3 vColor;
+in vec3 vSpecular;
 in vec2 vTexPos;
-in float vShininess;
+in vec3 vNormal;
+in vec3 vPosition;
+in float vFragDepth;
+flat in float vShininess;
 flat in int vUseCol;
-flat in int vTask;
+
+uniform float near_plane;
+uniform float far_plane;
 
 uniform sampler2D albedo_texture;
 uniform sampler2D specular_texture;
 
-layout(location = 0) out vec4 outColor;
+layout(location = 0) out vec4 outPosition;
+layout(location = 1) out vec4 outNormal;
+layout(location = 2) out vec4 outAlbedo;
+layout(location = 3) out vec4 outSpecular;
+layout(location = 4) out vec4 outMaterial;
 
 vec3 calculateColor(vec3 texel, vec3 color, int useCol) {
     if(useCol == 1) {
@@ -84,23 +90,17 @@ vec3 calculateColor(vec3 texel, vec3 color, int useCol) {
     return vec3(0.0);
 }
 
+float linearizeDepth(float depth)
+{
+    float z = depth * 2.0 - 1.0; // back to NDC
+    return (2.0 * near_plane * far_plane) / (far_plane + near_plane - z * (far_plane - near_plane));
+}
+
 void main(void) {
-    vec4 final_color = vec4(0.0);
-    if(vTask == 1) {
-        // Albedo Pass
-        final_color = vec4(calculateColor(texture(albedo_texture, vTexPos).rgb, vColor, vUseCol), 1.0);
-    } else if (vTask == 2) {
-        // Specular Pass
-        final_color = vec4(vec3(calculateColor(texture(specular_texture, vTexPos).rgb, vColor, vUseCol).rgb), vShininess);
-   } else if (vTask == 3) {
-        // Normal Pass
-        final_color = vec4(vColor, 1.0);
-    } else if (vTask == 4) {
-        // Position Pass
-        final_color = vec4(vColor, 1.0);
-    } else if (vTask == 5) {
-        // Material Pass
-        final_color = vec4(vShininess, 0.0, 0.0, 1.0);
-    }
-    outColor = final_color;
+    float c = linearizeDepth(gl_FragCoord.z) / far_plane;  // convert to linear values
+    outPosition = vec4(vPosition, c);
+    outNormal = vec4(vNormal, 1.0);
+    outAlbedo =  vec4(calculateColor(texture(albedo_texture, vTexPos).rgb, vColor, vUseCol).rgb, 1.0);
+    outSpecular = vec4(calculateColor(texture(specular_texture, vTexPos).rgb, vSpecular, vUseCol).rgb, 1.0);
+    outMaterial = vec4(vShininess, c, 0.0, 1.0);
 }

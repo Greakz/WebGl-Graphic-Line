@@ -1,7 +1,6 @@
 import {GeometryShader} from "../../Shader/GeometryShader";
 import {ShadowShader} from "../../Shader/ShadowShader";
 import {Transformation} from '../../../Geometry/Transformation/Transformation';
-import {MainController} from "../../../Controller/MainController";
 import {Mesh} from "./Mesh";
 import {GeometryPass} from "../../../Controller/PrivateController/RenderPass/GeometryPass";
 

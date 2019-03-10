@@ -21,8 +21,6 @@ interface GeometryShaderUniformLocations {
     specular_texture: WebGLUniformLocation;
     shininess: WebGLUniformLocation;
 
-    near_plane: WebGLUniformLocation;
-    far_plane: WebGLUniformLocation;
 }
 
 export class GeometryShader implements Shader {
@@ -41,7 +39,7 @@ export class GeometryShader implements Shader {
     program: WebGLProgram;
 
     constructor(GL: WebGL2RenderingContext) {
-        this.program = ShaderLoader.buildShader('GeometryShader');
+        this.program = ShaderLoader.buildShader('GeometryShader_alt');
         this.attribute_pointer = {
             vertex_position: GL.getAttribLocation(this.program, "VertexPosition"),
             vertex_normal: GL.getAttribLocation(this.program, "VertexNormals"),
@@ -59,8 +57,6 @@ export class GeometryShader implements Shader {
             specular_color: GL.getUniformLocation(this.program, "specular_color"),
             specular_texture: GL.getUniformLocation(this.program, "specular_texture"),
             shininess: GL.getUniformLocation(this.program, "shininess"),
-            near_plane: GL.getUniformLocation(this.program, "near_plane"),
-            far_plane: GL.getUniformLocation(this.program, "far_plane"),
         };
         GL.useProgram(this.program);
         GL.uniformBlockBinding(

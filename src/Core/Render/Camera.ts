@@ -30,7 +30,7 @@ export class SimpleCamera implements Camera {
     target: vec3 = {x: 0, y: 0.0, z: 0};
 
     nearPlane: number = 0.5;
-    farPlane: number = 150;
+    farPlane: number = 200;
     fovDeg: number = 45;
 
     protected proj_mat_a_1: mat4;
@@ -94,19 +94,17 @@ export class SimpleCamera implements Camera {
             false,
             new Float32Array(flatMat4(this.proj_mat_a_1))
         );
+        GL.uniform1f(
+            MainController.ShaderController.getGeometryShader().uniform_locations.near_plane,
+            this.nearPlane
+        );
+        GL.uniform1f(
+            MainController.ShaderController.getGeometryShader().uniform_locations.far_plane,
+            this.farPlane
+        );
     }
 
     bindForDeferredLightningShader(GL: WebGL2RenderingContext) {
-        GL.uniformMatrix4fv(
-            MainController.ShaderController.getDeferredLightningShader().uniform_locations.undo_view_matrix,
-            false,
-            new Float32Array(flatMat4(this.undo_view_matrix))
-        );
-        GL.uniformMatrix4fv(
-            MainController.ShaderController.getDeferredLightningShader().uniform_locations.undo_projection_matrix,
-            false,
-            new Float32Array(flatMat4(this.undo_projection_matrix))
-        );
         GL.uniform3fv(
             MainController.ShaderController.getDeferredLightningShader().uniform_locations.camera_position,
             new Float32Array(flatVec3(this.position))
@@ -122,7 +120,15 @@ export class SimpleCamera implements Camera {
         GL.uniformMatrix4fv(
             MainController.ShaderController.getLightBulbShader().uniform_locations.projection_matrix,
             false,
-            new Float32Array(flatMat4(this.proj_mat_a_v))
+            new Float32Array(flatMat4(this.proj_mat_a_1))
+        );
+        GL.uniform1f(
+            MainController.ShaderController.getLightBulbShader().uniform_locations.near_plane,
+            this.nearPlane
+        );
+        GL.uniform1f(
+            MainController.ShaderController.getLightBulbShader().uniform_locations.far_plane,
+            this.farPlane
         );
     }
 

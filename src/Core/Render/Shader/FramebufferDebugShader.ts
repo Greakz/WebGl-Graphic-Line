@@ -86,9 +86,10 @@ export class FramebufferDebugShader implements Shader {
     textureDebugPass(textures: WebGLTexture[]) {
         const GL = MainController.CanvasController.getGL();
         GL.bindFramebuffer(GL.FRAMEBUFFER, null);
+        GL.useProgram(this.program);
+        GL.viewport(0, 0, MainController.RenderController.getFrameInfo().width, MainController.RenderController.getFrameInfo().height);
         GL.clearColor(0.9, 0.9, 0.9, 1.0);
         GL.clear(GL.COLOR_BUFFER_BIT);
-        GL.useProgram(this.program);
         const run = Math.min(textures.length, Math.min(this.planevao.length, 4));
         for (let i = 0; i < run; i++) {
             GL.bindVertexArray(this.planevao[i]);

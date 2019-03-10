@@ -8,8 +8,6 @@ interface GeometryShaderAttributePointer {
 }
 
 interface GeometryShaderUniformLocations {
-    undo_projection_matrix: WebGLUniformLocation;
-    undo_view_matrix: WebGLUniformLocation;
     camera_position: WebGLUniformLocation;
 
     albedo_map: WebGLUniformLocation;
@@ -49,8 +47,6 @@ export class DeferredLightningShader implements Shader {
             // omni_lights_two_block_index: GL.getUniformBlockIndex(this.program, "omni_lights_two"),
         };
         this.uniform_locations = {
-            undo_projection_matrix: GL.getUniformLocation(this.program, "undo_projection_matrix"),
-            undo_view_matrix: GL.getUniformLocation(this.program, "undo_view_matrix"),
             camera_position: GL.getUniformLocation(this.program, "camera_position"),
 
             albedo_map: GL.getUniformLocation(this.program, "albedo_map"),
@@ -59,8 +55,6 @@ export class DeferredLightningShader implements Shader {
             normal_map: GL.getUniformLocation(this.program, "normal_map"),
             material_map: GL.getUniformLocation(this.program, "material_map"),
         };
-        console.log(this.uniform_locations);
-        console.log(this.attribute_pointer);
         GL.uniform1i(
             this.uniform_locations.albedo_map,
             this.texture_bindings.albedo_map

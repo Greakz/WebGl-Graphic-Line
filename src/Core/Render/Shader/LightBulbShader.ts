@@ -1,5 +1,6 @@
 import {ShaderLoader} from "./ShaderLoader";
 import {Shader} from "./Shader";
+import {MainController} from "../../Controller/MainController";
 
 interface GeometryShaderAttributePointer {
     vertex_position: GLint;
@@ -10,6 +11,9 @@ interface GeometryShaderAttributePointer {
 interface GeometryShaderUniformLocations {
     projection_matrix: WebGLUniformLocation;
     view_matrix: WebGLUniformLocation;
+    position_map: WebGLUniformLocation;
+    near_plane: WebGLUniformLocation;
+    far_plane: WebGLUniformLocation;
 }
 
 export class LightBulbShader implements Shader {
@@ -30,6 +34,13 @@ export class LightBulbShader implements Shader {
         this.uniform_locations = {
             projection_matrix: GL.getUniformLocation(this.program, "projection_matrix"),
             view_matrix: GL.getUniformLocation(this.program, "view_matrix"),
+            position_map: GL.getUniformLocation(this.program, "position_map"),
+            near_plane: GL.getUniformLocation(this.program, "near_plane"),
+            far_plane: GL.getUniformLocation(this.program, "far_plane"),
         };
+        GL.uniform1i(
+            this.uniform_locations.position_map,
+            MainController.ShaderController.getDeferredLightningShader().texture_bindings.position_map
+        );
     }
 }

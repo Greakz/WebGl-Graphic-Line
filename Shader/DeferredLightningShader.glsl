@@ -47,7 +47,7 @@ struct SpotLight {
 
 struct OmniLight {
     vec3 position;
-    vec3 limit;  
+    vec3 limit;
     vec3 color;
     vec3 amb_factor;
     vec3 diff_factor;
@@ -79,6 +79,14 @@ uniform lights {
 
 // output
 layout(location = 0) out vec4 outColor;
+
+float linearizeDepth(float depth)
+{
+    float near_plane = 0.5;
+    float far_plane = 200.0;
+    float z = depth * 2.0 - 1.0; // back to NDC
+    return (2.0 * near_plane * far_plane) / (far_plane + near_plane - z * (far_plane - near_plane));
+}
 
 vec3 calculateDiffuseLight(vec3 surface_normal_unit, vec3 mat_diff, vec3 light_dir_unit, vec3 light_color, vec3 diff_factor) {
     float diff_strength = max(dot(light_dir_unit, surface_normal_unit), 0.0);
@@ -112,6 +120,7 @@ vec3 calculateOmniLight(
     result += calculateSpecularLight(frag_world_normal, frag_spec, view_to_frag_n, light_direction, omni_light.color, omni_light.spec_factor, frag_shini);
     return result * attenuation_factor;
 }
+
 vec3 calculateSpotLight(
     SpotLight spot_light,
     vec3 frag_world_normal,
@@ -302,4 +311,12 @@ void main(void) {
         }
     }
     outColor = vec4(final_daylight_color + omni_light_result + spot_light_result, 1.0);
+    /*
+    float linDep = linearizeDepth(texture(position_map, vTex).w);
+    if(linDep < 1.0) {
+        outColor = vec4(vec3(linDep), 1.0);
+    } else {
+        outColor = vec4(0.0, 0.0, 0.0, 1.0);
+    }
+    */
 }

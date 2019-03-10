@@ -35,6 +35,8 @@ export interface RenderControllerInterface {
     prepareRenderPasses(): void;
 
     initRenderPassRun(): void;
+
+    getFrameInfo(): FrameInfo;
 }
 
 class RenderController implements RenderControllerInterface {
@@ -57,8 +59,16 @@ class RenderController implements RenderControllerInterface {
 
     private frame_info: FrameInfo = {
         height: 0,
-        width: 0
+        width: 0,
+        tex_bottom: 0,
+        tex_left: 0,
+        tex_right: 0,
+        tex_top: 0
     };
+
+    public getFrameInfo(): FrameInfo {
+        return this.frame_info;
+    }
 
     public prepareRenderPasses() {
         GeometryPass.appSetup();
@@ -66,9 +76,27 @@ class RenderController implements RenderControllerInterface {
     }
 
     public initRenderPassRun() {
+        const aspect = MainController.CanvasController.getAspect();
+        let top, bottom, left, right;
+        if (aspect > 1) {
+            const height = 1 / aspect;
+            bottom = (1 - height) / 2;
+            top = bottom + height;
+            left = 0.0;
+            right = 1.0;
+        } else {
+            left = (1 - aspect) / 2;
+            right = left + aspect;
+            top = 1.0;
+            bottom = 0.0;
+        }
         this.frame_info = {
             height: MainController.CanvasController.getHeight(),
-            width: MainController.CanvasController.getWidth()
+            width: MainController.CanvasController.getWidth(),
+            tex_bottom: bottom,
+            tex_left: left,
+            tex_right: right,
+            tex_top: top
         };
         GeometryPass.frameSetup(this.frame_info);
         LightningPass.frameSetup(this.frame_info);
@@ -77,10 +105,10 @@ class RenderController implements RenderControllerInterface {
     public framebufferDebugPass() {
         MainController.ShaderController.getFramebufferDebugShader().textureDebugPass(
             [
-                GeometryPass.position_texture,
-                GeometryPass.albedo_texture,
+                LightningPass.light_calculation_result,
+                LightningPass.light_bulb_result,
                 GeometryPass.specular_texture,
-                GeometryPass.normal_texture
+                GeometryPass.material_texture
             ]
         );
     }
@@ -208,6 +236,10 @@ class RenderController implements RenderControllerInterface {
 export interface FrameInfo {
     height: number;
     width: number;
+    tex_left: number;
+    tex_right: number;
+    tex_top: number;
+    tex_bottom: number;
 }
 
 export interface RenderQueueMeshEntry {
