@@ -8,6 +8,7 @@ import {GeometryPass} from "./RenderPass/GeometryPass";
 import {LightningPass} from "./RenderPass/LightningPass";
 import {OutputShader} from "../../Render/Shader/OutputShader";
 import {OutputPass} from "./RenderPass/OutputPass";
+import {GeometryPassShadowExtension} from "./RenderPass/GeometryPassShadowExtension";
 
 export interface GraphicOptions {
 
@@ -111,8 +112,8 @@ class RenderController implements RenderControllerInterface {
     public framebufferDebugPass() {
         MainController.ShaderController.getFramebufferDebugShader().textureDebugPass(
             [
-                LightningPass.light_blurred_horiz,
-                LightningPass.light_blurred_result,
+                GeometryPassShadowExtension.shadow_texture,
+                GeometryPass.position_texture,
                 LightningPass.light_combine_result,
                 LightningPass.light_final_result
             ]

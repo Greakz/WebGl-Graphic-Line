@@ -2,6 +2,7 @@ import {MainController} from "../../MainController";
 import {checkFramebuffer} from "../../../Util/FramebufferCheck";
 import {FrameInfo, RenderQueueMaterialEntry, RenderQueueMeshEntry} from "../RenderController";
 import {DrawMesh} from "../../../Render/DrawMesh";
+import {GeometryPassShadowExtension} from "./GeometryPassShadowExtension";
 
 export abstract class GeometryPass {
 
@@ -179,11 +180,13 @@ export abstract class GeometryPass {
         GL.bindRenderbuffer(GL.RENDERBUFFER, null);
         GL.bindTexture(GL.TEXTURE_2D, null);
         GL.bindFramebuffer(GL.FRAMEBUFFER, null);
+
+        GeometryPassShadowExtension.appSetup();
     }
     
     static frameSetup(frame_info: FrameInfo): void {
         // const GL: WebGL2RenderingContext = MainController.CanvasController.getGL();
-        
+        GeometryPassShadowExtension.frameSetup(frame_info);
     }
     
     static runPass(render_queue: RenderQueueMeshEntry[], frame_info: FrameInfo): void {
@@ -204,6 +207,7 @@ export abstract class GeometryPass {
         // Set Data for Camera
         MainController.SceneController.getSceneCamera().bingForGeometryShader(GL);
 
+
         render_queue.forEach(
             (render_queue_mesh_entry: RenderQueueMeshEntry) => {
                 // there has to be an entry so select from the first
@@ -218,13 +222,20 @@ export abstract class GeometryPass {
                         GeometryPass.geometryPassPrepareUniformMeshData(render_queue_entry.draw_meshes);
 
                         // second activate material
+
                         const material_to_use = render_queue_entry.draw_meshes[0].related_material;
                         material_to_use.use(GL, MainController.ShaderController.getGeometryShader());
 
-                        // Buffer Albedo Task Number
-                        GL.bindFramebuffer(GL.FRAMEBUFFER, GeometryPass.geometry_framebuffer);
                         GeometryPass.geometryPassDrawMeshTasks(render_queue_entry.draw_meshes);
 
+                        // SHADOW PASS
+                        if(true) {
+                            GeometryPassShadowExtension.bindForDrawShadow();
+                            GeometryPass.geometryPassDrawMeshTasks(render_queue_entry.draw_meshes);
+                            // bind back normal geometry shader framebuffer
+                            GL.bindFramebuffer(GL.FRAMEBUFFER, GeometryPass.geometry_framebuffer);
+                            MainController.ShaderController.useGeometryShader();
+                        }
                     }
                 );
             }
@@ -282,42 +293,83 @@ export abstract class GeometryPass {
         }
 
         // Prepare Geometry Bindings
-        const model_matrix_location: number = MainController.ShaderController.getGeometryShader().attribute_pointer.model_matrix;
-        const mesh_matrix_location: number = MainController.ShaderController.getGeometryShader().attribute_pointer.mesh_matrix;
+        const geom_model_matrix_location: number = MainController.ShaderController.getGeometryShader().attribute_pointer.model_matrix;
+        const geom_mesh_matrix_location: number = MainController.ShaderController.getGeometryShader().attribute_pointer.mesh_matrix;
 
         GL.bindBuffer(GL.ARRAY_BUFFER, GeometryPass.model_mesh_matrix_buffer);
+        MainController.ShaderController.useGeometryShader();
         // Define Attribute Matrix Pointer
-        GL.enableVertexAttribArray(model_matrix_location);
-        GL.vertexAttribPointer(model_matrix_location, 4, GL.FLOAT, false, 32 * 4, 0);
-        GL.vertexAttribDivisor(model_matrix_location, 1);
+        GL.enableVertexAttribArray(geom_model_matrix_location);
+        GL.vertexAttribPointer(geom_model_matrix_location, 4, GL.FLOAT, false, 32 * 4, 0);
+        GL.vertexAttribDivisor(geom_model_matrix_location, 1);
 
-        GL.enableVertexAttribArray(model_matrix_location + 1);
-        GL.vertexAttribPointer(model_matrix_location + 1, 4, GL.FLOAT, false, 32 * 4, 4 * 4);
-        GL.vertexAttribDivisor(model_matrix_location + 1, 1);
+        GL.enableVertexAttribArray(geom_model_matrix_location + 1);
+        GL.vertexAttribPointer(geom_model_matrix_location + 1, 4, GL.FLOAT, false, 32 * 4, 4 * 4);
+        GL.vertexAttribDivisor(geom_model_matrix_location + 1, 1);
 
-        GL.enableVertexAttribArray(model_matrix_location + 2);
-        GL.vertexAttribPointer(model_matrix_location + 2, 4, GL.FLOAT, false, 32 * 4, 8 * 4);
-        GL.vertexAttribDivisor(model_matrix_location + 2, 1);
+        GL.enableVertexAttribArray(geom_model_matrix_location + 2);
+        GL.vertexAttribPointer(geom_model_matrix_location + 2, 4, GL.FLOAT, false, 32 * 4, 8 * 4);
+        GL.vertexAttribDivisor(geom_model_matrix_location + 2, 1);
 
-        GL.enableVertexAttribArray(model_matrix_location + 3);
-        GL.vertexAttribPointer(model_matrix_location + 3, 4, GL.FLOAT, false, 32 * 4, 12 * 4);
-        GL.vertexAttribDivisor(model_matrix_location + 3, 1);
+        GL.enableVertexAttribArray(geom_model_matrix_location + 3);
+        GL.vertexAttribPointer(geom_model_matrix_location + 3, 4, GL.FLOAT, false, 32 * 4, 12 * 4);
+        GL.vertexAttribDivisor(geom_model_matrix_location + 3, 1);
 
-        GL.enableVertexAttribArray(mesh_matrix_location);
-        GL.vertexAttribPointer(mesh_matrix_location, 4, GL.FLOAT, false, 32 * 4, 16 * 4);
-        GL.vertexAttribDivisor(mesh_matrix_location, 1);
+        GL.enableVertexAttribArray(geom_mesh_matrix_location);
+        GL.vertexAttribPointer(geom_mesh_matrix_location, 4, GL.FLOAT, false, 32 * 4, 16 * 4);
+        GL.vertexAttribDivisor(geom_mesh_matrix_location, 1);
 
-        GL.enableVertexAttribArray(mesh_matrix_location + 1);
-        GL.vertexAttribPointer(mesh_matrix_location + 1, 4, GL.FLOAT, false, 32 * 4, 20 * 4);
-        GL.vertexAttribDivisor(mesh_matrix_location + 1, 1);
+        GL.enableVertexAttribArray(geom_mesh_matrix_location + 1);
+        GL.vertexAttribPointer(geom_mesh_matrix_location + 1, 4, GL.FLOAT, false, 32 * 4, 20 * 4);
+        GL.vertexAttribDivisor(geom_mesh_matrix_location + 1, 1);
 
-        GL.enableVertexAttribArray(mesh_matrix_location + 2);
-        GL.vertexAttribPointer(mesh_matrix_location + 2, 4, GL.FLOAT, false, 32 * 4, 24 * 4);
-        GL.vertexAttribDivisor(mesh_matrix_location + 2, 1);
+        GL.enableVertexAttribArray(geom_mesh_matrix_location + 2);
+        GL.vertexAttribPointer(geom_mesh_matrix_location + 2, 4, GL.FLOAT, false, 32 * 4, 24 * 4);
+        GL.vertexAttribDivisor(geom_mesh_matrix_location + 2, 1);
 
-        GL.enableVertexAttribArray(mesh_matrix_location + 3);
-        GL.vertexAttribPointer(mesh_matrix_location + 3, 4, GL.FLOAT, false, 32 * 4, 28 * 4);
-        GL.vertexAttribDivisor(mesh_matrix_location + 3, 1);
+        GL.enableVertexAttribArray(geom_mesh_matrix_location + 3);
+        GL.vertexAttribPointer(geom_mesh_matrix_location + 3, 4, GL.FLOAT, false, 32 * 4, 28 * 4);
+        GL.vertexAttribDivisor(geom_mesh_matrix_location + 3, 1);
+
+        // Prepare Geometry Bindings
+        const shadow_model_matrix_location: number = MainController.ShaderController.getShadowShader().attribute_pointer.model_matrix;
+        const shadow_mesh_matrix_location: number = MainController.ShaderController.getShadowShader().attribute_pointer.mesh_matrix;
+        MainController.ShaderController.useShadowShader();
+
+        // Define Attribute Matrix Pointer
+        GL.enableVertexAttribArray(shadow_model_matrix_location);
+        GL.vertexAttribPointer(shadow_model_matrix_location, 4, GL.FLOAT, false, 32 * 4, 0);
+        GL.vertexAttribDivisor(shadow_model_matrix_location, 1);
+
+        GL.enableVertexAttribArray(shadow_model_matrix_location + 1);
+        GL.vertexAttribPointer(shadow_model_matrix_location + 1, 4, GL.FLOAT, false, 32 * 4, 4 * 4);
+        GL.vertexAttribDivisor(shadow_model_matrix_location + 1, 1);
+
+        GL.enableVertexAttribArray(shadow_model_matrix_location + 2);
+        GL.vertexAttribPointer(shadow_model_matrix_location + 2, 4, GL.FLOAT, false, 32 * 4, 8 * 4);
+        GL.vertexAttribDivisor(shadow_model_matrix_location + 2, 1);
+
+        GL.enableVertexAttribArray(shadow_model_matrix_location + 3);
+        GL.vertexAttribPointer(shadow_model_matrix_location + 3, 4, GL.FLOAT, false, 32 * 4, 12 * 4);
+        GL.vertexAttribDivisor(shadow_model_matrix_location + 3, 1);
+
+        GL.enableVertexAttribArray(shadow_mesh_matrix_location);
+        GL.vertexAttribPointer(shadow_mesh_matrix_location, 4, GL.FLOAT, false, 32 * 4, 16 * 4);
+        GL.vertexAttribDivisor(shadow_mesh_matrix_location, 1);
+
+        GL.enableVertexAttribArray(shadow_mesh_matrix_location + 1);
+        GL.vertexAttribPointer(shadow_mesh_matrix_location + 1, 4, GL.FLOAT, false, 32 * 4, 20 * 4);
+        GL.vertexAttribDivisor(shadow_mesh_matrix_location + 1, 1);
+
+        GL.enableVertexAttribArray(shadow_mesh_matrix_location + 2);
+        GL.vertexAttribPointer(shadow_mesh_matrix_location + 2, 4, GL.FLOAT, false, 32 * 4, 24 * 4);
+        GL.vertexAttribDivisor(shadow_mesh_matrix_location + 2, 1);
+
+        GL.enableVertexAttribArray(shadow_mesh_matrix_location + 3);
+        GL.vertexAttribPointer(shadow_mesh_matrix_location + 3, 4, GL.FLOAT, false, 32 * 4, 28 * 4);
+        GL.vertexAttribDivisor(shadow_mesh_matrix_location + 3, 1);
+        MainController.ShaderController.useGeometryShader();
+
 
         GL.bindBuffer(GL.ARRAY_BUFFER, null);
     }

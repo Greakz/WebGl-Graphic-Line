@@ -3,6 +3,7 @@ import {ShadowShader} from "../../Shader/ShadowShader";
 import {Transformation} from '../../../Geometry/Transformation/Transformation';
 import {Mesh} from "./Mesh";
 import {GeometryPass} from "../../../Controller/PrivateController/RenderPass/GeometryPass";
+import {MainController} from "../../../Controller/MainController";
 
 export abstract class SingleBufferMesh implements Mesh {
     readonly resource_type: 'mesh' = 'mesh';
@@ -56,6 +57,12 @@ export abstract class SingleBufferMesh implements Mesh {
 
         GL.vertexAttribPointer(geometry_shader.attribute_pointer.texture_position, 2, GL.FLOAT, false, 8 * 4, 6 * 4);
         GL.enableVertexAttribArray(geometry_shader.attribute_pointer.texture_position);
+
+        GL.useProgram(shadow_shader.program);
+
+        GL.vertexAttribPointer(shadow_shader.attribute_pointer.vertex_position, 3, GL.FLOAT, false, 8 * 4, 0);
+        GL.enableVertexAttribArray(shadow_shader.attribute_pointer.vertex_position);
+
         GL.bindBuffer(GL.ARRAY_BUFFER, null);
 
         GeometryPass.setMeshAndModelAttributePointer(GL);

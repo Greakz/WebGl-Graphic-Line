@@ -21,6 +21,13 @@ export interface Camera {
     bindForLightBulbShader(GL: WebGL2RenderingContext): void
 
     update(time: number): void;
+
+    position: vec3;
+    target: vec3;
+
+    nearPlane: number;
+    farPlane: number;
+    fovDeg: number;
 }
 
 export class SimpleCamera implements Camera {

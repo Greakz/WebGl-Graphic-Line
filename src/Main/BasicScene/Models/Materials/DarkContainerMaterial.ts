@@ -9,9 +9,9 @@ export class DarkContainerMaterial extends DefaultColorTextureMaterial {
     readonly resource_id: string = 'dark-container-material';
 
     albedo_texture: Texture = new ContainerTexture();
-    albedo_color: vec3 = {x: 0.3, y: 0.3, z: 0.3};
+    albedo_color: vec3 = {x: 0.6, y: 0.6, z: 0.6};
     specular_texture: Texture = new ContainerSpecTexture();
-    specular_color: vec3 = {x: 0.2, y: 0.2, z: 0.2};
-    shininess: number = 0.2;
+    specular_color: vec3 = {x: 0.5, y: 0.5, z: 0.5};
+    shininess: number = 0.3;
     transparency: number = 0;
 }

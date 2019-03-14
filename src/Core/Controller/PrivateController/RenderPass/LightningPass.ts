@@ -5,6 +5,7 @@ import {GeometryPass} from "./GeometryPass";
 import {SceneLightInfo} from "../../SceneController";
 import {DayLight} from "../../../Render/Resource/Light/DayLight";
 import {LightBulbShader} from "../../../Render/Shader/LightBulbShader";
+import {GeometryPassShadowExtension} from "./GeometryPassShadowExtension";
 
 export const MAXIMUM_OMNI_LIGHT_BLOCKS: number = 4;
 export const MAXIMUM_SPOT_LIGHT_BLOCKS: number = 4;
@@ -341,6 +342,9 @@ export abstract class LightningPass {
 
         GL.activeTexture(GL.TEXTURE4);
         GL.bindTexture(GL.TEXTURE_2D, GeometryPass.material_texture);
+
+        GL.activeTexture(GL.TEXTURE5);
+        GL.bindTexture(GL.TEXTURE_2D, GeometryPassShadowExtension.shadow_texture);
 
         // Bind Daylight
         LightningPass.bindSceneLights();

@@ -9,6 +9,7 @@ import {CombineLightningShader} from "../../Render/Shader/CombineLightningShader
 import {BlurShader} from "../../Render/Shader/BlurShader";
 import {FinalizeLightningShader} from "../../Render/Shader/FinalizeLightningShader";
 import {OutputShader} from "../../Render/Shader/OutputShader";
+import {ShadowShader} from "../../Render/Shader/ShadowShader";
 
 export interface ShaderControllerInterface {
     loadShader(): void;
@@ -36,6 +37,9 @@ export interface ShaderControllerInterface {
 
     useOutputShader(): void;
     getOutputShader(): OutputShader;
+
+    useShadowShader(): void;
+    getShadowShader(): ShadowShader;
 }
 
 class ShaderController implements ShaderControllerInterface{
@@ -49,6 +53,7 @@ class ShaderController implements ShaderControllerInterface{
     private blur_shader: BlurShader;
     private finalize_lightning_shader: FinalizeLightningShader;
     private output_shader: OutputShader;
+    private shadow_shader: ShadowShader;
 
     constructor(){}
 
@@ -62,6 +67,7 @@ class ShaderController implements ShaderControllerInterface{
         this.blur_shader = new BlurShader(GL);
         this.finalize_lightning_shader = new FinalizeLightningShader(GL);
         this.output_shader = new OutputShader(GL);
+        this.shadow_shader = new ShadowShader(GL);
     }
 
     getGeometryShader(): GeometryShader {
@@ -119,6 +125,13 @@ class ShaderController implements ShaderControllerInterface{
     }
     useOutputShader(): void {
         MainController.CanvasController.getGL().useProgram(this.output_shader.program);
+    }
+
+    getShadowShader(): ShadowShader{
+        return this.shadow_shader;
+    }
+    useShadowShader(): void {
+        MainController.CanvasController.getGL().useProgram(this.shadow_shader.program);
     }
 }
 

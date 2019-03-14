@@ -21,7 +21,7 @@ export class BasicScene implements Scene
 
     init() {
 
-        this.groundPlane.model.transformation.scale(6).moveY(-3).apply();
+        this.groundPlane.model.transformation.scale(60).moveY(-3).apply();
 
         // this.exampleCube.model.transformation.moveX(-0.5).apply();
         this.exampleCube2.model.transformation.scale(0.5).moveX(0.5).moveY(0.5).moveZ(0.5).apply();
@@ -50,9 +50,9 @@ export class BasicScene implements Scene
     private altOmniLights: OmniLight[] = [];
     private altSpotLights: SpotLight[] = [];
     private alternateInit() {
-        let genCubes: number = 400;
-        let genOmniLights: number = 25;
-        let genSpotLights: number = 25;
+        let genCubes: number = 500;
+        let genOmniLights: number = 50;
+        let genSpotLights: number = 200;
 
         for(let i = 0; i < genCubes; i++) {
             const newCube = new DynamicCubeObject();

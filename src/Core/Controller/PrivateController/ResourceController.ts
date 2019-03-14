@@ -50,7 +50,7 @@ class ResourceController implements ResourceControllerInterface {
             mesh.load(
                 MainController.CanvasController.getGL(),
                 MainController.ShaderController.getGeometryShader(),
-                MainController.ShaderController.getGeometryShader(),
+                MainController.ShaderController.getShadowShader(),
             );
             this.instanced_resources.meshes[mesh.resource_id] = mesh;
             return mesh;

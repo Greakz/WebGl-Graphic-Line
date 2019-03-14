@@ -10,11 +10,15 @@ interface GeometryShaderAttributePointer {
 interface GeometryShaderUniformLocations {
     camera_position: WebGLUniformLocation;
 
+    daylight_view_matrix: WebGLUniformLocation;
+    daylight_projection_matrix: WebGLUniformLocation;
+
     albedo_map: WebGLUniformLocation;
     specular_map: WebGLUniformLocation;
     position_map: WebGLUniformLocation;
     normal_map: WebGLUniformLocation;
     material_map: WebGLUniformLocation;
+    shadow_map: WebGLUniformLocation;
 }
 
 export class DeferredLightningShader implements Shader {
@@ -30,6 +34,7 @@ export class DeferredLightningShader implements Shader {
         position_map: 2,
         normal_map: 3,
         material_map: 4,
+        shadow_map: 5,
     };
 
     attribute_pointer: GeometryShaderAttributePointer;
@@ -49,11 +54,15 @@ export class DeferredLightningShader implements Shader {
         this.uniform_locations = {
             camera_position: GL.getUniformLocation(this.program, "camera_position"),
 
+            daylight_view_matrix: GL.getUniformLocation(this.program, "daylight_view_matrix"),
+            daylight_projection_matrix: GL.getUniformLocation(this.program, "daylight_projection_matrix"),
+
             albedo_map: GL.getUniformLocation(this.program, "albedo_map"),
             specular_map: GL.getUniformLocation(this.program, "specular_map"),
             position_map: GL.getUniformLocation(this.program, "position_map"),
             normal_map: GL.getUniformLocation(this.program, "normal_map"),
             material_map: GL.getUniformLocation(this.program, "material_map"),
+            shadow_map: GL.getUniformLocation(this.program, "shadow_map"),
         };
         GL.uniform1i(
             this.uniform_locations.albedo_map,
@@ -74,6 +83,10 @@ export class DeferredLightningShader implements Shader {
         GL.uniform1i(
             this.uniform_locations.material_map,
             this.texture_bindings.material_map
+        );
+        GL.uniform1i(
+            this.uniform_locations.shadow_map,
+            this.texture_bindings.shadow_map
         );
         GL.uniformBlockBinding(
             this.program,
