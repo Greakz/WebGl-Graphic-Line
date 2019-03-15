@@ -54,7 +54,7 @@ export class AdvancedCamera extends BaseCamera implements Camera {
     private vertical_rotation_pos: number = 130;
 
     private primaryButtonMovementDrag(delta: vec2) {
-        this.round_rotation_pos -= delta.x * this.moveSpeed;
+        this.round_rotation_pos = (this.round_rotation_pos - delta.x * this.moveSpeed) % 360;
         this.vertical_rotation_pos -= delta.y * this.moveSpeed;
         this.vertical_rotation_pos = Math.min(Math.max(this.vertical_rotation_pos, this.deadEndDegrees), 180 - this.deadEndDegrees);
         console.log('perform left click drag');
