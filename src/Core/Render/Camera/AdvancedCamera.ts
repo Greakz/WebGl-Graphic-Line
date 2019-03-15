@@ -18,9 +18,8 @@ export class AdvancedCamera extends BaseCamera implements Camera {
     private last_mouse_button_secondary: boolean = false;
 
     protected freeMovement() {
-        const deadzone = 1;
         const delta: vec2 = subtractVec2(this.last_mouse_pos, MouseTracker.position);
-        if(Math.abs(delta.x) > deadzone || Math.abs(delta.y) > deadzone) {
+        if(delta.x != 0 || delta.y != 0) {
             if(this.last_mouse_button_primary && MouseTracker.button[0]) {
                 // primary drag!
                 this.primaryButtonMovementDrag(delta);
