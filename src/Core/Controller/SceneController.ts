@@ -4,7 +4,7 @@ import {SceneObject} from "../Scene/SceneObject";
 import {LogInterface} from "../Util/LogInstance";
 import LogInstance from "../Util/LogInstance";
 import { Scene } from '../Scene/Scene'
-import { Camera } from '../Render/Camera'
+import { Camera } from '../Render/Camera/Camera'
 import {DayLight} from "../Render/Resource/Light/DayLight";
 import {OmniLight} from "../Render/Resource/Light/OmniLight";
 import {SceneLight} from "../Render/Resource/Light/SceneLight";

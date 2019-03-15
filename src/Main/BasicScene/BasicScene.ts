@@ -2,14 +2,16 @@ import {Scene} from "../../Core/Scene/Scene";
 import {MainController} from "../../Core/Controller/MainController";
 import {StaticPlaneObject} from "./SceneObjects/Static/StaticPlaneObject";
 import {DynamicCubeObject} from "./SceneObjects/Dynamic/DynamicCubeObject";
-import { Camera, SimpleCamera } from '../../Core/Render/Camera'
+import { Camera } from '../../Core/Render/Camera/Camera'
 import {DayLight} from "../../Core/Render/Resource/Light/DayLight";
 import {OmniLight} from "../../Core/Render/Resource/Light/OmniLight";
 import {SpotLight} from "../../Core/Render/Resource/Light/SpotLight";
+import {RotationCamera} from "../../Core/Render/Camera/RotationCamera";
+import {AdvancedCamera} from "../../Core/Render/Camera/AdvancedCamera";
 
 export class BasicScene implements Scene
 {
-    camera: Camera = new SimpleCamera();
+    camera: Camera = new AdvancedCamera();
     day_light: DayLight = new DayLight();
 
     private groundPlane: StaticPlaneObject = new StaticPlaneObject();
@@ -52,7 +54,7 @@ export class BasicScene implements Scene
     private alternateInit() {
         let genCubes: number = 500;
         let genOmniLights: number = 50;
-        let genSpotLights: number = 200;
+        let genSpotLights: number = 192;
 
         for(let i = 0; i < genCubes; i++) {
             const newCube = new DynamicCubeObject();

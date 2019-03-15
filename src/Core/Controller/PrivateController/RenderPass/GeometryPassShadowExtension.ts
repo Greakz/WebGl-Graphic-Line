@@ -6,7 +6,7 @@ import {DayLight} from "../../../Render/Resource/Light/DayLight";
 import {flatMat4} from "../../../Geometry/Matrix/flatten";
 import {getOrthographicMatrix} from "../../../Geometry/Matrix/orthographic";
 import {lookAtMatrix} from "../../../Geometry/Matrix/lookAt";
-import {Camera} from "../../../Render/Camera";
+import {Camera} from "../../../Render/Camera/Camera";
 import {addVec3} from "../../../Geometry/Vector/add";
 import {scaleVec3} from "../../../Geometry/Vector/scale";
 

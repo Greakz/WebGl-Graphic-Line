@@ -1,5 +1,11 @@
-import { vec3, vec4 } from './vec';
+import {vec2, vec3, vec4} from './vec';
 
+export function subtractVec2(a: vec2, b: vec2): vec2 {
+    return {
+        x: a.x - b.x,
+        y: a.y - b.y,
+    }
+}
 export function subtractVec3(a: vec3, b: vec3): vec3 {
     return {
         x: a.x - b.x,

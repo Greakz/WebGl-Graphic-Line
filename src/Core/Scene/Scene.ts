@@ -1,4 +1,4 @@
-import { Camera } from '../Render/Camera'
+import { Camera } from '../Render/Camera/Camera'
 import {DayLight} from "../Render/Resource/Light/DayLight";
 
 export interface Scene {
