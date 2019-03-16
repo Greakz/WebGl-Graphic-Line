@@ -6,6 +6,7 @@ import {SceneLightInfo} from "../../SceneController";
 import {DayLight} from "../../../Render/Resource/Light/DayLight";
 import {LightBulbShader} from "../../../Render/Shader/LightBulbShader";
 import {GeometryPassShadowExtension} from "./GeometryPassShadowExtension";
+import {SkyboxPass} from "./SkyboxPass";
 
 export const MAXIMUM_OMNI_LIGHT_BLOCKS: number = 4;
 export const MAXIMUM_SPOT_LIGHT_BLOCKS: number = 4;
@@ -595,9 +596,13 @@ export abstract class LightningPass {
         GL.bindVertexArray(LightningPass.plane_vao);
 
         GL.activeTexture(GL.TEXTURE0);
-        GL.bindTexture(GL.TEXTURE_2D, this.light_calculation_result);
+        GL.bindTexture(GL.TEXTURE_2D, LightningPass.light_calculation_result);
         GL.activeTexture(GL.TEXTURE1);
-        GL.bindTexture(GL.TEXTURE_2D, this.light_blurred_result);
+        GL.bindTexture(GL.TEXTURE_2D, LightningPass.light_blurred_result);
+        GL.activeTexture(GL.TEXTURE2);
+        GL.bindTexture(GL.TEXTURE_2D, GeometryPass.position_texture);
+        GL.activeTexture(GL.TEXTURE3);
+        GL.bindTexture(GL.TEXTURE_2D, SkyboxPass.screen_gen_result);
 
         GL.drawArrays(GL.TRIANGLES, 0, 6);
 

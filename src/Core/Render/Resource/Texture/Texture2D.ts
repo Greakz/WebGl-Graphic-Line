@@ -1,14 +1,13 @@
 import {Image} from "../Image/Image";
 import {MainController} from "../../../Controller/MainController";
-import {Texture} from "./Texture";
+import {Texture2DI} from "./Texture";
 
-export abstract class ImageTexture implements Texture {
+export abstract class Texture2D implements Texture2DI {
     public readonly resource_type: 'texture';
     public readonly resource_id: string = 'default-texture';
 
     /** image: Image | Implemented by the Texture, which image should get used! */
     readonly image: Image;
-    private use_image: Image;
 
     private texture_buffer: WebGLTexture;
 
@@ -17,11 +16,12 @@ export abstract class ImageTexture implements Texture {
     readonly load = (GL: WebGL2RenderingContext) => {
         this.texture_buffer = GL.createTexture();
 
-        this.use_image = MainController.ResourceController.getImage(this.image);
+        // @ts-ignore
+        this.image = MainController.ResourceController.getImage(this.image);
 
-        this.use_image.runIfReady(() => {
+        this.image.runIfReady(() => {
             GL.bindTexture(GL.TEXTURE_2D, this.texture_buffer);
-            GL.texImage2D(GL.TEXTURE_2D, 0, GL.RGBA, this.use_image.image_width, this.use_image.image_height, 0, GL.RGBA, GL.UNSIGNED_BYTE, this.use_image.get());
+            GL.texImage2D(GL.TEXTURE_2D, 0, GL.RGBA, this.image.image_width, this.image.image_height, 0, GL.RGBA, GL.UNSIGNED_BYTE, this.image.get());
             // base settings, make it editable with texture options
             GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_WRAP_S, GL.CLAMP_TO_EDGE);
             GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_WRAP_T, GL.CLAMP_TO_EDGE);
@@ -37,4 +37,5 @@ export abstract class ImageTexture implements Texture {
             MainController.RenderController.bindEmptyTexture(GL);
         }
     };
+    readonly get = () => this.texture_buffer;
 }

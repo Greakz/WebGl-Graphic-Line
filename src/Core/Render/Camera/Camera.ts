@@ -19,6 +19,7 @@ export interface Camera {
     bingForGeometryShader(GL: WebGL2RenderingContext): void
     bindForDeferredLightningShader(GL: WebGL2RenderingContext): void
     bindForLightBulbShader(GL: WebGL2RenderingContext): void
+    bindForSkyBox(GL: WebGL2RenderingContext, view_matrix: WebGLUniformLocation, projection_matrix: WebGLUniformLocation): void;
 
     update(time: number): void;
 
@@ -28,6 +29,7 @@ export interface Camera {
     nearPlane: number;
     farPlane: number;
     fovDeg: number;
+
 }
 
 
@@ -133,6 +135,18 @@ export abstract class BaseCamera implements Camera {
         GL.uniform1f(
             MainController.ShaderController.getLightBulbShader().uniform_locations.far_plane,
             this.farPlane
+        );
+    }
+    bindForSkyBox(GL: WebGL2RenderingContext, view_matrix: WebGLUniformLocation, projection_matrix: WebGLUniformLocation) {
+        GL.uniformMatrix4fv(
+            view_matrix,
+            false,
+            new Float32Array(flatMat4(this.view_matrix))
+        );
+        GL.uniformMatrix4fv(
+            projection_matrix,
+            false,
+            new Float32Array(flatMat4(this.proj_mat_a_1))
         );
     }
 

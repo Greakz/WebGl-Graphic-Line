@@ -16,7 +16,6 @@ void main(void) {
 precision mediump float;
 in vec2 vTex;
 
-
 uniform sampler2D source;
 
 // output

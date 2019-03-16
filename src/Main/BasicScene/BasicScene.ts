@@ -6,13 +6,16 @@ import { Camera } from '../../Core/Render/Camera/Camera'
 import {DayLight} from "../../Core/Render/Resource/Light/DayLight";
 import {OmniLight} from "../../Core/Render/Resource/Light/OmniLight";
 import {SpotLight} from "../../Core/Render/Resource/Light/SpotLight";
-import {RotationCamera} from "../../Core/Render/Camera/RotationCamera";
 import {AdvancedCamera} from "../../Core/Render/Camera/AdvancedCamera";
+import {Skybox} from "../../Core/Render/Skybox/Skybox";
+import {BasicSkybox} from "./BasicSkybox";
 
 export class BasicScene implements Scene
 {
     camera: Camera = new AdvancedCamera();
     day_light: DayLight = new DayLight();
+    sky_box: Skybox = new BasicSkybox();
+
 
     private groundPlane: StaticPlaneObject = new StaticPlaneObject();
     private exampleCube: DynamicCubeObject = new DynamicCubeObject();
@@ -22,7 +25,7 @@ export class BasicScene implements Scene
     private omniLight: OmniLight = new OmniLight();
 
     init() {
-
+        this.sky_box.use(MainController.CanvasController.getGL());
         this.groundPlane.model.transformation.scale(60).moveY(-3).apply();
 
         // this.exampleCube.model.transformation.moveX(-0.5).apply();

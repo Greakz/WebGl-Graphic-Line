@@ -10,6 +10,7 @@ import {BlurShader} from "../../Render/Shader/BlurShader";
 import {FinalizeLightningShader} from "../../Render/Shader/FinalizeLightningShader";
 import {OutputShader} from "../../Render/Shader/OutputShader";
 import {ShadowShader} from "../../Render/Shader/ShadowShader";
+import {SkyBoxShader} from "../../Render/Shader/SkyBoxShader";
 
 export interface ShaderControllerInterface {
     loadShader(): void;
@@ -40,6 +41,9 @@ export interface ShaderControllerInterface {
 
     useShadowShader(): void;
     getShadowShader(): ShadowShader;
+
+    useSkyBoxShader(): void;
+    getSkyBoxShader(): SkyBoxShader;
 }
 
 class ShaderController implements ShaderControllerInterface{
@@ -54,6 +58,7 @@ class ShaderController implements ShaderControllerInterface{
     private finalize_lightning_shader: FinalizeLightningShader;
     private output_shader: OutputShader;
     private shadow_shader: ShadowShader;
+    private skybox_shader: SkyBoxShader;
 
     constructor(){}
 
@@ -68,6 +73,7 @@ class ShaderController implements ShaderControllerInterface{
         this.finalize_lightning_shader = new FinalizeLightningShader(GL);
         this.output_shader = new OutputShader(GL);
         this.shadow_shader = new ShadowShader(GL);
+        this.skybox_shader = new SkyBoxShader(GL);
     }
 
     getGeometryShader(): GeometryShader {
@@ -132,6 +138,13 @@ class ShaderController implements ShaderControllerInterface{
     }
     useShadowShader(): void {
         MainController.CanvasController.getGL().useProgram(this.shadow_shader.program);
+    }
+
+    getSkyBoxShader(): SkyBoxShader{
+        return this.skybox_shader;
+    }
+    useSkyBoxShader(): void {
+        MainController.CanvasController.getGL().useProgram(this.skybox_shader.program);
     }
 }
 

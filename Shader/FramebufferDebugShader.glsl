@@ -21,4 +21,5 @@ layout(location = 0) out vec4 fragmentColor;
 
 void main(void) {
     fragmentColor = vec4(texture(input_texture, vTexPos).rgb, 1.0);
+    // fragmentColor = vec4(vec3(texture(input_texture, vTexPos).rgb), texture(input_texture, vTexPos).w);
 }

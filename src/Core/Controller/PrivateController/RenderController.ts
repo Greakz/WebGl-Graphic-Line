@@ -2,13 +2,15 @@ import {DrawMesh} from "../../Render/DrawMesh";
 import LogInstance, {LogInterface} from "../../Util/LogInstance";
 import {MainController} from "../MainController";
 import {Model} from "../../Render/Model";
-import {Texture} from "../../Render/Resource/Texture/Texture";
+import {Texture, Texture2DI, TextureCubeMapI} from "../../Render/Resource/Texture/Texture";
 import {Image} from "../../Render/Resource/Image/Image";
 import {GeometryPass} from "./RenderPass/GeometryPass";
 import {LightningPass} from "./RenderPass/LightningPass";
 import {OutputShader} from "../../Render/Shader/OutputShader";
 import {OutputPass} from "./RenderPass/OutputPass";
 import {GeometryPassShadowExtension} from "./RenderPass/GeometryPassShadowExtension";
+import {SkyboxPass} from "./RenderPass/SkyboxPass";
+import {TextureCubeMap} from "../../Render/Resource/Texture/TextureCubeMap";
 
 export interface GraphicOptions {
 
@@ -77,6 +79,7 @@ class RenderController implements RenderControllerInterface {
 
     public prepareRenderPasses() {
         GeometryPass.appSetup();
+        SkyboxPass.appSetup();
         LightningPass.appSetup();
         OutputPass.appSetup();
     }
@@ -105,6 +108,7 @@ class RenderController implements RenderControllerInterface {
             tex_top: top
         };
         GeometryPass.frameSetup(this.frame_info);
+        SkyboxPass.frameSetup(this.frame_info);
         LightningPass.frameSetup(this.frame_info);
         OutputPass.frameSetup(this.frame_info);
     }
@@ -112,8 +116,8 @@ class RenderController implements RenderControllerInterface {
     public framebufferDebugPass() {
         MainController.ShaderController.getFramebufferDebugShader().textureDebugPass(
             [
-                GeometryPassShadowExtension.shadow_texture,
-                GeometryPass.position_texture,
+                SkyboxPass.screen_gen_result,
+                GeometryPass.material_texture,
                 LightningPass.light_combine_result,
                 LightningPass.light_final_result
             ]
@@ -124,7 +128,9 @@ class RenderController implements RenderControllerInterface {
     }
 
     public geometryPass() {
+        SkyboxPass.runGenerateCubemapSkyboxPass();
         GeometryPass.runPass(this.render_queue, this.frame_info);
+        SkyboxPass.runGenerateOutputSkyboxPass();
     }
 
     public lightningPass() {
@@ -273,7 +279,7 @@ export interface LightQueueEntry {
 var RenderControllerInstance: RenderController = new RenderController();
 export default RenderControllerInstance;
 
-class EmptyTexture implements Texture {
+class EmptyTexture implements Texture2DI {
     public readonly resource_type: 'texture';
     public readonly resource_id: string = 'def-t-';
     private texture_buffer: WebGLTexture;
@@ -303,4 +309,43 @@ class EmptyTexture implements Texture {
     readonly use = (GL: WebGL2RenderingContext) => {
         GL.bindTexture(GL.TEXTURE_2D, this.texture_buffer);
     };
+    readonly get = () => this.texture_buffer;
+}
+class EmptyCubeMap implements TextureCubeMapI {
+    public readonly resource_type: 'texture';
+    public readonly resource_id: string = 'def-t-';
+    private texture_buffer: WebGLTexture;
+    image: Image;
+    readonly load = (GL: WebGL2RenderingContext) => {
+        this.texture_buffer = GL.createTexture();
+        GL.bindTexture(GL.TEXTURE_2D, this.texture_buffer);
+        GL.pixelStorei(GL.UNPACK_ALIGNMENT, 1);
+        GL.texImage2D(GL.TEXTURE_2D,
+            0,
+            GL.RGB,
+            2,
+            2,
+            0,
+            GL.RGB,
+            GL.UNSIGNED_BYTE,
+            new Uint8Array([
+                80, 80, 80,     50, 50, 50,
+                50, 50, 50,     80, 80, 80,
+            ]));
+        // base settings, make it editable with texture options
+        GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_WRAP_S, GL.CLAMP_TO_EDGE);
+        GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_WRAP_T, GL.CLAMP_TO_EDGE);
+        GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MIN_FILTER, GL.NEAREST);
+        GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MAG_FILTER, GL.NEAREST);
+    };
+    readonly use = (GL: WebGL2RenderingContext) => {
+        GL.bindTexture(GL.TEXTURE_2D, this.texture_buffer);
+    };
+    readonly get = () => this.texture_buffer;
+    readonly image_back: Image;
+    readonly image_bottom: Image;
+    readonly image_front: Image;
+    readonly image_left: Image;
+    readonly image_right: Image;
+    readonly image_top: Image;
 }

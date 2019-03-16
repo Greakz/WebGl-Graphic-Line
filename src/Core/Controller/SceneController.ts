@@ -10,6 +10,7 @@ import {OmniLight} from "../Render/Resource/Light/OmniLight";
 import {SceneLight} from "../Render/Resource/Light/SceneLight";
 import {SpotLight} from "../Render/Resource/Light/SpotLight";
 import {MainController} from "./MainController";
+import {Skybox} from "../Render/Skybox/Skybox";
 
 export interface SceneControllerInterface {
     pushSceneObject(sceneObject: SceneObject): void
@@ -157,6 +158,9 @@ class SceneController implements PrivateSceneControllerInterface {
             spot_lights: this.spot_lights
         }
     }
+    getSceneSkybox(): Skybox {
+        return this.scene.sky_box;
+    }
 
     private pushStaticSceneObject(object: StaticSceneObject) {
         let canBeAdded: boolean = true;
@@ -228,6 +232,7 @@ export interface PrivateSceneControllerInterface extends SceneControllerInterfac
     getSceneCamera(): Camera
     getSceneDayLight(): DayLight
     getSceneLightInfo(): SceneLightInfo
+    getSceneSkybox(): Skybox
 }
 
 var SceneControllerInstance: SceneController = new SceneController();
