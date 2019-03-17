@@ -182,8 +182,8 @@ class RenderController implements RenderControllerInterface {
                         ...render_queue_entry,
                         render_queue_material_entries: render_queue_entry.render_queue_material_entries.map(
                             (render_queue_material_entry: RenderQueueMaterialEntry) => {
-                                materialAllReadyIn = true;
                                 if (render_queue_material_entry.material_id === draw_mesh.related_material.resource_id) {
+                                    materialAllReadyIn = true;
                                     // if all ready type of mesh-material in, push another "draw mesh"...
                                     return {
                                         ...render_queue_material_entry,

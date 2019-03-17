@@ -9,6 +9,7 @@ import {SpotLight} from "../../Core/Render/Resource/Light/SpotLight";
 import {AdvancedCamera} from "../../Core/Render/Camera/AdvancedCamera";
 import {Skybox} from "../../Core/Render/Skybox/Skybox";
 import {BasicSkybox} from "./BasicSkybox";
+import {DynamicCubeBlankObject} from "./SceneObjects/Dynamic/DynamicCubeBlankObject";
 
 export class BasicScene extends BaseScene implements Scene
 {
@@ -54,7 +55,8 @@ export class BasicScene extends BaseScene implements Scene
     private altOmniLights: OmniLight[] = [];
     private altSpotLights: SpotLight[] = [];
     private alternateInit() {
-        let genCubes: number = 500;
+        let genCubes: number = 400;
+        let genCubesBlank: number = 100;
         let genOmniLights: number = 50;
         let genSpotLights: number = 192;
 
@@ -65,6 +67,18 @@ export class BasicScene extends BaseScene implements Scene
                 .moveX(Math.sin(randomNr) * (Math.random() * 20 + 5))
                 .moveZ(Math.cos(randomNr) * (Math.random() * 20 + 5))
                 .moveY(Math.cos(Math.random() * 2 * Math.PI) * 0.1 - 2)
+                .rotateY(Math.random() * 90)
+                .apply();
+            this.altCubes.push(newCube);
+            MainController.SceneController.pushSceneObject(newCube);
+        }
+        for(let i = 0; i < genCubesBlank; i++) {
+            const newCube = new DynamicCubeBlankObject();
+            let randomNr: number = Math.random() * 2 * Math.PI;
+            newCube.model.transformation
+                .moveX(Math.sin(randomNr) * (Math.random() * 20 + 5))
+                .moveZ(Math.cos(randomNr) * (Math.random() * 20 + 5))
+                .moveY(Math.cos(Math.random() * 2 * Math.PI) * 0.1  - 1)
                 .rotateY(Math.random() * 90)
                 .apply();
             this.altCubes.push(newCube);

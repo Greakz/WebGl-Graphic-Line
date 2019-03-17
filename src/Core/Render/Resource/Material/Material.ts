@@ -18,6 +18,6 @@ export interface Material extends RenderResource {
     // All the different infos that an material holds
     shininess: number;
     transparency: number;
-    // reflection
+    reflection: number;
     // refraction
 }

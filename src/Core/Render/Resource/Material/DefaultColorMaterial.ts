@@ -27,6 +27,9 @@ export abstract class DefaultColorMaterial implements Material {
      */
     transparency: number = 0.0;
 
+
+    reflection: number = 0.0;
+
     private uniform_buffer_object: WebGLBuffer;
 
     readonly load = (GL: WebGL2RenderingContext) => {
