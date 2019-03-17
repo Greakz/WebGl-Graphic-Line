@@ -15,7 +15,7 @@ import SceneControllerInstance, {PrivateSceneControllerInterface as SceneControl
  * Mainly the holder for the Specific Logic Controller!
  */
 export class MainController {
-    private static readonly Log: LogInterface = LogInstance;
+    public static readonly Log: LogInterface = LogInstance;
     public static readonly CanvasController: CanvasControllerInterface = CanvasControllerInstance;
     public static readonly ResourceController: ResourceControllerInterface = ResourceControllerInstance;
     public static readonly RenderController: RenderControllerInterface = RenderControllerInstance;

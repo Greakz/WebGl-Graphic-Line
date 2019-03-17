@@ -4,11 +4,11 @@ import {MainController} from "../MainController";
 import {Model} from "../../Render/Model";
 import {Texture, Texture2DI, TextureCubeMapI} from "../../Render/Resource/Texture/Texture";
 import {Image} from "../../Render/Resource/Image/Image";
-import {GeometryPass} from "./RenderPass/GeometryPass";
-import {LightningPass} from "./RenderPass/LightningPass";
+import {GeometryPass} from "./RenderPass/GeometryPass/GeometryPass";
+import {LightningPass} from "./RenderPass/LightningPass/LightningPass";
 import {OutputShader} from "../../Render/Shader/OutputShader";
 import {OutputPass} from "./RenderPass/OutputPass";
-import {GeometryPassShadowExtension} from "./RenderPass/GeometryPassShadowExtension";
+import {GeometryPassShadowExtension} from "./RenderPass/GeometryPass/GeometryPassShadowExtension";
 import {SkyboxPass} from "./RenderPass/SkyboxPass";
 import {TextureCubeMap} from "../../Render/Resource/Texture/TextureCubeMap";
 
@@ -120,9 +120,9 @@ class RenderController implements RenderControllerInterface {
         MainController.ShaderController.getFramebufferDebugShader().textureDebugPass(
             [
                 SkyboxPass.screen_gen_result,
-                GeometryPass.material_texture,
-                LightningPass.light_combine_result,
-                LightningPass.light_final_result
+                GeometryPass.solid_storage.material_texture,
+                LightningPass.lightning_storage.light_combine_result,
+                LightningPass.lightning_storage.light_final_result
             ]
         );
     }
@@ -142,7 +142,7 @@ class RenderController implements RenderControllerInterface {
     }
 
     public lightningPass() {
-        LightningPass.runPass(this.frame_info);
+        LightningPass.runPass();
     }
 
     public outputPass() {

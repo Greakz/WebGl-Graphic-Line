@@ -2,7 +2,7 @@ import {GeometryShader} from "../../Shader/GeometryShader";
 import {ShadowShader} from "../../Shader/ShadowShader";
 import {Transformation} from '../../../Geometry/Transformation/Transformation';
 import {Mesh} from "./Mesh";
-import {GeometryPass} from "../../../Controller/PrivateController/RenderPass/GeometryPass";
+import {GeometryPass} from "../../../Controller/PrivateController/RenderPass/GeometryPass/GeometryPass";
 import {MainController} from "../../../Controller/MainController";
 
 export abstract class SingleBufferMesh implements Mesh {

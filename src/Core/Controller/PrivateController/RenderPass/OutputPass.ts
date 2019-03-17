@@ -1,11 +1,6 @@
 import {MainController} from "../../MainController";
-import {FrameInfo, LightQueueEntry} from "../RenderController";
-import {DeferredLightningShader} from "../../../Render/Shader/DeferredLightningShader";
-import {GeometryPass} from "./GeometryPass";
-import {SceneLightInfo} from "../../SceneController";
-import {DayLight} from "../../../Render/Resource/Light/DayLight";
-import {LightBulbShader} from "../../../Render/Shader/LightBulbShader";
-import {LightningPass} from "./LightningPass";
+import {FrameInfo} from "../RenderController";
+import {LightningPass} from "./LightningPass/LightningPass";
 
 export abstract class OutputPass {
     //////////////////////////////
@@ -76,7 +71,7 @@ export abstract class OutputPass {
         GL.bindVertexArray(this.plane_vao);
 
         GL.activeTexture(GL.TEXTURE0);
-        GL.bindTexture(GL.TEXTURE_2D, LightningPass.light_final_result);
+        GL.bindTexture(GL.TEXTURE_2D, LightningPass.lightning_storage.light_final_result);
 
         GL.drawArrays(GL.TRIANGLES, 0, 6);
     }
