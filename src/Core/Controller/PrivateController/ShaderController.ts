@@ -11,6 +11,8 @@ import {FinalizeLightningShader} from "../../Render/Shader/FinalizeLightningShad
 import {OutputShader} from "../../Render/Shader/OutputShader";
 import {ShadowShader} from "../../Render/Shader/ShadowShader";
 import {SkyBoxShader} from "../../Render/Shader/SkyBoxShader";
+import {CustomSkyBoxShader} from "../../Render/Shader/CustomSkyBoxShader";
+import {CubeMapDebugShader} from "../../Render/Shader/CubeMapDebugShader";
 
 export interface ShaderControllerInterface {
     loadShader(): void;
@@ -44,6 +46,12 @@ export interface ShaderControllerInterface {
 
     useSkyBoxShader(): void;
     getSkyBoxShader(): SkyBoxShader;
+
+    useCustomSkyBoxShader(): void;
+    getCustomSkyBoxShader(): CustomSkyBoxShader;
+
+    useCubeMapDebugShader(): void;
+    getCubeMapDebugShader(): CubeMapDebugShader;
 }
 
 class ShaderController implements ShaderControllerInterface{
@@ -59,6 +67,8 @@ class ShaderController implements ShaderControllerInterface{
     private output_shader: OutputShader;
     private shadow_shader: ShadowShader;
     private skybox_shader: SkyBoxShader;
+    private custom_skybox_shader: CustomSkyBoxShader;
+    private cubemap_debug_shader: CubeMapDebugShader;
 
     constructor(){}
 
@@ -74,6 +84,8 @@ class ShaderController implements ShaderControllerInterface{
         this.output_shader = new OutputShader(GL);
         this.shadow_shader = new ShadowShader(GL);
         this.skybox_shader = new SkyBoxShader(GL);
+        this.custom_skybox_shader = new CustomSkyBoxShader(GL);
+        this.cubemap_debug_shader = new CubeMapDebugShader(GL);
     }
 
     getGeometryShader(): GeometryShader {
@@ -145,6 +157,20 @@ class ShaderController implements ShaderControllerInterface{
     }
     useSkyBoxShader(): void {
         MainController.CanvasController.getGL().useProgram(this.skybox_shader.program);
+    }
+
+    getCustomSkyBoxShader(): CustomSkyBoxShader{
+        return this.custom_skybox_shader;
+    }
+    useCustomSkyBoxShader(): void {
+        MainController.CanvasController.getGL().useProgram(this.custom_skybox_shader.program);
+    }
+
+    useCubeMapDebugShader(): void {
+        MainController.CanvasController.getGL().useProgram(this.cubemap_debug_shader.program);
+    }
+    getCubeMapDebugShader(): CubeMapDebugShader {
+        return this.cubemap_debug_shader;
     }
 }
 

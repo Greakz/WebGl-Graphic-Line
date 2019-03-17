@@ -38,9 +38,11 @@ export abstract class TextureCubeMap implements TextureCubeMapI {
 
         const height: number = this.image_front.image_height;
         const width: number = this.image_front.image_width;
+        console.log(height, width);
 
         this.image_front.runIfReady(() => {
             // Prepare Front
+            GL.bindTexture(GL.TEXTURE_CUBE_MAP, this.texture_buffer);
             GL.texImage2D(
                 GL.TEXTURE_CUBE_MAP_POSITIVE_Z,
                 0, GL.RGB,
@@ -53,6 +55,7 @@ export abstract class TextureCubeMap implements TextureCubeMapI {
         });
         this.image_back.runIfReady(() => {
             // Prepare Back
+            GL.bindTexture(GL.TEXTURE_CUBE_MAP, this.texture_buffer);
             GL.texImage2D(
                 GL.TEXTURE_CUBE_MAP_NEGATIVE_Z,
                 0, GL.RGB,
@@ -65,6 +68,7 @@ export abstract class TextureCubeMap implements TextureCubeMapI {
         });
         this.image_left.runIfReady(() => {
             // Prepare Left
+            GL.bindTexture(GL.TEXTURE_CUBE_MAP, this.texture_buffer);
             GL.texImage2D(
                 GL.TEXTURE_CUBE_MAP_NEGATIVE_X,
                 0, GL.RGB,
@@ -77,6 +81,7 @@ export abstract class TextureCubeMap implements TextureCubeMapI {
         });
         this.image_right.runIfReady(() => {
             // Prepare Right
+            GL.bindTexture(GL.TEXTURE_CUBE_MAP, this.texture_buffer);
             GL.texImage2D(
                 GL.TEXTURE_CUBE_MAP_POSITIVE_X,
                 0, GL.RGB,
@@ -89,6 +94,7 @@ export abstract class TextureCubeMap implements TextureCubeMapI {
         });
         this.image_top.runIfReady(() => {
             // Prepare Top
+            GL.bindTexture(GL.TEXTURE_CUBE_MAP, this.texture_buffer);
             GL.texImage2D(
                 GL.TEXTURE_CUBE_MAP_POSITIVE_Y,
                 0, GL.RGB,
@@ -101,6 +107,7 @@ export abstract class TextureCubeMap implements TextureCubeMapI {
         });
         this.image_bottom.runIfReady(() => {
             // Prepare Bottom
+            GL.bindTexture(GL.TEXTURE_CUBE_MAP, this.texture_buffer);
             GL.texImage2D(
                 GL.TEXTURE_CUBE_MAP_NEGATIVE_Y,
                 0, GL.RGB,
@@ -115,6 +122,7 @@ export abstract class TextureCubeMap implements TextureCubeMapI {
     private finishedPart(GL: WebGL2RenderingContext) {
         this.readyCounter--;
         if(this.readyCounter <= 0) {
+            GL.bindTexture(GL.TEXTURE_CUBE_MAP, this.texture_buffer);
             GL.texParameteri(GL.TEXTURE_CUBE_MAP, GL.TEXTURE_MAG_FILTER, GL.LINEAR);
             GL.texParameteri(GL.TEXTURE_CUBE_MAP, GL.TEXTURE_MIN_FILTER, GL.LINEAR);
             GL.texParameteri(GL.TEXTURE_CUBE_MAP, GL.TEXTURE_WRAP_S, GL.CLAMP_TO_EDGE);
@@ -127,7 +135,7 @@ export abstract class TextureCubeMap implements TextureCubeMapI {
         if(this.ready) {
             GL.bindTexture(GL.TEXTURE_CUBE_MAP, this.texture_buffer);
         } else {
-            MainController.RenderController.bindEmptyTexture(GL);
+            MainController.RenderController.bindEmptyCubeMap(GL);
         }
     };
     readonly get = () => this.texture_buffer;

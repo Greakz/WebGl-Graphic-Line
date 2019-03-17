@@ -29,7 +29,7 @@ export class BasicScene implements Scene
         this.groundPlane.model.transformation.scale(60).moveY(-3).apply();
 
         // this.exampleCube.model.transformation.moveX(-0.5).apply();
-        this.exampleCube2.model.transformation.scale(0.5).moveX(0.5).moveY(0.5).moveZ(0.5).apply();
+        this.exampleCube2.model.transformation.scale(0.5).moveX(0.8).moveY(0.4).moveZ(-0.5).apply();
         this.exampleCube3.model.transformation.scale(3).moveX(0.2).moveY(-2).rotateY(45).apply();
 
         // push some objects

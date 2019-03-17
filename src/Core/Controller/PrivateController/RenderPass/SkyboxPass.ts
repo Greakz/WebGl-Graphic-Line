@@ -2,8 +2,12 @@ import {MainController} from "../../MainController";
 import {FrameInfo} from "../RenderController";
 import {getScalingMatrix} from "../../../Geometry/Matrix/scaling";
 import {flatMat4} from "../../../Geometry/Matrix/flatten";
-import {GeometryPass} from "./GeometryPass";
 import {checkFramebuffer} from "../../../Util/FramebufferCheck";
+import {getPerspectiveMatrix} from "../../../Geometry/Matrix/perspective";
+import {radians} from "../../../Geometry/radians";
+import {lookAtMatrix} from "../../../Geometry/Matrix/lookAt";
+import {CustomSkyBoxShader} from "../../../Render/Shader/CustomSkyBoxShader";
+import {getRotationYMatrix} from "../../../Geometry/Matrix/rotation";
 
 
 export abstract class SkyboxPass {
@@ -18,6 +22,8 @@ export abstract class SkyboxPass {
     /////////////////////////////
     static cubemap_gen_framebuffer: WebGLFramebuffer;
     static cubemap_gen_result: WebGLTexture;
+    static cubemap_matrices: Float32Array[] = [];
+    static projection_matrix: Float32Array;
     static screen_gen_framebuffer: WebGLFramebuffer;
     static screen_gen_result: WebGLTexture;
 
@@ -26,13 +32,79 @@ export abstract class SkyboxPass {
      */
     static appSetup(): void {
         const GL: WebGL2RenderingContext = MainController.CanvasController.getGL();
+        //const camera: Camera = MainController.SceneController.getSceneCamera();
+
+        const farplane = 100;
 
         const SIZEX = 1920;
         const SIZEY = 1920;
         const INTERN_FORMAT = GL.RGBA32F;
         const FILTER = GL.NEAREST;
         const LEVEL = 1;
+        this.model_mat = new Float32Array(flatMat4(getScalingMatrix(farplane,farplane,farplane)));
 
+        ////////////////////////////////
+        // SKYBOX GENERATION
+        ////////////////////////////////
+        SkyboxPass.cubemap_gen_framebuffer = GL.createFramebuffer();
+        GL.bindFramebuffer(GL.FRAMEBUFFER, SkyboxPass.cubemap_gen_framebuffer);
+
+
+
+        SkyboxPass.projection_matrix = new Float32Array(flatMat4(getPerspectiveMatrix(radians(90), 1, 5.0, farplane)));
+        SkyboxPass.cubemap_matrices = [
+            new Float32Array(flatMat4(lookAtMatrix({x: 0, y: 0, z: 0}, {x: -1.0, y: 0.0, z: 0.0}, {x: 0.0, y: 1.0, z: 0.0}))),
+            new Float32Array(flatMat4(lookAtMatrix({x: 0, y: 0, z: 0}, {x: 1.0, y: 0.0, z: 0.0}, {x: 0.0, y: 1.0, z: 0.0}))),
+            new Float32Array(flatMat4(lookAtMatrix({x: 0, y: 0, z: 0}, {x: 0.0, y: 1.0, z: 0.0}, {x: 0.0, y: 0.0, z: 1.0}))),
+            new Float32Array(flatMat4(lookAtMatrix({x: 0, y: 0, z: 0}, {x: 0.0, y: -1.0, z: 0.0}, {x: 0.0, y: 0.0, z: -1.0}))),
+            new Float32Array(flatMat4(lookAtMatrix({x: 0, y: 0, z: 0}, {x: 0.0, y: 0.0, z: -1.0}, {x: 0.0, y: 1.0, z: 0.0}))),
+            new Float32Array(flatMat4(lookAtMatrix({x: 0, y: 0, z: 0}, {x: 0.0, y: 0.0, z: 1.0}, {x: 0.0, y: 1.0, z: 0.0}))),
+        ];
+        GL.enable(GL.DEPTH_TEST);
+        SkyboxPass.cubemap_gen_result = GL.createTexture();
+        GL.bindTexture(GL.TEXTURE_CUBE_MAP,  SkyboxPass.cubemap_gen_result);
+
+        // GL.pixelStorei(GL.UNPACK_ALIGNMENT, 1);
+        GL.texImage2D(GL.TEXTURE_CUBE_MAP_POSITIVE_X, 0, GL.RGB, 512, 512, 0, GL.RGB, GL.UNSIGNED_BYTE, null);
+        GL.framebufferTexture2D(GL.FRAMEBUFFER, GL.COLOR_ATTACHMENT0, GL.TEXTURE_CUBE_MAP_POSITIVE_X, SkyboxPass.cubemap_gen_result, 0);
+
+        GL.texImage2D(GL.TEXTURE_CUBE_MAP_NEGATIVE_X, 0, GL.RGB, 512, 512, 0, GL.RGB, GL.UNSIGNED_BYTE, null);
+        GL.framebufferTexture2D(GL.FRAMEBUFFER, GL.COLOR_ATTACHMENT1, GL.TEXTURE_CUBE_MAP_NEGATIVE_X, SkyboxPass.cubemap_gen_result, 0);
+
+        GL.texImage2D(GL.TEXTURE_CUBE_MAP_POSITIVE_Y, 0, GL.RGB, 512, 512, 0, GL.RGB, GL.UNSIGNED_BYTE, null);
+        GL.framebufferTexture2D(GL.FRAMEBUFFER, GL.COLOR_ATTACHMENT2, GL.TEXTURE_CUBE_MAP_POSITIVE_Y, SkyboxPass.cubemap_gen_result, 0);
+
+        GL.texImage2D(GL.TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, GL.RGB, 512, 512, 0, GL.RGB, GL.UNSIGNED_BYTE, null);
+        GL.framebufferTexture2D(GL.FRAMEBUFFER, GL.COLOR_ATTACHMENT3, GL.TEXTURE_CUBE_MAP_NEGATIVE_Y, SkyboxPass.cubemap_gen_result, 0);
+
+        GL.texImage2D(GL.TEXTURE_CUBE_MAP_POSITIVE_Z, 0, GL.RGB, 512, 512, 0, GL.RGB, GL.UNSIGNED_BYTE, null);
+        GL.framebufferTexture2D(GL.FRAMEBUFFER, GL.COLOR_ATTACHMENT4, GL.TEXTURE_CUBE_MAP_POSITIVE_Z, SkyboxPass.cubemap_gen_result, 0);
+
+        GL.texImage2D(GL.TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, GL.RGB, 512, 512, 0, GL.RGB, GL.UNSIGNED_BYTE, null);
+        GL.framebufferTexture2D(GL.FRAMEBUFFER, GL.COLOR_ATTACHMENT5, GL.TEXTURE_CUBE_MAP_NEGATIVE_Z, SkyboxPass.cubemap_gen_result, 0);
+
+
+        GL.texParameteri(GL.TEXTURE_CUBE_MAP, GL.TEXTURE_MIN_FILTER, GL.NEAREST);
+        GL.texParameteri(GL.TEXTURE_CUBE_MAP, GL.TEXTURE_MAG_FILTER, GL.NEAREST);
+        GL.texParameteri(GL.TEXTURE_CUBE_MAP, GL.TEXTURE_WRAP_R, GL.CLAMP_TO_EDGE);
+        GL.texParameteri(GL.TEXTURE_CUBE_MAP, GL.TEXTURE_WRAP_S, GL.CLAMP_TO_EDGE);
+        GL.texParameteri(GL.TEXTURE_CUBE_MAP, GL.TEXTURE_WRAP_T, GL.CLAMP_TO_EDGE);
+
+        GL.drawBuffers([
+            GL.COLOR_ATTACHMENT0,
+            GL.COLOR_ATTACHMENT1,
+            GL.COLOR_ATTACHMENT2,
+            GL.COLOR_ATTACHMENT3,
+            GL.COLOR_ATTACHMENT4,
+            GL.COLOR_ATTACHMENT5,
+        ]);
+        GL.bindTexture(GL.TEXTURE_CUBE_MAP,  null);
+
+        checkFramebuffer(GL, SkyboxPass.cubemap_gen_framebuffer);
+
+        ////////////////////////////////
+        // SCREEN GENERATION
+        ////////////////////////////////
         SkyboxPass.screen_gen_framebuffer = GL.createFramebuffer();
         GL.bindFramebuffer(GL.FRAMEBUFFER, SkyboxPass.screen_gen_framebuffer);
         GL.activeTexture(GL.TEXTURE0);
@@ -53,7 +125,7 @@ export abstract class SkyboxPass {
 
         GL.drawBuffers([GL.COLOR_ATTACHMENT0]);
 
-        checkFramebuffer(GL, this.screen_gen_framebuffer);
+        checkFramebuffer(GL, SkyboxPass.screen_gen_framebuffer);
 
         ////////////////////////////////
         // CLEAR BINDINGS AFTER INITIALISATION
@@ -76,11 +148,39 @@ export abstract class SkyboxPass {
      * GENEREATES the skybox that is later used for the screen version and for reflections!
      */
     static runGenerateCubemapSkyboxPass(): void {
-        // const GL: WebGL2RenderingContext = MainController.CanvasController.getGL();
-        // SkyboxPass.cubemap_gen_result = MainController.SceneController.getSceneSkybox().cube_map.get();
+        const GL: WebGL2RenderingContext = MainController.CanvasController.getGL();
+
+        MainController.ShaderController.useCustomSkyBoxShader();
+        const cstmShader: CustomSkyBoxShader = MainController.ShaderController.getCustomSkyBoxShader();
+        GL.bindFramebuffer(GL.FRAMEBUFFER, SkyboxPass.cubemap_gen_framebuffer);
+        GL.viewport(0, 0, 512, 512);
+        GL.clearColor(0.0, 0.0, 0.0, 1.0);
+        GL.disable(GL.CULL_FACE);
+
+        GL.bindVertexArray(this.cube_vao);
+
+        GL.uniformMatrix4fv(cstmShader.uniform_locations.model_matrix, false, SkyboxPass.model_mat);
+        GL.uniformMatrix4fv(cstmShader.uniform_locations.view_matrix_right, false, SkyboxPass.cubemap_matrices[0]);
+        GL.uniformMatrix4fv(cstmShader.uniform_locations.view_matrix_left, false, SkyboxPass.cubemap_matrices[1]);
+        GL.uniformMatrix4fv(cstmShader.uniform_locations.view_matrix_top, false, SkyboxPass.cubemap_matrices[2]);
+        GL.uniformMatrix4fv(cstmShader.uniform_locations.view_matrix_bottom, false, SkyboxPass.cubemap_matrices[3]);
+        GL.uniformMatrix4fv(cstmShader.uniform_locations.view_matrix_back, false, SkyboxPass.cubemap_matrices[4]);
+        GL.uniformMatrix4fv(cstmShader.uniform_locations.view_matrix_front, false, SkyboxPass.cubemap_matrices[5]);
+        GL.uniformMatrix4fv(cstmShader.uniform_locations.projection_matrix, false, SkyboxPass.projection_matrix);
+
+        GL.uniform3fv(cstmShader.uniform_locations.daylight1_color, new Float32Array([1.0, 1.0, 1.0]));
+        GL.uniform3fv(cstmShader.uniform_locations.daylight2_color, new Float32Array([1.0, 1.0, 1.0]));
+        GL.uniform1f(cstmShader.uniform_locations.balance, 0.5);
+
+        GL.activeTexture(GL.TEXTURE0);
+        MainController.SceneController.getSceneSkybox().cube_map.use(GL);
+
+        MainController.RenderController.bindEmptyCubeMap(GL, GL.TEXTURE1);
+
+        GL.drawArrays(GL.TRIANGLES, 0, 36);
     }
 
-    private static model_mat: Float32Array = new Float32Array(flatMat4(getScalingMatrix(150,150,150)));
+    private static model_mat: Float32Array;
     /**
      * GENERATES A 2D version of the visible fragments for the screen.
      */
@@ -99,7 +199,10 @@ export abstract class SkyboxPass {
             MainController.ShaderController.getSkyBoxShader().uniform_locations.projection_matrix
         );
         GL.activeTexture(GL.TEXTURE0);
-        GL.bindTexture(GL.TEXTURE_CUBE_MAP, MainController.SceneController.getSceneSkybox().cube_map.get());
+        // MainController.SceneController.getSceneSkybox().cube_map.use(GL);
+        GL.bindTexture(GL.TEXTURE_CUBE_MAP, SkyboxPass.cubemap_gen_result);
+        //GL.bindTexture(GL.TEXTURE_CUBE_MAP, MainController.SceneController.getSceneSkybox().cube_map.get());
+
 
         GL.drawArrays(GL.TRIANGLES, 0, 36);
     }

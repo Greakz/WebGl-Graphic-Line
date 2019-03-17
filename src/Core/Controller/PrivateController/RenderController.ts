@@ -27,6 +27,8 @@ export interface RenderControllerInterface {
 
     framebufferDebugPass(): void;
 
+    cubemapDebugPass(): void;
+
     lightningPass(): void;
 
     outputPass(): void;
@@ -38,6 +40,7 @@ export interface RenderControllerInterface {
     removeModel(model: Model): void;
 
     bindEmptyTexture(GL: WebGL2RenderingContext, binding_slot?: GLenum): void;
+    bindEmptyCubeMap(GL: WebGL2RenderingContext, binding_slot?: GLenum): void;
 
     prepareRenderPasses(): void;
 
@@ -121,6 +124,11 @@ class RenderController implements RenderControllerInterface {
                 LightningPass.light_combine_result,
                 LightningPass.light_final_result
             ]
+        );
+    }
+    public cubemapDebugPass() {
+        MainController.ShaderController.getCubeMapDebugShader().cubeMapDebugPass(
+            SkyboxPass.cubemap_gen_result
         );
     }
 
@@ -238,6 +246,7 @@ class RenderController implements RenderControllerInterface {
     }
 
     private empty_texture: Texture | null = null;
+    private empty_cm_texture: Texture | null = null;
 
     bindEmptyTexture(GL: WebGL2RenderingContext, binding_slot?: GLenum) {
         if (this.empty_texture === null) {
@@ -247,6 +256,15 @@ class RenderController implements RenderControllerInterface {
             GL.activeTexture(binding_slot);
         }
         this.empty_texture.use(GL);
+    }
+    bindEmptyCubeMap(GL: WebGL2RenderingContext, binding_slot?: GLenum) {
+        if (this.empty_cm_texture === null) {
+            this.empty_cm_texture = MainController.ResourceController.getTexture(new EmptyCubeMap());
+        }
+        if(binding_slot !== undefined) {
+            GL.activeTexture(binding_slot);
+        }
+        this.empty_cm_texture.use(GL);
     }
 }
 
@@ -313,33 +331,36 @@ class EmptyTexture implements Texture2DI {
 }
 class EmptyCubeMap implements TextureCubeMapI {
     public readonly resource_type: 'texture';
-    public readonly resource_id: string = 'def-t-';
+    public readonly resource_id: string = 'def-cm-t-';
     private texture_buffer: WebGLTexture;
-    image: Image;
     readonly load = (GL: WebGL2RenderingContext) => {
+        const data = new Uint8Array([
+            80, 80, 80,     50, 50, 50,
+            50, 50, 50,     80, 80, 80,
+        ]);
         this.texture_buffer = GL.createTexture();
-        GL.bindTexture(GL.TEXTURE_2D, this.texture_buffer);
+        GL.bindTexture(GL.TEXTURE_CUBE_MAP, this.texture_buffer);
+
         GL.pixelStorei(GL.UNPACK_ALIGNMENT, 1);
-        GL.texImage2D(GL.TEXTURE_2D,
-            0,
-            GL.RGB,
-            2,
-            2,
-            0,
-            GL.RGB,
-            GL.UNSIGNED_BYTE,
-            new Uint8Array([
-                80, 80, 80,     50, 50, 50,
-                50, 50, 50,     80, 80, 80,
-            ]));
+
+        GL.texImage2D(GL.TEXTURE_CUBE_MAP_POSITIVE_X, 0, GL.RGB, 2, 2, 0, GL.RGB, GL.UNSIGNED_BYTE, data);
+        GL.texImage2D(GL.TEXTURE_CUBE_MAP_NEGATIVE_X, 0, GL.RGB, 2, 2, 0, GL.RGB, GL.UNSIGNED_BYTE, data);
+
+        GL.texImage2D(GL.TEXTURE_CUBE_MAP_POSITIVE_Y, 0, GL.RGB, 2, 2, 0, GL.RGB, GL.UNSIGNED_BYTE, data);
+        GL.texImage2D(GL.TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, GL.RGB, 2, 2, 0, GL.RGB, GL.UNSIGNED_BYTE, data);
+
+        GL.texImage2D(GL.TEXTURE_CUBE_MAP_POSITIVE_Z, 0, GL.RGB, 2, 2, 0, GL.RGB, GL.UNSIGNED_BYTE, data);
+        GL.texImage2D(GL.TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, GL.RGB, 2, 2, 0, GL.RGB, GL.UNSIGNED_BYTE, data);
+
         // base settings, make it editable with texture options
-        GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_WRAP_S, GL.CLAMP_TO_EDGE);
-        GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_WRAP_T, GL.CLAMP_TO_EDGE);
-        GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MIN_FILTER, GL.NEAREST);
-        GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MAG_FILTER, GL.NEAREST);
+        GL.texParameteri(GL.TEXTURE_CUBE_MAP, GL.TEXTURE_WRAP_S, GL.CLAMP_TO_EDGE);
+        GL.texParameteri(GL.TEXTURE_CUBE_MAP, GL.TEXTURE_WRAP_T, GL.CLAMP_TO_EDGE);
+        GL.texParameteri(GL.TEXTURE_CUBE_MAP, GL.TEXTURE_WRAP_R, GL.CLAMP_TO_EDGE);
+        GL.texParameteri(GL.TEXTURE_CUBE_MAP, GL.TEXTURE_MIN_FILTER, GL.NEAREST);
+        GL.texParameteri(GL.TEXTURE_CUBE_MAP, GL.TEXTURE_MAG_FILTER, GL.NEAREST);
     };
     readonly use = (GL: WebGL2RenderingContext) => {
-        GL.bindTexture(GL.TEXTURE_2D, this.texture_buffer);
+        GL.bindTexture(GL.TEXTURE_CUBE_MAP, this.texture_buffer);
     };
     readonly get = () => this.texture_buffer;
     readonly image_back: Image;

@@ -9,7 +9,7 @@ uniform mat4 projection_matrix;
 out vec3 vTexCoords;
 
 void main(void) {
-    gl_Position = projection_matrix * view_matrix * model_matrix * vec4(VertexPosition, 1.0);
+    gl_Position = (projection_matrix * view_matrix * model_matrix * vec4(VertexPosition, 1.0)).xyww;
     vTexCoords = VertexPosition;
 }
 

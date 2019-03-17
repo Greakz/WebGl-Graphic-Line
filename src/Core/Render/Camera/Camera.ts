@@ -12,8 +12,8 @@ import {vec3} from "../../Geometry/Vector/vec";
 import {invertMatrix} from "../../Geometry/Matrix/inivert";
 
 export interface Camera {
-    getProjectionMatrix(): mat4;
-
+    getProjectionMatrixPreClip(): mat4;
+    getProjectionMatrixViewClip(): mat4;
     getViewMatrix(): mat4;
 
     bingForGeometryShader(GL: WebGL2RenderingContext): void
@@ -40,7 +40,7 @@ export abstract class BaseCamera implements Camera {
     target: vec3 = {x: 0, y: 0.0, z: 0};
 
     nearPlane: number = 0.5;
-    farPlane: number = 200;
+    farPlane: number = 250;
     fovDeg: number = 45;
 
     protected proj_mat_a_1: mat4;
@@ -154,9 +154,13 @@ export abstract class BaseCamera implements Camera {
         this.proj_mat_a_1 = new_matrix
     }
 
-    getProjectionMatrix(): mat4 {
+    getProjectionMatrixPreClip(): mat4 {
         return this.proj_mat_a_1;
     }
+
+    getProjectionMatrixViewClip(): mat4 {
+        return this.proj_mat_a_v;
+    };
 
     setViewMatrix(new_matrix: mat4): void {
         this.view_matrix = new_matrix
@@ -165,6 +169,7 @@ export abstract class BaseCamera implements Camera {
     getViewMatrix(): mat4 {
         return this.view_matrix
     }
+
 
     protected updateMatrices() {
         this.recalculateViewMatrix();
