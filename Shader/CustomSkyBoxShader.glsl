@@ -55,8 +55,8 @@ layout(location = 5) out vec4 skybox_front;
 
 vec3 getColor(vec3 vTexCoords, bool swap) {
     vec3 tex = swap ? vec3(vTexCoords.x, -1.0 * vTexCoords.y, vTexCoords.z) : vTexCoords;
-    return  texture(cubemap1, tex).rgb * daylight1_color * vec3(balance)
-    + texture(cubemap2, tex).rgb * daylight2_color * vec3(1.0 - balance);
+    return  texture(cubemap1, tex).rgb * daylight1_color * vec3(1.0 - balance)
+    + texture(cubemap2, tex).rgb * daylight2_color * vec3(balance);
 }
 
 void main(void) {

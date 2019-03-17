@@ -1,4 +1,4 @@
-import {Scene} from "../../Core/Scene/Scene";
+import {BaseScene, Scene} from "../../Core/Scene/Scene";
 import {MainController} from "../../Core/Controller/MainController";
 import {StaticPlaneObject} from "./SceneObjects/Static/StaticPlaneObject";
 import {DynamicCubeObject} from "./SceneObjects/Dynamic/DynamicCubeObject";
@@ -10,12 +10,11 @@ import {AdvancedCamera} from "../../Core/Render/Camera/AdvancedCamera";
 import {Skybox} from "../../Core/Render/Skybox/Skybox";
 import {BasicSkybox} from "./BasicSkybox";
 
-export class BasicScene implements Scene
+export class BasicScene extends BaseScene implements Scene
 {
     camera: Camera = new AdvancedCamera();
     day_light: DayLight = new DayLight();
     sky_box: Skybox = new BasicSkybox();
-
 
     private groundPlane: StaticPlaneObject = new StaticPlaneObject();
     private exampleCube: DynamicCubeObject = new DynamicCubeObject();

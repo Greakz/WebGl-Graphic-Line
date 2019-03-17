@@ -1,10 +1,8 @@
 import {StaticSceneObject} from "../Scene/StaticSceneObject";
 import {DynamicSceneObject} from "../Scene/DynamicSceneObject";
 import {SceneObject} from "../Scene/SceneObject";
-import {LogInterface} from "../Util/LogInstance";
-import LogInstance from "../Util/LogInstance";
-import { Scene } from '../Scene/Scene'
-import { Camera } from '../Render/Camera/Camera'
+import {Scene} from '../Scene/Scene';
+import {Camera} from '../Render/Camera/Camera';
 import {DayLight} from "../Render/Resource/Light/DayLight";
 import {OmniLight} from "../Render/Resource/Light/OmniLight";
 import {SceneLight} from "../Render/Resource/Light/SceneLight";
@@ -151,6 +149,9 @@ class SceneController implements PrivateSceneControllerInterface {
     getSceneDayLight(): DayLight{
         return this.scene.day_light;
     }
+    getSceneDayLightAlt(): DayLight | null {
+        return this.scene.day_light_alt;
+    }
 
     getSceneLightInfo(): SceneLightInfo {
         return {
@@ -160,6 +161,12 @@ class SceneController implements PrivateSceneControllerInterface {
     }
     getSceneSkybox(): Skybox {
         return this.scene.sky_box;
+    }
+    getSceneSkyboxAlt(): Skybox | null {
+        return this.scene.sky_box_alt;
+    }
+    getSceneAltBalance(): number {
+        return this.scene.alt_balance;
     }
 
     private pushStaticSceneObject(object: StaticSceneObject) {
@@ -231,8 +238,11 @@ export interface PrivateSceneControllerInterface extends SceneControllerInterfac
     hasActiveScene(): boolean
     getSceneCamera(): Camera
     getSceneDayLight(): DayLight
+    getSceneDayLightAlt(): DayLight | undefined
     getSceneLightInfo(): SceneLightInfo
     getSceneSkybox(): Skybox
+    getSceneSkyboxAlt(): Skybox | undefined
+    getSceneAltBalance(): number
 }
 
 var SceneControllerInstance: SceneController = new SceneController();

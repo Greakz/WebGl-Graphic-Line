@@ -8,6 +8,8 @@ import {radians} from "../../../Geometry/radians";
 import {lookAtMatrix} from "../../../Geometry/Matrix/lookAt";
 import {CustomSkyBoxShader} from "../../../Render/Shader/CustomSkyBoxShader";
 import {getRotationYMatrix} from "../../../Geometry/Matrix/rotation";
+import {Skybox} from "../../../Render/Skybox/Skybox";
+import {DayLight} from "../../../Render/Resource/Light/DayLight";
 
 
 export abstract class SkyboxPass {
@@ -169,15 +171,37 @@ export abstract class SkyboxPass {
         GL.uniformMatrix4fv(cstmShader.uniform_locations.view_matrix_front, false, SkyboxPass.cubemap_matrices[5]);
         GL.uniformMatrix4fv(cstmShader.uniform_locations.projection_matrix, false, SkyboxPass.projection_matrix);
 
-        GL.uniform3fv(cstmShader.uniform_locations.daylight1_color, new Float32Array([1.0, 1.0, 1.0]));
-        GL.uniform3fv(cstmShader.uniform_locations.daylight2_color, new Float32Array([1.0, 1.0, 1.0]));
-        GL.uniform1f(cstmShader.uniform_locations.balance, 0.5);
+        const alt_daylight: DayLight | null = MainController.SceneController.getSceneDayLightAlt();
+        const daylight: DayLight | null = MainController.SceneController.getSceneDayLight();
+
+        const amb_diff_balance: number = 0.2;
+
+        GL.uniform3fv(cstmShader.uniform_locations.daylight1_color, new Float32Array([
+            (((1.0 - amb_diff_balance) * daylight.diffuse_factor.x) + (amb_diff_balance * daylight.amb_factor.x)) * daylight.color.x,
+            (((1.0 - amb_diff_balance) * daylight.diffuse_factor.y) + (amb_diff_balance * daylight.amb_factor.y)) * daylight.color.y,
+            (((1.0 - amb_diff_balance) * daylight.diffuse_factor.z) + (amb_diff_balance * daylight.amb_factor.z)) * daylight.color.z,
+        ]));
+        if(alt_daylight !== null) {
+            GL.uniform3fv(cstmShader.uniform_locations.daylight2_color, new Float32Array([
+                (((1.0 - amb_diff_balance) * alt_daylight.diffuse_factor.x) + (amb_diff_balance * alt_daylight.amb_factor.x)) * alt_daylight.color.x,
+                (((1.0 - amb_diff_balance) * alt_daylight.diffuse_factor.y) + (amb_diff_balance * alt_daylight.amb_factor.y)) * alt_daylight.color.y,
+                (((1.0 - amb_diff_balance) * alt_daylight.diffuse_factor.z) + (amb_diff_balance * alt_daylight.amb_factor.z)) * alt_daylight.color.z,
+            ]));
+        } else {
+            GL.uniform3fv(cstmShader.uniform_locations.daylight2_color, new Float32Array([1.0, 1.0, 1.0]));
+        }
+
+        GL.uniform1f(cstmShader.uniform_locations.balance, MainController.SceneController.getSceneAltBalance());
 
         GL.activeTexture(GL.TEXTURE0);
-        MainController.SceneController.getSceneSkybox().cube_map.use(GL);
-
-        MainController.RenderController.bindEmptyCubeMap(GL, GL.TEXTURE1);
-
+        MainController.SceneController.getSceneSkybox().use(GL);
+        GL.activeTexture(GL.TEXTURE1);
+        const alt_skybox: Skybox | null = MainController.SceneController.getSceneSkyboxAlt();
+        if(alt_skybox !== null) {
+            alt_skybox.use(GL);
+        }else {
+            MainController.RenderController.bindEmptyCubeMap(GL);
+        }
         GL.drawArrays(GL.TRIANGLES, 0, 36);
     }
 
