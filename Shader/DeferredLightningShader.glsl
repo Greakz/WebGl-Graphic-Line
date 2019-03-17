@@ -79,6 +79,8 @@ uniform lights {
     SpotLight spot_lights4[NR_LIGHTS_PER_PACK];
 };
 
+uniform samplerCube reflection_cubemap;
+
 // output
 layout(location = 0) out vec4 outColor;
 
@@ -168,6 +170,17 @@ float daylightShadowFactor(vec3 world_space_position) {
     return 1.0 - shadow;
 }
 
+vec3 calculateReflection(vec3 view_to_frag_n, vec3 world_normal, float intensity) {
+    // if it doesnt need to get calced...
+    if(intensity <= 0.0) { return vec3(0.0); }
+    // calc Reflection
+
+    vec3 skybox_reflect_dir = reflect(view_to_frag_n, normalize(world_normal));
+    vec3 readout_reflect_map = vec3(skybox_reflect_dir.x, -1.0 * skybox_reflect_dir.y, skybox_reflect_dir.z);
+    vec3 skybox_reflection_res = texture(reflection_cubemap, readout_reflect_map).rgb * vec3(intensity);
+    return skybox_reflection_res;
+}
+
 void main(void) {
     vec3 world_space_position = texture(position_map, vTex).rgb;
     vec3 world_space_normal = normalize(texture(normal_map, vTex).rgb);
@@ -175,14 +188,15 @@ void main(void) {
     vec3 fragment_diffuse_color = texture(albedo_map, vTex).rgb;
     vec3 fragment_specular_color = texture(specular_map, vTex).rgb;
     float fragment_shininess_intensity = texture(material_map, vTex).r;
+    float fragment_reflective_intensity = texture(material_map, vTex).g;
 
-    // float fragment_reflective_intensity = texture(position_map, vTex).b;
 
     // float fragment_in_daylight_shadow = texture(specular_map. vTex).b;
     // float custom_stencil_value = texture(position_map, vTex).g;
 
     // VIEWDIR TP FRAGMEMT
     vec3 view_to_frag_n = normalize(camera_position - world_space_position.xyz);
+    vec3 reflection_result = calculateReflection(view_to_frag_n, world_space_normal, fragment_reflective_intensity);
 
     // DAYLIGHT (DIRECTIONAL)
     vec3 frag_to_daylight_n = normalize(-daylight.direction);
@@ -333,7 +347,7 @@ void main(void) {
             }
         }
     }
-    outColor = vec4(final_daylight_color + omni_light_result + spot_light_result , 1.0);
+    outColor = vec4(vec3(1.0 - fragment_reflective_intensity) * vec3(final_daylight_color + omni_light_result + spot_light_result) + reflection_result , 1.0);
     //outColor = vec4(vec3(compare_shadow_value - fragment_daylight_space.z ) , 1.0);
 /*
     float linDep = linearizeDepth(texture(position_map, vTex).w);

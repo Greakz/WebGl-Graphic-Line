@@ -12,8 +12,8 @@ layout(location = 7) in mat4 model_matrix;
 // material data
 uniform mat
 {
-    vec3 albedo_color;
-    vec3 specular_color;
+    vec3 albedo_color; // use a component fot reflectiveness todo!
+    vec4 specular_color; // use a component for transparancy
     vec4 shini_ucolor_utex;
 };
 
@@ -28,6 +28,7 @@ out vec3 vNormal;
 out vec3 vPosition;
 out float vFragDepth;
 flat out float vShininess;
+flat out float vReflection;
 flat out int vUseCol;
 
 void main(void) {
@@ -48,7 +49,8 @@ void main(void) {
     // give relevant data to fragment shader
     vTexPos = TexturePosition;
     vColor = albedo_color;
-    vSpecular = specular_color;
+    vSpecular = specular_color.rgb;
+    vReflection = specular_color.a;
     vShininess = shininess;
     vNormal = vec3(model_matrix * mesh_matrix * vec4(VertexNormals, 0.0));
     vPosition = world_pos.xyz;
@@ -65,6 +67,7 @@ in vec3 vNormal;
 in vec3 vPosition;
 in float vFragDepth;
 flat in float vShininess;
+flat in float vReflection;
 flat in int vUseCol;
 
 uniform float near_plane;
@@ -102,5 +105,5 @@ void main(void) {
     outNormal = vec4(vNormal, 1.0);
     outAlbedo =  vec4(calculateColor(texture(albedo_texture, vTexPos).rgb, vColor, vUseCol).rgb, 1.0);
     outSpecular = vec4(calculateColor(texture(specular_texture, vTexPos).rgb, vSpecular, vUseCol).rgb, 1.0);
-    outMaterial = vec4(vShininess, linearizedDepth, 0.0, 1.0);
+    outMaterial = vec4(vShininess, vReflection, 0.0, 1.0);
 }

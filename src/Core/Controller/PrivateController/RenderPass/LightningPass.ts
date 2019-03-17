@@ -347,6 +347,9 @@ export abstract class LightningPass {
         GL.activeTexture(GL.TEXTURE5);
         GL.bindTexture(GL.TEXTURE_2D, GeometryPassShadowExtension.shadow_texture);
 
+        GL.activeTexture(GL.TEXTURE6);
+        GL.bindTexture(GL.TEXTURE_CUBE_MAP, SkyboxPass.cubemap_gen_result);
+
         // Bind Daylight
         LightningPass.bindSceneLights();
 

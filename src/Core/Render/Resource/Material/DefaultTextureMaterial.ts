@@ -52,7 +52,7 @@ export abstract class DefaultTextureMaterial implements Material {
             GL.UNIFORM_BUFFER,
             new Float32Array([
                 0, 0, 0, 0,
-                0, 0, 0, 0,
+                0, 0, 0, this.reflection,
                 this.shininess,
                 0.0, // Use Color = false;
                 1.0, // Use Texture = true;

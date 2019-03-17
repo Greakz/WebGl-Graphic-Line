@@ -10,5 +10,5 @@ export class BaseMaterial extends DefaultColorMaterial {
     specular_color: vec3 = {x: 0.2, y: 0.5, z: 0.6};
     shininess: number = 0.2;
     transparency: number = 0;
-    reflection: number = 0.5;
+    reflection: number = 1.0;
 }

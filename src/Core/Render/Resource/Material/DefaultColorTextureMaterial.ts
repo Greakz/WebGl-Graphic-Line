@@ -59,7 +59,7 @@ export abstract class DefaultColorTextureMaterial implements Material {
             GL.UNIFORM_BUFFER,
             new Float32Array([
                 this.albedo_color.x, this.albedo_color.y, this.albedo_color.z, 0.0,
-                this.specular_color.x, this.specular_color.y, this.specular_color.z, 0.0,
+                this.specular_color.x, this.specular_color.y, this.specular_color.z, this.reflection,
                 this.shininess,
                 1.0, // Use Color = false;
                 1.0, // Use Texture = false;

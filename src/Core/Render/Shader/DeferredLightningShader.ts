@@ -19,6 +19,7 @@ interface GeometryShaderUniformLocations {
     normal_map: WebGLUniformLocation;
     material_map: WebGLUniformLocation;
     shadow_map: WebGLUniformLocation;
+    reflection_cubemap: WebGLUniformLocation;
 }
 
 export class DeferredLightningShader implements Shader {
@@ -35,6 +36,7 @@ export class DeferredLightningShader implements Shader {
         normal_map: 3,
         material_map: 4,
         shadow_map: 5,
+        reflection_cubemap: 6,
     };
 
     attribute_pointer: GeometryShaderAttributePointer;
@@ -63,6 +65,7 @@ export class DeferredLightningShader implements Shader {
             normal_map: GL.getUniformLocation(this.program, "normal_map"),
             material_map: GL.getUniformLocation(this.program, "material_map"),
             shadow_map: GL.getUniformLocation(this.program, "shadow_map"),
+            reflection_cubemap: GL.getUniformLocation(this.program, "reflection_cubemap"),
         };
         GL.uniform1i(
             this.uniform_locations.albedo_map,
@@ -87,6 +90,10 @@ export class DeferredLightningShader implements Shader {
         GL.uniform1i(
             this.uniform_locations.shadow_map,
             this.texture_bindings.shadow_map
+        );
+        GL.uniform1i(
+            this.uniform_locations.reflection_cubemap,
+            this.texture_bindings.reflection_cubemap
         );
         GL.uniformBlockBinding(
             this.program,
