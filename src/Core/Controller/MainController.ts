@@ -97,8 +97,8 @@ export class MainController {
         MainController.RenderController.geometryPass();
         MainController.RenderController.lightningPass();
         // MainController.RenderController.framebufferDebugPass();
-        MainController.RenderController.cubemapDebugPass();
-        // MainController.RenderController.outputPass();
+        // MainController.RenderController.cubemapDebugPass();
+        MainController.RenderController.outputPass();
         // MainController.RenderController.postProcessPass();
 
         // MainController.Log.info("MainController", "Finishing Frame")

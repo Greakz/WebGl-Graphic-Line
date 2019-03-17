@@ -21,7 +21,6 @@ export class SkyBoxShader implements Shader {
 
     texture_bindings = {
         cubemap: 0,
-        position_map: 1
     };
 
     constructor(GL: WebGL2RenderingContext) {

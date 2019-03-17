@@ -34,13 +34,14 @@ export abstract class SkyboxPass {
         const GL: WebGL2RenderingContext = MainController.CanvasController.getGL();
         //const camera: Camera = MainController.SceneController.getSceneCamera();
 
-        const farplane = 100;
 
         const SIZEX = 1920;
         const SIZEY = 1920;
         const INTERN_FORMAT = GL.RGBA32F;
         const FILTER = GL.NEAREST;
         const LEVEL = 1;
+
+        const farplane = 100;
         this.model_mat = new Float32Array(flatMat4(getScalingMatrix(farplane,farplane,farplane)));
 
         ////////////////////////////////
@@ -186,24 +187,33 @@ export abstract class SkyboxPass {
      */
     static runGenerateOutputSkyboxPass(): void {
         const GL: WebGL2RenderingContext = MainController.CanvasController.getGL();
-        MainController.ShaderController.useSkyBoxShader();
+        const farplane = MainController.SceneController.getSceneCamera().farPlane;
+        const model_mat = new Float32Array(flatMat4(getScalingMatrix(farplane,farplane,farplane)));
         GL.bindFramebuffer(GL.FRAMEBUFFER, this.screen_gen_framebuffer);
+        MainController.ShaderController.useSkyBoxShader();
         GL.viewport(0, 0, 1920, 1920);
         GL.clearColor(0.0, 0.0, 0.0, 1.0);
+        GL.clear(GL.COLOR_BUFFER_BIT);
         GL.disable(GL.CULL_FACE);
         GL.bindVertexArray(this.cube_vao);
-        GL.uniformMatrix4fv(MainController.ShaderController.getSkyBoxShader().uniform_locations.model_matrix, false, SkyboxPass.model_mat);
-        MainController.SceneController.getSceneCamera().bindForSkyBox(
-            GL,
-            MainController.ShaderController.getSkyBoxShader().uniform_locations.view_matrix,
-            MainController.ShaderController.getSkyBoxShader().uniform_locations.projection_matrix
+        GL.uniformMatrix4fv(
+            MainController.ShaderController.getSkyBoxShader().uniform_locations.model_matrix,
+            false,
+            model_mat
         );
+        GL.uniformMatrix4fv(
+            MainController.ShaderController.getSkyBoxShader().uniform_locations.view_matrix,
+            false,
+            new Float32Array(flatMat4(MainController.SceneController.getSceneCamera().getViewMatrix()))
+        );
+        GL.uniformMatrix4fv(
+            MainController.ShaderController.getSkyBoxShader().uniform_locations.projection_matrix,
+            false,
+            new Float32Array(flatMat4(MainController.SceneController.getSceneCamera().getProjectionMatrixPreClip()))
+        );
+
         GL.activeTexture(GL.TEXTURE0);
-        // MainController.SceneController.getSceneSkybox().cube_map.use(GL);
         GL.bindTexture(GL.TEXTURE_CUBE_MAP, SkyboxPass.cubemap_gen_result);
-        //GL.bindTexture(GL.TEXTURE_CUBE_MAP, MainController.SceneController.getSceneSkybox().cube_map.get());
-
-
         GL.drawArrays(GL.TRIANGLES, 0, 36);
     }
 

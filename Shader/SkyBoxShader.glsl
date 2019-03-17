@@ -1,6 +1,6 @@
 //#VERTEX-SHADER#//
 #version 300 es
-layout (location = 0) in vec3 VertexPosition;
+in vec3 VertexPosition;
 
 uniform mat4 model_matrix;
 uniform mat4 view_matrix;

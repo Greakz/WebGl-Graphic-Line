@@ -38,7 +38,6 @@ export abstract class TextureCubeMap implements TextureCubeMapI {
 
         const height: number = this.image_front.image_height;
         const width: number = this.image_front.image_width;
-        console.log(height, width);
 
         this.image_front.runIfReady(() => {
             // Prepare Front
