@@ -67,23 +67,25 @@ export abstract class SkyboxPass {
         SkyboxPass.cubemap_gen_result = GL.createTexture();
         GL.bindTexture(GL.TEXTURE_CUBE_MAP,  SkyboxPass.cubemap_gen_result);
 
+        const cube_map_size: number = 1024;
+
         // GL.pixelStorei(GL.UNPACK_ALIGNMENT, 1);
-        GL.texImage2D(GL.TEXTURE_CUBE_MAP_POSITIVE_X, 0, GL.RGB, 512, 512, 0, GL.RGB, GL.UNSIGNED_BYTE, null);
+        GL.texImage2D(GL.TEXTURE_CUBE_MAP_POSITIVE_X, 0, GL.RGB, cube_map_size, cube_map_size, 0, GL.RGB, GL.UNSIGNED_BYTE, null);
         GL.framebufferTexture2D(GL.FRAMEBUFFER, GL.COLOR_ATTACHMENT0, GL.TEXTURE_CUBE_MAP_POSITIVE_X, SkyboxPass.cubemap_gen_result, 0);
 
-        GL.texImage2D(GL.TEXTURE_CUBE_MAP_NEGATIVE_X, 0, GL.RGB, 512, 512, 0, GL.RGB, GL.UNSIGNED_BYTE, null);
+        GL.texImage2D(GL.TEXTURE_CUBE_MAP_NEGATIVE_X, 0, GL.RGB, cube_map_size, cube_map_size, 0, GL.RGB, GL.UNSIGNED_BYTE, null);
         GL.framebufferTexture2D(GL.FRAMEBUFFER, GL.COLOR_ATTACHMENT1, GL.TEXTURE_CUBE_MAP_NEGATIVE_X, SkyboxPass.cubemap_gen_result, 0);
 
-        GL.texImage2D(GL.TEXTURE_CUBE_MAP_POSITIVE_Y, 0, GL.RGB, 512, 512, 0, GL.RGB, GL.UNSIGNED_BYTE, null);
+        GL.texImage2D(GL.TEXTURE_CUBE_MAP_POSITIVE_Y, 0, GL.RGB, cube_map_size, cube_map_size, 0, GL.RGB, GL.UNSIGNED_BYTE, null);
         GL.framebufferTexture2D(GL.FRAMEBUFFER, GL.COLOR_ATTACHMENT2, GL.TEXTURE_CUBE_MAP_POSITIVE_Y, SkyboxPass.cubemap_gen_result, 0);
 
-        GL.texImage2D(GL.TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, GL.RGB, 512, 512, 0, GL.RGB, GL.UNSIGNED_BYTE, null);
+        GL.texImage2D(GL.TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, GL.RGB, cube_map_size, cube_map_size, 0, GL.RGB, GL.UNSIGNED_BYTE, null);
         GL.framebufferTexture2D(GL.FRAMEBUFFER, GL.COLOR_ATTACHMENT3, GL.TEXTURE_CUBE_MAP_NEGATIVE_Y, SkyboxPass.cubemap_gen_result, 0);
 
-        GL.texImage2D(GL.TEXTURE_CUBE_MAP_POSITIVE_Z, 0, GL.RGB, 512, 512, 0, GL.RGB, GL.UNSIGNED_BYTE, null);
+        GL.texImage2D(GL.TEXTURE_CUBE_MAP_POSITIVE_Z, 0, GL.RGB, cube_map_size, cube_map_size, 0, GL.RGB, GL.UNSIGNED_BYTE, null);
         GL.framebufferTexture2D(GL.FRAMEBUFFER, GL.COLOR_ATTACHMENT4, GL.TEXTURE_CUBE_MAP_POSITIVE_Z, SkyboxPass.cubemap_gen_result, 0);
 
-        GL.texImage2D(GL.TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, GL.RGB, 512, 512, 0, GL.RGB, GL.UNSIGNED_BYTE, null);
+        GL.texImage2D(GL.TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, GL.RGB, cube_map_size, cube_map_size, 0, GL.RGB, GL.UNSIGNED_BYTE, null);
         GL.framebufferTexture2D(GL.FRAMEBUFFER, GL.COLOR_ATTACHMENT5, GL.TEXTURE_CUBE_MAP_NEGATIVE_Z, SkyboxPass.cubemap_gen_result, 0);
 
 
@@ -156,7 +158,7 @@ export abstract class SkyboxPass {
         MainController.ShaderController.useCustomSkyBoxShader();
         const cstmShader: CustomSkyBoxShader = MainController.ShaderController.getCustomSkyBoxShader();
         GL.bindFramebuffer(GL.FRAMEBUFFER, SkyboxPass.cubemap_gen_framebuffer);
-        GL.viewport(0, 0, 512, 512);
+        GL.viewport(0, 0, 1024, 1024);
         GL.clearColor(0.0, 0.0, 0.0, 1.0);
         GL.disable(GL.CULL_FACE);
 

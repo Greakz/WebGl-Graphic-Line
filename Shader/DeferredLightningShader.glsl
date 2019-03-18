@@ -374,8 +374,14 @@ void main(void) {
         }
     }
     vec3 light_result = final_daylight_color + omni_light_result + spot_light_result;
+    if(fragment_reflective_intensity > 0.0) {
+        outColor = vec4(
+        fragment_diffuse_color * vec3(1.0 - fragment_reflective_intensity)
+        + reflection_result, 1.0);
+    } else {
+        outColor = vec4(light_result, 1.0);
+    }
     vec3 light_with_reflection =
         light_result * vec3(1.0 - fragment_reflective_intensity)
         + reflection_result;
-    outColor = vec4(light_with_reflection, 1.0);
 }
