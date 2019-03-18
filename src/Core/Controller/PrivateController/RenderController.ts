@@ -128,7 +128,7 @@ class RenderController implements RenderControllerInterface {
     }
     public cubemapDebugPass() {
         MainController.ShaderController.getCubeMapDebugShader().cubeMapDebugPass(
-            SkyboxPass.cubemap_gen_result
+            MainController.SceneController.getSceneSkyboxAlt().cube_map.get()
         );
     }
 

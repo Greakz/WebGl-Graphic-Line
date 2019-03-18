@@ -49,7 +49,7 @@ export class AdvancedCamera extends BaseCamera implements Camera {
     protected deadEndDegrees: number = 10;
     protected moveSpeed: number = 0.3;
 
-    private distance: number = 15;
+    private distance: number = 40;
     private round_rotation_pos: number = 45;
     private vertical_rotation_pos: number = 130;
 

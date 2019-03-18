@@ -35,7 +35,7 @@ export abstract class LightningPassDeferredAndBulbs {
 
         const allocateLightUniformSize =
             4           // Flag = 1 * vec4
-            +   4 * 5       // DayLight = 5 * vec4
+            +   4 * 5 * 2       // 2x DayLight = 5 * vec4 * 2
             +   MAXIMUM_LIGHTS_PER_BLOCK * MAXIMUM_OMNI_LIGHT_BLOCKS * 6 * 4 // OmniLight = 6 * vec4
             +   MAXIMUM_LIGHTS_PER_BLOCK * MAXIMUM_OMNI_LIGHT_BLOCKS * 8 * 4; // SpotLight = 8 * vec4
         LightningPassDeferredAndBulbs.light_buffer = GL.createBuffer();
@@ -111,13 +111,15 @@ export abstract class LightningPassDeferredAndBulbs {
 
     private static bufferOmniLightData() {
         const GL: WebGL2RenderingContext = MainController.CanvasController.getGL();
-        GL.bufferSubData(GL.UNIFORM_BUFFER, 96, new Float32Array(this.rawOmniData));
+        const floatOffsets = 4    // Flag = 1 * vec4
+            +   4 * 5 * 2;       // DayLight = 5 * vec4
+        GL.bufferSubData(GL.UNIFORM_BUFFER, floatOffsets * 4, new Float32Array(this.rawOmniData));
     }
 
     private static bufferSpotLightData() {
         const GL: WebGL2RenderingContext = MainController.CanvasController.getGL();
         const floatOffsets = 4    // Flag = 1 * vec4
-            +   4 * 5       // DayLight = 5 * vec4
+            +   4 * 5 * 2       // DayLight = 5 * vec4
             +   MAXIMUM_LIGHTS_PER_BLOCK * MAXIMUM_OMNI_LIGHT_BLOCKS * 6 * 4; // Omni = 6 * vec4
         GL.bufferSubData(GL.UNIFORM_BUFFER, floatOffsets * 4, new Float32Array(this.rawSpotData));
     }
@@ -238,20 +240,38 @@ export abstract class LightningPassDeferredAndBulbs {
         }
         const GL: WebGL2RenderingContext = MainController.CanvasController.getGL();
 
-
-
         const dl: DayLight = MainController.SceneController.getSceneDayLight();
+        const dl2: DayLight | null = MainController.SceneController.getSceneDayLightAlt();
         this.rawDaylightSetData = [
             needOmniUniformBlocks,
             (this.rawOmniData.length / (6 * 4)) % (MAXIMUM_LIGHTS_PER_BLOCK),
             needSpotUniformBlocks,
             (this.rawSpotData.length / (8 * 4)) % (MAXIMUM_LIGHTS_PER_BLOCK),
+            // daylight 1
             dl.direction.x, dl.direction.y, dl.direction.z, 0.0,
             dl.color.x, dl.color.y, dl.color.z, 0.0,
             dl.amb_factor.x, dl.amb_factor.y, dl.amb_factor.z, 0.0,
             dl.diffuse_factor.x, dl.diffuse_factor.y, dl.diffuse_factor.z, 0.0,
-            dl.specular_factor.x, dl.specular_factor.y, dl.specular_factor.z, 0.0
+            dl.specular_factor.x, dl.specular_factor.y, dl.specular_factor.z, 0.0,
         ];
+        if(dl2 === null){
+            this.rawDaylightSetData.push(
+                0.0, 0.0, 0.0, 0.0,
+                0.0, 0.0, 0.0, 0.0,
+                0.0, 0.0, 0.0, 0.0,
+                0.0, 0.0, 0.0, 0.0,
+                0.0, 0.0, 0.0, 0.0
+            )
+        } else {
+            // Daylight 2
+            this.rawDaylightSetData.push(
+                dl2.direction.x, dl2.direction.y, dl2.direction.z, MainController.SceneController.getSceneAltBalance(),
+                dl2.color.x, dl2.color.y, dl2.color.z, 0.0,
+                dl2.amb_factor.x, dl2.amb_factor.y, dl2.amb_factor.z, 0.0,
+                dl2.diffuse_factor.x, dl2.diffuse_factor.y, dl2.diffuse_factor.z, 0.0,
+                dl2.specular_factor.x, dl2.specular_factor.y, dl2.specular_factor.z, 0.0
+            )
+        }
         GL.bindBuffer(GL.UNIFORM_BUFFER, LightningPassDeferredAndBulbs.light_buffer);
 
         GL.bindBufferBase(GL.UNIFORM_BUFFER, MainController.ShaderController.getDeferredLightningShader().block_bindings.light, LightningPassDeferredAndBulbs.light_buffer);

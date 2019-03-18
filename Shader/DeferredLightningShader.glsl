@@ -15,7 +15,7 @@ void main(void) {
 #version 300 es
 precision mediump float;
 #define NR_LIGHTS_PER_PACK 64
-const float SHADOW_BIAS = 0.001;
+const float SHADOW_BIAS = 0.003;
 // vertex shader input
 in vec2 vTex;
 
@@ -57,7 +57,7 @@ struct OmniLight {
 };
 
 struct DayLight {
-    vec3 direction;
+    vec4 direction;
     vec3 color;
     vec3 amb_factor;
     vec3 diff_factor;
@@ -67,6 +67,7 @@ struct DayLight {
 uniform lights {
     vec4 omni_spot_blockcount_lastblockcount;
     DayLight daylight;
+    DayLight daylight2;
 
     OmniLight omni_lights1[NR_LIGHTS_PER_PACK];
     OmniLight omni_lights2[NR_LIGHTS_PER_PACK];
@@ -148,7 +149,24 @@ vec3 calculateSpotLight(SpotLight spot_light,
     return vec3(0.0);
 }
 
-float daylightShadowFactor(vec3 world_space_position) {
+vec3 calculateDaylight(DayLight process_daylight,
+                       float daylight_factor,
+                       vec3 frag_world_normal,
+                       vec3 view_to_frag_n,
+                       vec3 frag_diff,
+                       vec3 frag_spec,
+                       float frag_shini) {
+    vec3 frag_to_daylight_n = normalize(-process_daylight.direction.xyz);
+    vec3 dir_amb_light_res = process_daylight.color * process_daylight.amb_factor * frag_diff;
+    vec3 dir_diff_light_res = calculateDiffuseLight(frag_world_normal, frag_diff, frag_to_daylight_n, process_daylight.color, process_daylight.diff_factor);
+    vec3 dir_spec_light_res = calculateSpecularLight(frag_world_normal, frag_spec, view_to_frag_n, frag_to_daylight_n, process_daylight.color, process_daylight.spec_factor, frag_shini);
+    return (dir_amb_light_res + dir_diff_light_res + dir_spec_light_res) * vec3(daylight_factor);
+}
+
+float daylightShadowFactor(vec3 world_space_position, float balance) {
+    if(balance < 0.5) {
+        return 1.0;
+    }
     vec4 fragment_daylight_space_res = daylight_projection_matrix * daylight_view_matrix * vec4(world_space_position, 1.0);
     vec3 fragment_daylight_space = fragment_daylight_space_res.xyz;
     fragment_daylight_space = fragment_daylight_space * 0.5 + 0.5;
@@ -167,7 +185,7 @@ float daylightShadowFactor(vec3 world_space_position) {
         }
     }
     shadow /= 11.0;
-    return 1.0 - shadow;
+    return (1.0 - (shadow * ((balance - 0.5) * 2.0)));
 }
 
 vec3 calculateReflection(vec3 view_to_frag_n, vec3 world_normal, float intensity) {
@@ -177,7 +195,7 @@ vec3 calculateReflection(vec3 view_to_frag_n, vec3 world_normal, float intensity
 
     vec3 skybox_reflect_dir = reflect(view_to_frag_n, normalize(world_normal));
     vec3 readout_reflect_map = vec3(skybox_reflect_dir.x, -1.0 * skybox_reflect_dir.y, skybox_reflect_dir.z);
-    vec3 skybox_reflection_res = texture(reflection_cubemap, readout_reflect_map).rgb * vec3(intensity);
+    vec3 skybox_reflection_res = texture(reflection_cubemap, readout_reflect_map).rgb; // * vec3(intensity);
     return skybox_reflection_res;
 }
 
@@ -190,6 +208,8 @@ void main(void) {
     float fragment_shininess_intensity = texture(material_map, vTex).r;
     float fragment_reflective_intensity = texture(material_map, vTex).g;
 
+    float daylight_balance = daylight2.direction.w;
+
 
     // float fragment_in_daylight_shadow = texture(specular_map. vTex).b;
     // float custom_stencil_value = texture(position_map, vTex).g;
@@ -198,13 +218,19 @@ void main(void) {
     vec3 view_to_frag_n = normalize(camera_position - world_space_position.xyz);
     vec3 reflection_result = calculateReflection(view_to_frag_n, world_space_normal, fragment_reflective_intensity);
 
-    // DAYLIGHT (DIRECTIONAL)
-    vec3 frag_to_daylight_n = normalize(-daylight.direction);
-    vec3 dir_amb_light_res = daylight.color * daylight.amb_factor * fragment_diffuse_color;
-    vec3 dir_diff_light_res = calculateDiffuseLight(world_space_normal, fragment_diffuse_color, frag_to_daylight_n, daylight.color, daylight.diff_factor);
-    vec3 dir_spec_light_res = calculateSpecularLight(world_space_normal, fragment_specular_color, view_to_frag_n, frag_to_daylight_n, daylight.color, daylight.spec_factor, fragment_shininess_intensity);
-    float daylight_shadow_factor = daylightShadowFactor(world_space_position);
-    vec3 final_daylight_color = (dir_amb_light_res + dir_diff_light_res + dir_spec_light_res) * vec3(daylight_shadow_factor);
+    // DAYLIGHT1 (DIRECTIONAL)
+    vec3 final_daylight_color = vec3(0.0);
+
+    if(daylight_balance < 1.0) {
+        final_daylight_color +=
+            calculateDaylight(daylight, 1.0 - daylight_balance, world_space_normal, view_to_frag_n, fragment_diffuse_color, fragment_specular_color, fragment_shininess_intensity)
+            * daylightShadowFactor(world_space_position, 1.0 - daylight_balance);
+    }
+    if(daylight_balance > 0.0) {
+        final_daylight_color +=
+            calculateDaylight(daylight2, daylight_balance, world_space_normal, view_to_frag_n, fragment_diffuse_color, fragment_specular_color, fragment_shininess_intensity)
+            * daylightShadowFactor(world_space_position, daylight_balance);
+    }
 
     // OMNI AND SPOT LIGHT SETTINGS
     int omni_block_count = int(omni_spot_blockcount_lastblockcount.x);
@@ -347,14 +373,9 @@ void main(void) {
             }
         }
     }
-    outColor = vec4(vec3(1.0 - fragment_reflective_intensity) * vec3(final_daylight_color + omni_light_result + spot_light_result) + reflection_result , 1.0);
-    //outColor = vec4(vec3(compare_shadow_value - fragment_daylight_space.z ) , 1.0);
-/*
-    float linDep = linearizeDepth(texture(position_map, vTex).w);
-    if(linDep < 1.0) {
-        outColor = vec4(vec3(linDep), 1.0);
-    } else {
-        outColor = vec4(0.0, 0.0, 0.0, 1.0);
-    }
-*/
+    vec3 light_result = final_daylight_color + omni_light_result + spot_light_result;
+    vec3 light_with_reflection =
+        light_result * vec3(1.0 - fragment_reflective_intensity)
+        + reflection_result;
+    outColor = vec4(light_with_reflection, 1.0);
 }

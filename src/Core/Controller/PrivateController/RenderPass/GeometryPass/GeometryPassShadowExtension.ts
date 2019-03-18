@@ -9,6 +9,8 @@ import {lookAtMatrix} from "../../../../Geometry/Matrix/lookAt";
 import {Camera} from "../../../../Render/Camera/Camera";
 import {addVec3} from "../../../../Geometry/Vector/add";
 import {scaleVec3} from "../../../../Geometry/Vector/scale";
+import {vec3} from "../../../../Geometry/Vector/vec";
+import {crossProductVec3} from "../../../../Geometry/Vector/crossProduct";
 
 export abstract class GeometryPassShadowExtension {
 
@@ -97,7 +99,17 @@ export abstract class GeometryPassShadowExtension {
         GL.depthFunc(GL.LEQUAL);
         GL.clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT);
 
-        const daylight: DayLight = MainController.SceneController.getSceneDayLight();
+        let daylight: DayLight;
+
+        if(
+            MainController.SceneController.getSceneAltBalance() > 0.5 &&
+            MainController.SceneController.getSceneDayLightAlt() != null
+        ) {
+            daylight = MainController.SceneController.getSceneDayLightAlt();
+        } else {
+            daylight = MainController.SceneController.getSceneDayLight();
+        }
+
         const cam: Camera = MainController.SceneController.getSceneCamera();
         this.proj_matrix = flatMat4(getOrthographicMatrix(
             -(cam.farPlane / 4),
@@ -108,9 +120,9 @@ export abstract class GeometryPassShadowExtension {
             (cam.farPlane)
         ));
         this.view_matrix = flatMat4(lookAtMatrix(
-            addVec3(cam.target, scaleVec3(daylight.direction, -30)),
+            addVec3(cam.target, scaleVec3(daylight.direction, -(cam.farPlane / 4))),
             cam.target,
-            {x: 0.0, y: 1.0, z: 0.0}
+            calculateUsefullUpVector(daylight.direction)
         ));
         MainController.ShaderController.useShadowShader();
         GeometryPassShadowExtension.bindDayLightMatrix(
@@ -149,4 +161,11 @@ export abstract class GeometryPassShadowExtension {
             new Float32Array(GeometryPassShadowExtension.proj_matrix)
         );
     }
+}
+
+function calculateUsefullUpVector(direction: vec3): vec3 {
+    return crossProductVec3(
+        direction,
+        {x: 0.0, y: 0.0, z: 1.0}
+    );
 }
