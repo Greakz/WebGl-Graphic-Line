@@ -25,7 +25,7 @@ export abstract class DefaultTextureMaterial implements Material {
     /**
      *
      */
-    transparency: number = 0.0;
+    opacity: number = 1.0;
 
 
     reflection: number = 0.0;
@@ -51,7 +51,7 @@ export abstract class DefaultTextureMaterial implements Material {
         GL.bufferData(
             GL.UNIFORM_BUFFER,
             new Float32Array([
-                0, 0, 0, 0,
+                0, 0, 0, this.opacity,
                 0, 0, 0, this.reflection,
                 this.shininess,
                 0.0, // Use Color = false;

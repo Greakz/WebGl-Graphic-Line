@@ -13,5 +13,5 @@ export class DarkContainerMaterial extends DefaultColorTextureMaterial {
     specular_texture: Texture = new ContainerSpecTexture();
     specular_color: vec3 = {x: 0.5, y: 0.5, z: 0.5};
     shininess: number = 0.3;
-    transparency: number = 0;
+    opacity: number = 1.0;
 }

@@ -25,7 +25,7 @@ export abstract class DefaultColorMaterial implements Material {
     /**
      *
      */
-    transparency: number = 0.0;
+    opacity: number = 1.0;
 
 
     reflection: number = 0.0;
@@ -46,7 +46,7 @@ export abstract class DefaultColorMaterial implements Material {
         GL.bufferData(
             GL.UNIFORM_BUFFER,
             new Float32Array([
-                this.albedo_color.x, this.albedo_color.y, this.albedo_color.z, 0.0,
+                this.albedo_color.x, this.albedo_color.y, this.albedo_color.z, this.opacity,
                 this.specular_color.x, this.specular_color.y, this.specular_color.z, this.reflection,
                 this.shininess,
                 1.0, // Use Color = true;

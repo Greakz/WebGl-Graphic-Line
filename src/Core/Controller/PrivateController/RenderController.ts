@@ -11,6 +11,7 @@ import {OutputPass} from "./RenderPass/OutputPass";
 import {GeometryPassShadowExtension} from "./RenderPass/GeometryPass/GeometryPassShadowExtension";
 import {SkyboxPass} from "./RenderPass/SkyboxPass";
 import {TextureCubeMap} from "../../Render/Resource/Texture/TextureCubeMap";
+import {TransparencyPass} from "./RenderPass/TransparencyPass/TransparencyPass";
 
 export interface GraphicOptions {
 
@@ -82,6 +83,7 @@ class RenderController implements RenderControllerInterface {
 
     public prepareRenderPasses() {
         GeometryPass.appSetup();
+        TransparencyPass.appSetup();
         SkyboxPass.appSetup();
         LightningPass.appSetup();
         OutputPass.appSetup();
@@ -119,10 +121,10 @@ class RenderController implements RenderControllerInterface {
     public framebufferDebugPass() {
         MainController.ShaderController.getFramebufferDebugShader().textureDebugPass(
             [
-                SkyboxPass.screen_gen_result,
-                GeometryPass.solid_storage.material_texture,
-                LightningPass.lightning_storage.light_combine_result,
-                LightningPass.lightning_storage.light_final_result
+                TransparencyPass.transparent_storage.albedo_texture,
+                LightningPass.lightning_storage.light_calculation_result,
+                TransparencyPass.transparent_storage.normal_texture,
+                TransparencyPass.transparent_storage.material_texture,
             ]
         );
     }

@@ -12,12 +12,13 @@ import {DaySkybox} from "./DaySkybox";
 import {DynamicCubeBlankObject} from "./SceneObjects/Dynamic/DynamicCubeBlankObject";
 import {scaleVec3} from "../../Core/Geometry/Vector/scale";
 import {NightSkybox} from "./NightSkybox";
+import {DynamicCubeTransparentObject} from "./SceneObjects/Dynamic/DynamicCubeTransparentObject";
 
 export class BasicScene extends BaseScene implements Scene {
     camera: Camera = new AdvancedCamera();
     day_light: DayLight = new DayLight();
     day_light_alt: DayLight = new DayLight();
-    sky_box: Skybox = new NightSkybox();
+    sky_box: Skybox = new DaySkybox();
     sky_box_alt: Skybox = new NightSkybox();
 
     private groundPlane: StaticPlaneObject = new StaticPlaneObject();
@@ -66,10 +67,11 @@ export class BasicScene extends BaseScene implements Scene {
     private altSpotLights: SpotLight[] = [];
 
     private alternateInit() {
-        let genCubes: number = 400;
-        let genCubesBlank: number = 100;
-        let genOmniLights: number = 50;
-        let genSpotLights: number = 192;
+        let genCubes: number = 1000;
+        let genCubesBlank: number = 200;
+        let genCubesTransparent: number = 120;
+        let genOmniLights: number = 20;
+        let genSpotLights: number = 64;
 
         for (let i = 0; i < genCubes; i++) {
             const newCube = new DynamicCubeObject();
@@ -78,6 +80,18 @@ export class BasicScene extends BaseScene implements Scene {
                 .moveX(Math.sin(randomNr) * (Math.random() * 20 + 5))
                 .moveZ(Math.cos(randomNr) * (Math.random() * 20 + 5))
                 .moveY(Math.cos(Math.random() * 2 * Math.PI) * 0.1 - 2)
+                .rotateY(Math.random() * 90)
+                .apply();
+            this.altCubes.push(newCube);
+            MainController.SceneController.pushSceneObject(newCube);
+        }
+        for (let i = 0; i < genCubesTransparent; i++) {
+            const newCube = new DynamicCubeTransparentObject();
+            let randomNr: number = Math.random() * 2 * Math.PI;
+            newCube.model.transformation
+                .moveX(Math.sin(randomNr) * (Math.random() * 20 + 5))
+                .moveZ(Math.cos(randomNr) * (Math.random() * 20 + 5))
+                .moveY(Math.cos(Math.random() * 2 * Math.PI) * 0.1 + 0.5)
                 .rotateY(Math.random() * 90)
                 .apply();
             this.altCubes.push(newCube);
@@ -148,7 +162,7 @@ export class BasicScene extends BaseScene implements Scene {
             const day1_time = (((day_cyclus_status + 0.1) % 1.0) * (5 / 7) * 2);
             this.day_light.direction = {
                 x: -Math.cos(day1_time * Math.PI),
-                y: Math.min(Math.max(((0.5 * Math.cos(day1_time * 2 * Math.PI) - 0.5) * 1.3), -1.0), -0.05),
+                y: Math.min(Math.max(((0.5 * Math.cos(day1_time * 2 * Math.PI) - 0.5) * 1.1), -1.0), -0.05),
                 z: -Math.cos(day1_time * 2 * Math.PI) * 0.35,
             };
         } else {
@@ -170,7 +184,7 @@ export class BasicScene extends BaseScene implements Scene {
             const night1_time = (((day_cyclus_status + 0.6) % 1.0) * (5 / 7) * 2);
             this.day_light_alt.direction = {
                 x: -Math.cos(night1_time * Math.PI),
-                y:  Math.min(Math.max(((0.5 * Math.cos(night1_time * 2 * Math.PI) - 0.5) * 1.3), -1.0), -0.05),
+                y:  Math.min(Math.max(((0.5 * Math.cos(night1_time * 2 * Math.PI) - 0.5) * 1.1), -1.0), -0.05),
                 z: -Math.cos(night1_time * 2 * Math.PI) * 0.35,
             };
         } else {

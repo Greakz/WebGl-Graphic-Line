@@ -18,8 +18,15 @@ interface GeometryShaderUniformLocations {
     position_map: WebGLUniformLocation;
     normal_map: WebGLUniformLocation;
     material_map: WebGLUniformLocation;
+
     shadow_map: WebGLUniformLocation;
     reflection_cubemap: WebGLUniformLocation;
+
+    t_albedo_map: WebGLUniformLocation;
+    t_specular_map: WebGLUniformLocation;
+    t_position_map: WebGLUniformLocation;
+    t_normal_map: WebGLUniformLocation;
+    t_material_map: WebGLUniformLocation;
 }
 
 export class DeferredLightningShader implements Shader {
@@ -37,6 +44,11 @@ export class DeferredLightningShader implements Shader {
         material_map: 4,
         shadow_map: 5,
         reflection_cubemap: 6,
+        t_albedo_map: 7,
+        t_specular_map: 8,
+        t_position_map: 9,
+        t_normal_map: 10,
+        t_material_map: 11,
     };
 
     attribute_pointer: GeometryShaderAttributePointer;
@@ -64,8 +76,15 @@ export class DeferredLightningShader implements Shader {
             position_map: GL.getUniformLocation(this.program, "position_map"),
             normal_map: GL.getUniformLocation(this.program, "normal_map"),
             material_map: GL.getUniformLocation(this.program, "material_map"),
+
             shadow_map: GL.getUniformLocation(this.program, "shadow_map"),
             reflection_cubemap: GL.getUniformLocation(this.program, "reflection_cubemap"),
+
+            t_albedo_map: GL.getUniformLocation(this.program, "t_albedo_map"),
+            t_specular_map: GL.getUniformLocation(this.program, "t_specular_map"),
+            t_position_map: GL.getUniformLocation(this.program, "t_position_map"),
+            t_normal_map: GL.getUniformLocation(this.program, "t_normal_map"),
+            t_material_map: GL.getUniformLocation(this.program, "t_material_map"),
         };
         GL.uniform1i(
             this.uniform_locations.albedo_map,
@@ -94,6 +113,26 @@ export class DeferredLightningShader implements Shader {
         GL.uniform1i(
             this.uniform_locations.reflection_cubemap,
             this.texture_bindings.reflection_cubemap
+        );
+        GL.uniform1i(
+            this.uniform_locations.t_albedo_map,
+            this.texture_bindings.t_albedo_map
+        );
+        GL.uniform1i(
+            this.uniform_locations.t_specular_map,
+            this.texture_bindings.t_specular_map
+        );
+        GL.uniform1i(
+            this.uniform_locations.t_position_map,
+            this.texture_bindings.t_position_map
+        );
+        GL.uniform1i(
+            this.uniform_locations.t_normal_map,
+            this.texture_bindings.t_normal_map
+        );
+        GL.uniform1i(
+            this.uniform_locations.t_material_map,
+            this.texture_bindings.t_material_map
         );
         GL.uniformBlockBinding(
             this.program,

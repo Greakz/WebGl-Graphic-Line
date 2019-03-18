@@ -1,37 +1,48 @@
 import {MainController} from "../../../MainController";
 import {checkFramebuffer} from "../../../../Util/FramebufferCheck";
 import {FrameInfo, RenderQueueMaterialEntry, RenderQueueMeshEntry} from "../../RenderController";
-import {DrawMesh} from "../../../../Render/DrawMesh";
+import {DrawMesh, DrawMeshesWithBufferedData} from "../../../../Render/DrawMesh";
 import {GeometryPassShadowExtension} from "./GeometryPassShadowExtension";
-import {SolidGeometryPassStorage} from "./SolidGeometryPassStorage";
+import {GeometryPassStorage} from "./GeometryPassStorage";
+import {TransparencyPass} from "../TransparencyPass/TransparencyPass";
 
 export abstract class GeometryPass {
 
     static model_mesh_buffer_prepared: boolean = false;
     static model_mesh_matrix_buffer: WebGLBuffer;
 
-    static solid_storage: SolidGeometryPassStorage;
+    static solid_storage: GeometryPassStorage;
     
     static appSetup(): void {
        const GL: WebGL2RenderingContext = MainController.CanvasController.getGL();
-       GeometryPass.solid_storage = new SolidGeometryPassStorage(GL, 1920);
+       GeometryPass.solid_storage = new GeometryPassStorage(GL, 1920);
         GeometryPassShadowExtension.appSetup();
     }
     
     static frameSetup(frame_info: FrameInfo): void {
         // const GL: WebGL2RenderingContext = MainController.CanvasController.getGL();
+
+        // clear the task list for this frame
+        GeometryPass.solid_storage.clearTransparancyTaskList();
+
         GeometryPassShadowExtension.frameSetup(frame_info);
     }
     
     static runPass(render_queue: RenderQueueMeshEntry[], frame_info: FrameInfo): void {
         const GL: WebGL2RenderingContext = MainController.CanvasController.getGL();
 
-        GeometryPass.solid_storage.bindFramebufferAndShader(GL);
         GL.clearColor(0.0, 0.0, 0.0, 1.0);
         GL.viewport(0, 0, 1920, 1920);
         GL.enable(GL.DEPTH_TEST);
         GL.depthFunc(GL.LEQUAL);
+
+        TransparencyPass.transparent_storage.bindFramebufferAndShader(GL);
         GL.clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT);
+
+        GeometryPass.solid_storage.bindFramebufferAndShader(GL);
+        GL.clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT);
+
+        // used by both shaders!
         MainController.SceneController.getSceneCamera().bingForGeometryShader(GL);
 
         render_queue.forEach(
@@ -44,22 +55,30 @@ export abstract class GeometryPass {
                 render_queue_mesh_entry.render_queue_material_entries.forEach(
                     (render_queue_entry: RenderQueueMaterialEntry) => {
 
-                        // first, bind mesh transformation matrix
-                        GeometryPass.geometryPassPrepareUniformMeshData(render_queue_entry.draw_meshes);
-
-                        // second activate material
-
                         const material_to_use = render_queue_entry.draw_meshes[0].related_material;
-                        material_to_use.use(GL, MainController.ShaderController.getGeometryShader());
 
-                        GeometryPass.geometryPassDrawMeshTasks(render_queue_entry.draw_meshes);
-
-                        // SHADOW PASS
-                        if(true) {
-                            GeometryPassShadowExtension.bindForDrawShadow();
+                        if(material_to_use.opacity < 1) {
+                            // transparency pass!
+                            TransparencyPass.transparent_storage.bindGeometryFramebuffer(GL);
+                            const transparancyWithDataTask = GeometryPass.geometryPassPrepareUniformMeshData(render_queue_entry.draw_meshes);
+                            material_to_use.use(GL, MainController.ShaderController.getGeometryShader());
                             GeometryPass.geometryPassDrawMeshTasks(render_queue_entry.draw_meshes);
-                            // bind back normal geometry shader framebuffer
-                            GeometryPass.solid_storage.bindFramebufferAndShader(GL);
+
+                            GeometryPass.solid_storage.addToTransparancyTaskList(transparancyWithDataTask)
+                        } else {
+                            // solid pass!
+                            GeometryPass.solid_storage.bindGeometryFramebuffer(GL);
+                            GeometryPass.geometryPassPrepareUniformMeshData(render_queue_entry.draw_meshes);
+                            material_to_use.use(GL, MainController.ShaderController.getGeometryShader());
+                            GeometryPass.geometryPassDrawMeshTasks(render_queue_entry.draw_meshes);
+
+                            // SHADOW PASS
+                            if(true) {
+                                GeometryPassShadowExtension.bindForDrawShadow();
+                                GeometryPass.geometryPassDrawMeshTasks(render_queue_entry.draw_meshes);
+                                // bind back normal geometry shader framebuffer
+                                GeometryPass.solid_storage.bindFramebufferAndShader(GL);
+                            }
                         }
                     }
                 );
@@ -69,7 +88,7 @@ export abstract class GeometryPass {
         GL.viewport(0, 0, frame_info.width, frame_info.height);
     }
 
-    private static geometryPassPrepareUniformMeshData(taskList: DrawMesh[]) {
+    private static geometryPassPrepareUniformMeshData(taskList: DrawMesh[]): DrawMeshesWithBufferedData{
         const GL: WebGL2RenderingContext = MainController.CanvasController.getGL();
 
         if (!GeometryPass.model_mesh_buffer_prepared) {
@@ -90,9 +109,16 @@ export abstract class GeometryPass {
             }
         );
 
+        const draw_meshes_with_buffer_data: DrawMeshesWithBufferedData = {
+            draw_mesh: taskList,
+            bufferData: new Float32Array(bufferData)
+        };
+
         // Buffer Data
         GL.bindBuffer(GL.ARRAY_BUFFER, GeometryPass.model_mesh_matrix_buffer);
-        GL.bufferData(GL.ARRAY_BUFFER, new Float32Array(bufferData), GL.DYNAMIC_DRAW);
+        GL.bufferData(GL.ARRAY_BUFFER, draw_meshes_with_buffer_data.bufferData, GL.DYNAMIC_DRAW);
+
+        return draw_meshes_with_buffer_data;
     }
 
     private static geometryPassDrawMeshTasks(taskList: DrawMesh[]) {

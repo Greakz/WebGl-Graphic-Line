@@ -17,7 +17,7 @@ export interface Material extends RenderResource {
     readonly use: (GL: WebGL2RenderingContext, geometryShader: GeometryShader) => void;
     // All the different infos that an material holds
     shininess: number;
-    transparency: number;
+    opacity: number;
     reflection: number;
     // refraction
 }

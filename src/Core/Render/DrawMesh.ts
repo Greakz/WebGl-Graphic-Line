@@ -16,3 +16,8 @@ export class DrawMesh {
         this.related_material = MainController.ResourceController.getMaterial(related_material);
     }
 }
+
+export interface DrawMeshesWithBufferedData {
+    draw_mesh: DrawMesh[];
+    bufferData: Float32Array;
+}

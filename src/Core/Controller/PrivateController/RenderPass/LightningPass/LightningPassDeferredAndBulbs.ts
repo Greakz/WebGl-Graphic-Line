@@ -19,6 +19,7 @@ import {
     MAXIMUM_SPOT_LIGHT_BLOCKS
 } from "./LightningPass";
 import {SceneLightInfo} from "../../../SceneController";
+import {TransparencyPass} from "../TransparencyPass/TransparencyPass";
 
 export abstract class LightningPassDeferredAndBulbs {
 
@@ -94,6 +95,22 @@ export abstract class LightningPassDeferredAndBulbs {
 
         GL.activeTexture(GL.TEXTURE6);
         GL.bindTexture(GL.TEXTURE_CUBE_MAP, SkyboxPass.cubemap_gen_result);
+
+        GL.activeTexture(GL.TEXTURE7);
+        GL.bindTexture(GL.TEXTURE_2D, TransparencyPass.transparent_storage.albedo_texture);
+
+        GL.activeTexture(GL.TEXTURE8);
+        GL.bindTexture(GL.TEXTURE_2D, TransparencyPass.transparent_storage.specular_texture);
+
+        GL.activeTexture(GL.TEXTURE9);
+        GL.bindTexture(GL.TEXTURE_2D, TransparencyPass.transparent_storage.position_texture);
+
+        GL.activeTexture(GL.TEXTURE10);
+        GL.bindTexture(GL.TEXTURE_2D, TransparencyPass.transparent_storage.normal_texture);
+
+        GL.activeTexture(GL.TEXTURE11);
+        GL.bindTexture(GL.TEXTURE_2D, TransparencyPass.transparent_storage.material_texture);
+
 
         // create and buffer light data!
         LightningPassDeferredAndBulbs.bufferDayLightAndSettingsData();
