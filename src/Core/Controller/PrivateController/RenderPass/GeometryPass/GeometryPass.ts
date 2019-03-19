@@ -12,13 +12,13 @@ export abstract class GeometryPass {
     static model_mesh_matrix_buffer: WebGLBuffer;
 
     static solid_storage: GeometryPassStorage;
-    
+
     static appSetup(): void {
-       const GL: WebGL2RenderingContext = MainController.CanvasController.getGL();
-       GeometryPass.solid_storage = new GeometryPassStorage(GL, 1920);
+        const GL: WebGL2RenderingContext = MainController.CanvasController.getGL();
+        GeometryPass.solid_storage = new GeometryPassStorage(GL, 1920);
         GeometryPassShadowExtension.appSetup();
     }
-    
+
     static frameSetup(frame_info: FrameInfo): void {
         // const GL: WebGL2RenderingContext = MainController.CanvasController.getGL();
 
@@ -27,7 +27,7 @@ export abstract class GeometryPass {
 
         GeometryPassShadowExtension.frameSetup(frame_info);
     }
-    
+
     static runPass(render_queue: RenderQueueMeshEntry[], frame_info: FrameInfo): void {
         const GL: WebGL2RenderingContext = MainController.CanvasController.getGL();
 
@@ -36,7 +36,7 @@ export abstract class GeometryPass {
         GL.enable(GL.DEPTH_TEST);
         GL.depthFunc(GL.LEQUAL);
 
-        TransparencyPass.transparent_storage.bindFramebufferAndShader(GL);
+        TransparencyPass.transparent_storage.bindGeometryFramebufferAndShader(GL);
         GL.clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT);
 
         GeometryPass.solid_storage.bindFramebufferAndShader(GL);
@@ -57,28 +57,24 @@ export abstract class GeometryPass {
 
                         const material_to_use = render_queue_entry.draw_meshes[0].related_material;
 
-                        if(material_to_use.opacity < 1) {
+                        if (material_to_use.opacity < 1) {
                             // transparency pass!
-                            TransparencyPass.transparent_storage.bindGeometryFramebuffer(GL);
+                            TransparencyPass.transparent_storage.bindGeometryFramebufferAndShader(GL);
                             const transparancyWithDataTask = GeometryPass.geometryPassPrepareUniformMeshData(render_queue_entry.draw_meshes);
                             material_to_use.use(GL, MainController.ShaderController.getGeometryShader());
                             GeometryPass.geometryPassDrawMeshTasks(render_queue_entry.draw_meshes);
 
-                            GeometryPass.solid_storage.addToTransparancyTaskList(transparancyWithDataTask)
+                            GeometryPass.solid_storage.addToTransparancyTaskList(transparancyWithDataTask);
                         } else {
                             // solid pass!
-                            GeometryPass.solid_storage.bindGeometryFramebuffer(GL);
+                            GeometryPass.solid_storage.bindFramebufferAndShader(GL);
                             GeometryPass.geometryPassPrepareUniformMeshData(render_queue_entry.draw_meshes);
                             material_to_use.use(GL, MainController.ShaderController.getGeometryShader());
                             GeometryPass.geometryPassDrawMeshTasks(render_queue_entry.draw_meshes);
 
                             // SHADOW PASS
-                            if(true) {
-                                GeometryPassShadowExtension.bindForDrawShadow();
-                                GeometryPass.geometryPassDrawMeshTasks(render_queue_entry.draw_meshes);
-                                // bind back normal geometry shader framebuffer
-                                GeometryPass.solid_storage.bindFramebufferAndShader(GL);
-                            }
+                            GeometryPassShadowExtension.bindForDrawShadow();
+                            GeometryPass.geometryPassDrawMeshTasks(render_queue_entry.draw_meshes);
                         }
                     }
                 );
@@ -88,7 +84,7 @@ export abstract class GeometryPass {
         GL.viewport(0, 0, frame_info.width, frame_info.height);
     }
 
-    private static geometryPassPrepareUniformMeshData(taskList: DrawMesh[]): DrawMeshesWithBufferedData{
+    private static geometryPassPrepareUniformMeshData(taskList: DrawMesh[]): DrawMeshesWithBufferedData {
         const GL: WebGL2RenderingContext = MainController.CanvasController.getGL();
 
         if (!GeometryPass.model_mesh_buffer_prepared) {
@@ -100,10 +96,10 @@ export abstract class GeometryPass {
         taskList.forEach(
             (task: DrawMesh, index: number, list: DrawMesh[]) => {
                 // Prepare Current rendering
-                for(let i = 0; i < 16; i++) {
+                for (let i = 0; i < 16; i++) {
                     bufferData.push(task.related_mesh.transformation.getMatrix()[i]);
                 }
-                for(let i = 0; i < 16; i++) {
+                for (let i = 0; i < 16; i++) {
                     bufferData.push(task.related_model.transformation.getMatrix()[i]);
                 }
             }
@@ -139,7 +135,7 @@ export abstract class GeometryPass {
 
     static setMeshAndModelAttributePointer(GL: WebGL2RenderingContext) {
 
-        if(!GeometryPass.model_mesh_buffer_prepared) {
+        if (!GeometryPass.model_mesh_buffer_prepared) {
             GeometryPass.createMeshModelBuffer();
         }
 
@@ -219,7 +215,45 @@ export abstract class GeometryPass {
         GL.enableVertexAttribArray(shadow_mesh_matrix_location + 3);
         GL.vertexAttribPointer(shadow_mesh_matrix_location + 3, 4, GL.FLOAT, false, 32 * 4, 28 * 4);
         GL.vertexAttribDivisor(shadow_mesh_matrix_location + 3, 1);
-        MainController.ShaderController.useGeometryShader();
+
+        MainController.ShaderController.useTransparencyShader();
+
+        const t_geom_model_matrix_location: number = MainController.ShaderController.getTransparencyShader().attribute_pointer.model_matrix;
+        const t_geom_mesh_matrix_location: number = MainController.ShaderController.getTransparencyShader().attribute_pointer.mesh_matrix;
+
+
+        // Define Attribute Matrix Pointer
+        GL.enableVertexAttribArray(t_geom_model_matrix_location);
+        GL.vertexAttribPointer(t_geom_model_matrix_location, 4, GL.FLOAT, false, 32 * 4, 0);
+        GL.vertexAttribDivisor(t_geom_model_matrix_location, 1);
+
+        GL.enableVertexAttribArray(t_geom_model_matrix_location + 1);
+        GL.vertexAttribPointer(t_geom_model_matrix_location + 1, 4, GL.FLOAT, false, 32 * 4, 4 * 4);
+        GL.vertexAttribDivisor(t_geom_model_matrix_location + 1, 1);
+
+        GL.enableVertexAttribArray(t_geom_model_matrix_location + 2);
+        GL.vertexAttribPointer(t_geom_model_matrix_location + 2, 4, GL.FLOAT, false, 32 * 4, 8 * 4);
+        GL.vertexAttribDivisor(t_geom_model_matrix_location + 2, 1);
+
+        GL.enableVertexAttribArray(t_geom_model_matrix_location + 3);
+        GL.vertexAttribPointer(t_geom_model_matrix_location + 3, 4, GL.FLOAT, false, 32 * 4, 12 * 4);
+        GL.vertexAttribDivisor(t_geom_model_matrix_location + 3, 1);
+
+        GL.enableVertexAttribArray(t_geom_mesh_matrix_location);
+        GL.vertexAttribPointer(t_geom_mesh_matrix_location, 4, GL.FLOAT, false, 32 * 4, 16 * 4);
+        GL.vertexAttribDivisor(t_geom_mesh_matrix_location, 1);
+
+        GL.enableVertexAttribArray(t_geom_mesh_matrix_location + 1);
+        GL.vertexAttribPointer(t_geom_mesh_matrix_location + 1, 4, GL.FLOAT, false, 32 * 4, 20 * 4);
+        GL.vertexAttribDivisor(t_geom_mesh_matrix_location + 1, 1);
+
+        GL.enableVertexAttribArray(t_geom_mesh_matrix_location + 2);
+        GL.vertexAttribPointer(t_geom_mesh_matrix_location + 2, 4, GL.FLOAT, false, 32 * 4, 24 * 4);
+        GL.vertexAttribDivisor(t_geom_mesh_matrix_location + 2, 1);
+
+        GL.enableVertexAttribArray(t_geom_mesh_matrix_location + 3);
+        GL.vertexAttribPointer(t_geom_mesh_matrix_location + 3, 4, GL.FLOAT, false, 32 * 4, 28 * 4);
+        GL.vertexAttribDivisor(t_geom_mesh_matrix_location + 3, 1);
 
 
         GL.bindBuffer(GL.ARRAY_BUFFER, null);

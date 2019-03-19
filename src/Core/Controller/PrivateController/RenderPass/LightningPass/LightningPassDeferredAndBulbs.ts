@@ -47,11 +47,12 @@ export abstract class LightningPassDeferredAndBulbs {
 
     static frameSetup(frame_info: FrameInfo): void {
         const GL: WebGL2RenderingContext = MainController.CanvasController.getGL();
+        LightningPassDeferredAndBulbs.generateLightningData();
 
     }
 
     static runPass() {
-        LightningPassDeferredAndBulbs.createSceneLightData();
+        LightningPassDeferredAndBulbs.bindSceneLightUniformBuffer();
         LightningPassDeferredAndBulbs.deferredShadingPass();
         LightningPassDeferredAndBulbs.lightBulbPass();
         LightningPassDeferredAndBulbs.combineBulbAndCalcResult();
@@ -110,6 +111,9 @@ export abstract class LightningPassDeferredAndBulbs {
 
         GL.activeTexture(GL.TEXTURE11);
         GL.bindTexture(GL.TEXTURE_2D, TransparencyPass.transparent_storage.material_texture);
+
+        GL.activeTexture(GL.TEXTURE12);
+        GL.bindTexture(GL.TEXTURE_2D, TransparencyPass.transparent_storage.blend_texture);
 
 
         // create and buffer light data!
@@ -192,7 +196,13 @@ export abstract class LightningPassDeferredAndBulbs {
     /**
      *
      */
-    private static createSceneLightData() {
+    private static bindSceneLightUniformBuffer() {
+        const GL: WebGL2RenderingContext = MainController.CanvasController.getGL();
+        GL.bindBuffer(GL.UNIFORM_BUFFER, LightningPassDeferredAndBulbs.light_buffer);
+        GL.bindBufferBase(GL.UNIFORM_BUFFER, MainController.ShaderController.getDeferredLightningShader().block_bindings.light, LightningPassDeferredAndBulbs.light_buffer);
+    }
+
+    private static generateLightningData() {
         const scene_light_info: SceneLightInfo = MainController.SceneController.getSceneLightInfo();
 
         this.light_bulb_data = [];
@@ -255,8 +265,6 @@ export abstract class LightningPassDeferredAndBulbs {
         if(overflow > 0) {
             console.warn("REACHED SPOT LIGHT LIMIT OF " + (MAXIMUM_OMNI_LIGHT_BLOCKS * MAXIMUM_LIGHTS_PER_BLOCK) + ". Light Requests: " + overflow);
         }
-        const GL: WebGL2RenderingContext = MainController.CanvasController.getGL();
-
         const dl: DayLight = MainController.SceneController.getSceneDayLight();
         const dl2: DayLight | null = MainController.SceneController.getSceneDayLightAlt();
         this.rawDaylightSetData = [
@@ -289,12 +297,7 @@ export abstract class LightningPassDeferredAndBulbs {
                 dl2.specular_factor.x, dl2.specular_factor.y, dl2.specular_factor.z, 0.0
             )
         }
-        GL.bindBuffer(GL.UNIFORM_BUFFER, LightningPassDeferredAndBulbs.light_buffer);
-
-        GL.bindBufferBase(GL.UNIFORM_BUFFER, MainController.ShaderController.getDeferredLightningShader().block_bindings.light, LightningPassDeferredAndBulbs.light_buffer);
     }
-
-
 
 
 

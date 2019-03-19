@@ -10,7 +10,7 @@ export class AdvancedCamera extends BaseCamera implements Camera {
         this.updateMatrices();
     }
 
-    position: vec3 = {x: 45, y: 30, z: 45};
+    position: vec3 = {x: 0, y: 30, z: 0};
 
     private last_mouse_pos: vec2 = {x: 0, y: 0};
     private last_mouse_button_primary: boolean = false;
@@ -49,7 +49,7 @@ export class AdvancedCamera extends BaseCamera implements Camera {
     protected deadEndDegrees: number = 10;
     protected moveSpeed: number = 0.3;
 
-    private distance: number = 40;
+    private distance: number = 30;
     private round_rotation_pos: number = 45;
     private vertical_rotation_pos: number = 130;
 

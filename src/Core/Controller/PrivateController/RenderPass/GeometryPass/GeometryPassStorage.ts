@@ -14,6 +14,7 @@ export class GeometryPassStorage {
     specular_texture: WebGLTexture;
     normal_texture: WebGLTexture;
     material_texture: WebGLTexture;
+    misc_texture: WebGLTexture;
     depth_texture: WebGLTexture;
 
     collected_transparency_tasks: DrawMeshesWithBufferedData[];
@@ -71,15 +72,8 @@ export class GeometryPassStorage {
         this.material_texture = this.createTexture(GL, INTERN_FORMAT, FILTER, SIZE);
         GL.framebufferTexture2D(GL.FRAMEBUFFER, GL.COLOR_ATTACHMENT4, GL.TEXTURE_2D, this.material_texture, 0);
 
-        ////////////////////////////////////////////
-        // TRANSPARENCY GEOMETRY PASS
-        ////////////////////////////////////////////
-
-
-        ////////////////////////////////////////////
-        // TRANSPARENCY BLEND PASS
-        ////////////////////////////////////////////
-
+        this.misc_texture = this.createTexture(GL, INTERN_FORMAT, FILTER, SIZE);
+        GL.framebufferTexture2D(GL.FRAMEBUFFER, GL.COLOR_ATTACHMENT5, GL.TEXTURE_2D, this.misc_texture, 0);
 
         ////////////////////////////////////////////
         // SETUP DRAW BUFFER
@@ -91,7 +85,8 @@ export class GeometryPassStorage {
             GL.COLOR_ATTACHMENT1,
             GL.COLOR_ATTACHMENT2,
             GL.COLOR_ATTACHMENT3,
-            GL.COLOR_ATTACHMENT4
+            GL.COLOR_ATTACHMENT4,
+            GL.COLOR_ATTACHMENT5,
         ]);
 
         //  MainController.Log.info("PassStorage", "finished: GeometryPassStorage");

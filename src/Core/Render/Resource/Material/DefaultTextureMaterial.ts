@@ -63,4 +63,13 @@ export abstract class DefaultTextureMaterial implements Material {
         GL.bindBufferBase(GL.UNIFORM_BUFFER, geometryShader.attribute_pointer.material_block_index, this.uniform_buffer_object);
     };
 
+    readonly useTransparency = (GL: WebGL2RenderingContext, transparencyShader) => {
+        GL.activeTexture(GL.TEXTURE0);
+        this.albedo_texture.use(GL);
+        GL.activeTexture(GL.TEXTURE1);
+        this.specular_texture.use(GL);
+        GL.bindBuffer(GL.UNIFORM_BUFFER, this.uniform_buffer_object);
+        GL.bindBufferBase(GL.UNIFORM_BUFFER, transparencyShader.attribute_pointer.material_block_index, this.uniform_buffer_object);
+    }
+
 }

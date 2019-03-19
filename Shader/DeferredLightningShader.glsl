@@ -41,6 +41,7 @@ uniform sampler2D t_specular_map;
 uniform sampler2D t_position_map;
 uniform sampler2D t_normal_map;
 uniform sampler2D t_material_map;
+uniform sampler2D t_albedo_blend_map;
 
 
 struct SpotLight {
@@ -220,7 +221,7 @@ void main(void) {
     // FROM TRANSPARENT PASS
     vec3 t_world_space_position = texture(t_position_map, vTex).rgb;
     vec3 t_world_space_normal = normalize(texture(t_normal_map, vTex).rgb);
-    vec3 t_fragment_diffuse_color = texture(t_albedo_map, vTex).rgb;
+    vec3 t_fragment_diffuse_color = texture(t_albedo_blend_map, vTex).rgb;
     vec3 t_fragment_specular_color = texture(t_specular_map, vTex).rgb;
     float t_f_depth = texture(t_position_map, vTex).a;
     float t_fragment_shininess_intensity = texture(t_material_map, vTex).r;

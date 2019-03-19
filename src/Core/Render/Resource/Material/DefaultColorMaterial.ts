@@ -57,4 +57,27 @@ export abstract class DefaultColorMaterial implements Material {
         );
         GL.bindBufferBase(GL.UNIFORM_BUFFER, geometryShader.attribute_pointer.material_block_index, this.uniform_buffer_object);
     };
+    readonly useTransparency = (GL: WebGL2RenderingContext, transparencyShader) => {
+        MainController.RenderController.bindEmptyTexture(GL, GL.TEXTURE0);
+        MainController.RenderController.bindEmptyTexture(GL, GL.TEXTURE1);
+        GL.bindBuffer(GL.UNIFORM_BUFFER, this.uniform_buffer_object);
+        /*
+        => SINCE the normal usage is called before in a frame
+        this results in allready buffered data, just bind it to the
+        correct binding slot
+        GL.bufferData(
+            GL.UNIFORM_BUFFER,
+            new Float32Array([
+                this.albedo_color.x, this.albedo_color.y, this.albedo_color.z, this.opacity,
+                this.specular_color.x, this.specular_color.y, this.specular_color.z, this.reflection,
+                this.shininess,
+                1.0, // Use Color = true;
+                0.0, // Use Texture = false;
+                1.0
+            ]),
+            GL.DYNAMIC_DRAW
+        );
+        */
+        GL.bindBufferBase(GL.UNIFORM_BUFFER, transparencyShader.attribute_pointer.material_block_index, this.uniform_buffer_object);
+    }
 }

@@ -13,6 +13,7 @@ import {ShadowShader} from "../../Render/Shader/ShadowShader";
 import {SkyBoxShader} from "../../Render/Shader/SkyBoxShader";
 import {CustomSkyBoxShader} from "../../Render/Shader/CustomSkyBoxShader";
 import {CubeMapDebugShader} from "../../Render/Shader/CubeMapDebugShader";
+import {TransparencyShader} from "../../Render/Shader/TransparencyShader";
 
 export interface ShaderControllerInterface {
     loadShader(): void;
@@ -52,6 +53,9 @@ export interface ShaderControllerInterface {
 
     useCubeMapDebugShader(): void;
     getCubeMapDebugShader(): CubeMapDebugShader;
+
+    useTransparencyShader(): void;
+    getTransparencyShader(): TransparencyShader;
 }
 
 class ShaderController implements ShaderControllerInterface{
@@ -69,6 +73,7 @@ class ShaderController implements ShaderControllerInterface{
     private skybox_shader: SkyBoxShader;
     private custom_skybox_shader: CustomSkyBoxShader;
     private cubemap_debug_shader: CubeMapDebugShader;
+    private transparency_shader: TransparencyShader;
 
     constructor(){}
 
@@ -86,6 +91,7 @@ class ShaderController implements ShaderControllerInterface{
         this.skybox_shader = new SkyBoxShader(GL);
         this.custom_skybox_shader = new CustomSkyBoxShader(GL);
         this.cubemap_debug_shader = new CubeMapDebugShader(GL);
+        this.transparency_shader = new TransparencyShader(GL);
     }
 
     getGeometryShader(): GeometryShader {
@@ -171,6 +177,13 @@ class ShaderController implements ShaderControllerInterface{
     }
     getCubeMapDebugShader(): CubeMapDebugShader {
         return this.cubemap_debug_shader;
+    }
+
+    useTransparencyShader(): void {
+        MainController.CanvasController.getGL().useProgram(this.transparency_shader.program);
+    }
+    getTransparencyShader(): TransparencyShader {
+        return this.transparency_shader;
     }
 }
 

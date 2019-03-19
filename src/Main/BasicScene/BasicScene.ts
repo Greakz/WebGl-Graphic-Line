@@ -26,6 +26,7 @@ export class BasicScene extends BaseScene implements Scene {
     private exampleCubeX: DynamicCubeObject = new DynamicCubeBlankObject();
     private exampleCube2: DynamicCubeObject = new DynamicCubeObject();
     private exampleCube3: DynamicCubeObject = new DynamicCubeObject();
+    private exampleCube4: DynamicCubeTransparentObject = new DynamicCubeTransparentObject();
 
     private omniLight: OmniLight = new OmniLight();
 
@@ -41,6 +42,7 @@ export class BasicScene extends BaseScene implements Scene {
         // this.exampleCube.model.transformation.moveX(-0.5).apply();
         this.exampleCube2.model.transformation.scale(0.5).moveX(0.8).moveY(0.4).moveZ(-0.5).apply();
         this.exampleCube3.model.transformation.scale(3).moveX(0.2).moveY(-2).rotateY(45).apply();
+        this.exampleCube4.model.transformation.scale(2).moveX(10).moveY(-1 ).rotateY(10).apply();
 
         // push some objects
         MainController.SceneController.pushSceneObject(this.groundPlane);
@@ -48,6 +50,7 @@ export class BasicScene extends BaseScene implements Scene {
         MainController.SceneController.pushSceneObject(this.exampleCubeX);
         MainController.SceneController.pushSceneObject(this.exampleCube2);
         MainController.SceneController.pushSceneObject(this.exampleCube3);
+        MainController.SceneController.pushSceneObject(this.exampleCube4);
 
         // make a fail push to test saftyness and no double insert
         MainController.SceneController.pushSceneObject(this.exampleCube);
@@ -67,9 +70,9 @@ export class BasicScene extends BaseScene implements Scene {
     private altSpotLights: SpotLight[] = [];
 
     private alternateInit() {
-        let genCubes: number = 1000;
-        let genCubesBlank: number = 200;
-        let genCubesTransparent: number = 120;
+        let genCubes: number = 2000;
+        let genCubesBlank: number = 50;
+        let genCubesTransparent: number = 500;
         let genOmniLights: number = 20;
         let genSpotLights: number = 64;
 
@@ -91,7 +94,7 @@ export class BasicScene extends BaseScene implements Scene {
             newCube.model.transformation
                 .moveX(Math.sin(randomNr) * (Math.random() * 20 + 5))
                 .moveZ(Math.cos(randomNr) * (Math.random() * 20 + 5))
-                .moveY(Math.cos(Math.random() * 2 * Math.PI) * 0.1 + 0.5)
+                .moveY(Math.cos(Math.random() * 2 * Math.PI) * 0.1 - 0.5)
                 .rotateY(Math.random() * 90)
                 .apply();
             this.altCubes.push(newCube);

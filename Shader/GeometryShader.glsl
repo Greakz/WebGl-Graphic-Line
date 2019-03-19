@@ -84,6 +84,7 @@ layout(location = 1) out vec4 outNormal;
 layout(location = 2) out vec4 outAlbedo;
 layout(location = 3) out vec4 outSpecular;
 layout(location = 4) out vec4 outMaterial;
+layout(location = 5) out vec4 outMisc;
 
 vec3 calculateColor(vec3 texel, vec3 color, int useCol) {
     if(useCol == 1) {
@@ -109,4 +110,5 @@ void main(void) {
     outAlbedo =  vec4(calculateColor(texture(albedo_texture, vTexPos).rgb, vColor, vUseCol).rgb, 1.0);
     outSpecular = vec4(calculateColor(texture(specular_texture, vTexPos).rgb, vSpecular, vUseCol).rgb, 1.0);
     outMaterial = vec4(vShininess, vReflection, vTransparency, 1.0);
+    outMisc = vec4(linearizedDepth, 0.0, 0.0, 1.0);
 }

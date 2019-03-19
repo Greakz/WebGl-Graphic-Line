@@ -111,7 +111,7 @@ export abstract class GeometryPassShadowExtension {
         }
 
         const cam: Camera = MainController.SceneController.getSceneCamera();
-        this.proj_matrix = flatMat4(getOrthographicMatrix(
+        GeometryPassShadowExtension.proj_matrix = flatMat4(getOrthographicMatrix(
             -(cam.farPlane / 4),
             (cam.farPlane / 4),
             -(cam.farPlane / 4),
@@ -119,10 +119,10 @@ export abstract class GeometryPassShadowExtension {
             5.0,
             (cam.farPlane)
         ));
-        this.view_matrix = flatMat4(lookAtMatrix(
+        GeometryPassShadowExtension.view_matrix = flatMat4(lookAtMatrix(
             addVec3(cam.target, scaleVec3(daylight.direction, -(cam.farPlane / 4))),
             cam.target,
-            calculateUsefullUpVector(daylight.direction)
+            calculateUsefulUpVector(daylight.direction)
         ));
         MainController.ShaderController.useShadowShader();
         GeometryPassShadowExtension.bindDayLightMatrix(
@@ -163,7 +163,7 @@ export abstract class GeometryPassShadowExtension {
     }
 }
 
-function calculateUsefullUpVector(direction: vec3): vec3 {
+function calculateUsefulUpVector(direction: vec3): vec3 {
     return crossProductVec3(
         direction,
         {x: 0.0, y: 0.0, z: 1.0}

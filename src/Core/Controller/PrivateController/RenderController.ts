@@ -113,6 +113,7 @@ class RenderController implements RenderControllerInterface {
             tex_top: top
         };
         GeometryPass.frameSetup(this.frame_info);
+        TransparencyPass.frameSetup(this.frame_info);
         SkyboxPass.frameSetup(this.frame_info);
         LightningPass.frameSetup(this.frame_info);
         OutputPass.frameSetup(this.frame_info);
@@ -121,10 +122,10 @@ class RenderController implements RenderControllerInterface {
     public framebufferDebugPass() {
         MainController.ShaderController.getFramebufferDebugShader().textureDebugPass(
             [
-                TransparencyPass.transparent_storage.albedo_texture,
+                GeometryPass.solid_storage.position_texture,
+                TransparencyPass.transparent_storage.blend_texture,
                 LightningPass.lightning_storage.light_calculation_result,
-                TransparencyPass.transparent_storage.normal_texture,
-                TransparencyPass.transparent_storage.material_texture,
+                GeometryPassShadowExtension.shadow_texture,
             ]
         );
     }
@@ -141,6 +142,7 @@ class RenderController implements RenderControllerInterface {
         SkyboxPass.runGenerateCubemapSkyboxPass();
         GeometryPass.runPass(this.render_queue, this.frame_info);
         SkyboxPass.runGenerateOutputSkyboxPass();
+        TransparencyPass.runPass();
     }
 
     public lightningPass() {
