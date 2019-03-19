@@ -12,6 +12,7 @@ import {GeometryPassShadowExtension} from "./RenderPass/GeometryPass/GeometryPas
 import {SkyboxPass} from "./RenderPass/SkyboxPass";
 import {TextureCubeMap} from "../../Render/Resource/Texture/TextureCubeMap";
 import {TransparencyPass} from "./RenderPass/TransparencyPass/TransparencyPass";
+import {LightningPassFinalize} from "./RenderPass/LightningPass/LightningPassFinalize";
 
 export interface GraphicOptions {
 
@@ -122,10 +123,10 @@ class RenderController implements RenderControllerInterface {
     public framebufferDebugPass() {
         MainController.ShaderController.getFramebufferDebugShader().textureDebugPass(
             [
-                GeometryPass.solid_storage.position_texture,
+                LightningPass.lightning_storage.light_blurred_result,
                 TransparencyPass.transparent_storage.blend_texture,
                 LightningPass.lightning_storage.light_calculation_result,
-                GeometryPassShadowExtension.shadow_texture,
+                LightningPass.lightning_storage.light_final_result,
             ]
         );
     }

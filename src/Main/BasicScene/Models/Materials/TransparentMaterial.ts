@@ -5,9 +5,9 @@ export class TransparentMaterial extends DefaultColorMaterial {
     readonly resource_type: 'material';
     readonly resource_id: string = 'transparent-material';
 
-    albedo_color: vec3 = {x: 0.2, y: 0.4, z: 0.6};
-    specular_color: vec3 = {x: 0.3, y: 0.4, z: 0.5};
+    albedo_color: vec3 = {x: 0.1, y: 0.2, z: 0.3};
+    specular_color: vec3 = {x: 0.2, y: 0.25, z: 0.3};
     shininess: number = 0.4;
-    opacity: number = 0.3;
-    reflection: number = 0.4;
+    opacity: number = 0.6;
+    reflection: number = 0.1;
 }

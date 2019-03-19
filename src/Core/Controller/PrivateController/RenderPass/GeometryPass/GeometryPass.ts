@@ -36,9 +36,6 @@ export abstract class GeometryPass {
         GL.enable(GL.DEPTH_TEST);
         GL.depthFunc(GL.LEQUAL);
 
-        TransparencyPass.transparent_storage.bindGeometryFramebufferAndShader(GL);
-        GL.clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT);
-
         GeometryPass.solid_storage.bindFramebufferAndShader(GL);
         GL.clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT);
 
@@ -59,10 +56,8 @@ export abstract class GeometryPass {
 
                         if (material_to_use.opacity < 1) {
                             // transparency pass!
-                            TransparencyPass.transparent_storage.bindGeometryFramebufferAndShader(GL);
-                            const transparancyWithDataTask = GeometryPass.geometryPassPrepareUniformMeshData(render_queue_entry.draw_meshes);
                             material_to_use.use(GL, MainController.ShaderController.getGeometryShader());
-                            GeometryPass.geometryPassDrawMeshTasks(render_queue_entry.draw_meshes);
+                            const transparancyWithDataTask = GeometryPass.geometryPassPrepareUniformMeshData(render_queue_entry.draw_meshes);
 
                             GeometryPass.solid_storage.addToTransparancyTaskList(transparancyWithDataTask);
                         } else {
@@ -84,7 +79,7 @@ export abstract class GeometryPass {
         GL.viewport(0, 0, frame_info.width, frame_info.height);
     }
 
-    private static geometryPassPrepareUniformMeshData(taskList: DrawMesh[]): DrawMeshesWithBufferedData {
+    private static geometryPassPrepareUniformMeshData(taskList: DrawMesh[], preventBuffer: boolean = false): DrawMeshesWithBufferedData {
         const GL: WebGL2RenderingContext = MainController.CanvasController.getGL();
 
         if (!GeometryPass.model_mesh_buffer_prepared) {
@@ -111,9 +106,10 @@ export abstract class GeometryPass {
         };
 
         // Buffer Data
-        GL.bindBuffer(GL.ARRAY_BUFFER, GeometryPass.model_mesh_matrix_buffer);
-        GL.bufferData(GL.ARRAY_BUFFER, draw_meshes_with_buffer_data.bufferData, GL.DYNAMIC_DRAW);
-
+        if(!preventBuffer) {
+            GL.bindBuffer(GL.ARRAY_BUFFER, GeometryPass.model_mesh_matrix_buffer);
+            GL.bufferData(GL.ARRAY_BUFFER, draw_meshes_with_buffer_data.bufferData, GL.DYNAMIC_DRAW);
+        }
         return draw_meshes_with_buffer_data;
     }
 

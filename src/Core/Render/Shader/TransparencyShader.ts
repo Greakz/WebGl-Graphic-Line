@@ -28,7 +28,7 @@ interface TransparencyShaderUniformLocations {
     camera_position: WebGLUniformLocation;
 
     position_map: WebGLUniformLocation;
-    t_position_map: WebGLUniformLocation;
+    reflection_cubemap: WebGLUniformLocation;
 }
 
 export class TransparencyShader implements Shader {
@@ -42,7 +42,7 @@ export class TransparencyShader implements Shader {
         albedo_texture: 0,
         specular_texture: 1,
         position_map: 2,
-        t_position_map: 3,
+        reflection_cubemap: 3,
     };
 
     attribute_pointer: TransparencyShaderAttributePointer;
@@ -74,7 +74,7 @@ export class TransparencyShader implements Shader {
             far_plane: GL.getUniformLocation(this.program, "far_plane"),
             camera_position: GL.getUniformLocation(this.program, "camera_position"),
             position_map: GL.getUniformLocation(this.program, "position_map"),
-            t_position_map: GL.getUniformLocation(this.program, "t_position_map"),
+            reflection_cubemap: GL.getUniformLocation(this.program, "reflection_cubemap"),
         };
         GL.useProgram(this.program);
         GL.uniformBlockBinding(
@@ -100,8 +100,8 @@ export class TransparencyShader implements Shader {
             this.texture_bindings.position_map
         );
         GL.uniform1i(
-            this.uniform_locations.t_position_map,
-            this.texture_bindings.t_position_map
+            this.uniform_locations.reflection_cubemap,
+            this.texture_bindings.reflection_cubemap
         );
     }
 }

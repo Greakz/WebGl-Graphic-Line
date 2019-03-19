@@ -36,11 +36,7 @@ uniform sampler2D material_map;
 uniform sampler2D shadow_map;
 
 // transparancy mainpass data
-uniform sampler2D t_albedo_map;
-uniform sampler2D t_specular_map;
-uniform sampler2D t_position_map;
-uniform sampler2D t_normal_map;
-uniform sampler2D t_material_map;
+uniform sampler2D t_transparency_map;
 uniform sampler2D t_albedo_blend_map;
 
 
@@ -218,15 +214,8 @@ void main(void) {
     float fragment_shininess_intensity = texture(material_map, vTex).r;
     float fragment_reflective_intensity = texture(material_map, vTex).g;
 
-    // FROM TRANSPARENT PASS
-    vec3 t_world_space_position = texture(t_position_map, vTex).rgb;
-    vec3 t_world_space_normal = normalize(texture(t_normal_map, vTex).rgb);
-    vec3 t_fragment_diffuse_color = texture(t_albedo_blend_map, vTex).rgb;
-    vec3 t_fragment_specular_color = texture(t_specular_map, vTex).rgb;
-    float t_f_depth = texture(t_position_map, vTex).a;
-    float t_fragment_shininess_intensity = texture(t_material_map, vTex).r;
-    float t_fragment_reflective_intensity = texture(t_material_map, vTex).g;
-    float t_fragment_opacity = texture(t_material_map, vTex).b;
+    vec3 t_result = texture(t_albedo_blend_map, vTex).rgb;
+    float t_transparency = texture(t_transparency_map, vTex).r;
 
     // DAYLIGHT BALANCE
     float daylight_balance = daylight2.direction.w;
@@ -234,10 +223,6 @@ void main(void) {
     // VIEWDIR + REFLECTIONS SOLID
     vec3 view_to_frag_n = normalize(camera_position - world_space_position.xyz);
     vec3 reflection_result = calculateReflection(view_to_frag_n, world_space_normal, fragment_reflective_intensity);
-
-    // VIEWDIR + REFLECTIONS TRANSPARENT
-    vec3 t_view_to_frag_n = normalize(camera_position - t_world_space_position.xyz);
-    vec3 t_reflection_result = calculateReflection(t_view_to_frag_n, t_world_space_normal, t_fragment_reflective_intensity);
 
     // DAYLIGHT (DIRECTIONAL) FROM SOLID OBJECTS
     vec3 final_daylight_color = vec3(0.0);
@@ -252,17 +237,6 @@ void main(void) {
             * daylightShadowFactor(world_space_position, daylight_balance);
     }
 
-    // DAYLIGHT (DIRECTIONAL) FROM TRANSPARENT OBJECTS
-    vec3 t_final_daylight_color = vec3(0.0);
-    if(daylight_balance < 1.0) {
-        t_final_daylight_color +=
-            calculateDaylight(daylight, 1.0 - daylight_balance, t_world_space_normal, t_view_to_frag_n, t_fragment_diffuse_color, t_fragment_specular_color, t_fragment_shininess_intensity);
-    }
-    if(daylight_balance > 0.0) {
-        t_final_daylight_color +=
-            calculateDaylight(daylight2, daylight_balance, t_world_space_normal, t_view_to_frag_n, t_fragment_diffuse_color, t_fragment_specular_color, t_fragment_shininess_intensity);
-    }
-
     // OMNI AND SPOT LIGHT SETTINGS
     int omni_block_count = int(omni_spot_blockcount_lastblockcount.x);
     int omni_count_in_last = int(omni_spot_blockcount_lastblockcount.y);
@@ -272,7 +246,6 @@ void main(void) {
     // CALCULATE OMNI LIGHT
     // Do this stuff inline because its fast as fuck boii
     vec3 omni_light_result = vec3(0.0);
-    vec3 t_omni_light_result = vec3(0.0);
     for(int block_number = 1; block_number <= omni_block_count; block_number++) {
         if(omni_block_count >= block_number) {
             int calc_omni_lights_count = (omni_block_count == block_number) ? omni_count_in_last : NR_LIGHTS_PER_PACK;
@@ -291,16 +264,6 @@ void main(void) {
                                 fragment_specular_color,
                                 fragment_shininess_intensity
                             );
-                        t_omni_light_result +=
-                            calculateOmniLight(
-                                current_omni_light,
-                                t_world_space_normal.xyz,
-                                t_world_space_position.xyz,
-                                t_view_to_frag_n,
-                                t_fragment_diffuse_color,
-                                t_fragment_specular_color,
-                                t_fragment_shininess_intensity
-                            );
                         break;
                     case 2:
                         current_omni_light = omni_lights2[i];
@@ -313,16 +276,6 @@ void main(void) {
                                 fragment_diffuse_color,
                                 fragment_specular_color,
                                 fragment_shininess_intensity
-                            );
-                        t_omni_light_result +=
-                            calculateOmniLight(
-                                current_omni_light,
-                                t_world_space_normal.xyz,
-                                t_world_space_position.xyz,
-                                t_view_to_frag_n,
-                                t_fragment_diffuse_color,
-                                t_fragment_specular_color,
-                                t_fragment_shininess_intensity
                             );
                         break;
                     case 3:
@@ -337,16 +290,6 @@ void main(void) {
                                 fragment_specular_color,
                                 fragment_shininess_intensity
                             );
-                        t_omni_light_result +=
-                            calculateOmniLight(
-                                current_omni_light,
-                                t_world_space_normal.xyz,
-                                t_world_space_position.xyz,
-                                t_view_to_frag_n,
-                                t_fragment_diffuse_color,
-                                t_fragment_specular_color,
-                                t_fragment_shininess_intensity
-                            );
                         break;
                     case 4:
                         current_omni_light = omni_lights4[i];
@@ -360,16 +303,6 @@ void main(void) {
                                 fragment_specular_color,
                                 fragment_shininess_intensity
                             );
-                        t_omni_light_result +=
-                            calculateOmniLight(
-                                current_omni_light,
-                                t_world_space_normal.xyz,
-                                t_world_space_position.xyz,
-                                t_view_to_frag_n,
-                                t_fragment_diffuse_color,
-                                t_fragment_specular_color,
-                                t_fragment_shininess_intensity
-                            );
                         break;
                     default:
                         break;
@@ -381,7 +314,6 @@ void main(void) {
     // CALCULATE SPOT LIGHT
     // Do this stuff inline because its fast as fuck boii
     vec3 spot_light_result = vec3(0.0);
-    vec3 t_spot_light_result = vec3(0.0);
     for(int block_number = 1; block_number <= spot_block_count; block_number++) {
         if(spot_block_count >= block_number) {
             int calc_spot_lights_count = (spot_block_count == block_number) ? spot_count_in_last : NR_LIGHTS_PER_PACK;
@@ -400,16 +332,6 @@ void main(void) {
                                 fragment_specular_color,
                                 fragment_shininess_intensity
                             );
-                        t_spot_light_result +=
-                            calculateSpotLight(
-                                current_spot_light,
-                                t_world_space_normal.xyz,
-                                t_world_space_position.xyz,
-                                t_view_to_frag_n,
-                                t_fragment_diffuse_color,
-                                t_fragment_specular_color,
-                                t_fragment_shininess_intensity
-                            );
                         break;
                     case 2:
                         current_spot_light = spot_lights2[i];
@@ -422,16 +344,6 @@ void main(void) {
                                 fragment_diffuse_color,
                                 fragment_specular_color,
                                 fragment_shininess_intensity
-                            );
-                        t_spot_light_result +=
-                            calculateSpotLight(
-                                current_spot_light,
-                                t_world_space_normal.xyz,
-                                t_world_space_position.xyz,
-                                t_view_to_frag_n,
-                                t_fragment_diffuse_color,
-                                t_fragment_specular_color,
-                                t_fragment_shininess_intensity
                             );
                         break;
                     case 3:
@@ -446,16 +358,6 @@ void main(void) {
                                 fragment_specular_color,
                                 fragment_shininess_intensity
                             );
-                        t_spot_light_result +=
-                            calculateSpotLight(
-                                current_spot_light,
-                                t_world_space_normal.xyz,
-                                t_world_space_position.xyz,
-                                t_view_to_frag_n,
-                                t_fragment_diffuse_color,
-                                t_fragment_specular_color,
-                                t_fragment_shininess_intensity
-                            );
                         break;
                     case 4:
                         current_spot_light = spot_lights4[i];
@@ -468,16 +370,6 @@ void main(void) {
                                 fragment_diffuse_color,
                                 fragment_specular_color,
                                 fragment_shininess_intensity
-                            );
-                        t_spot_light_result +=
-                            calculateSpotLight(
-                                current_spot_light,
-                                t_world_space_normal.xyz,
-                                t_world_space_position.xyz,
-                                t_view_to_frag_n,
-                                t_fragment_diffuse_color,
-                                t_fragment_specular_color,
-                                t_fragment_shininess_intensity
                             );
                         break;
                     default:
@@ -492,24 +384,11 @@ void main(void) {
         light_result = fragment_diffuse_color * vec3(1.0 - fragment_reflective_intensity) + reflection_result;
     }
 
-    vec3 t_light_result = t_final_daylight_color + t_omni_light_result + t_spot_light_result;
-    if(t_fragment_reflective_intensity > 0.0) {
-        t_light_result = t_fragment_diffuse_color * vec3(1.0 - t_fragment_reflective_intensity) + t_reflection_result;
-    }
-
     vec3 final_fragment = vec3(0.0);
-    if(t_fragment_opacity > 0.0) {
-        if(f_depth < 1.0) {
-            if(t_f_depth < f_depth) {
-                final_fragment = (vec3(t_fragment_opacity) * t_light_result) + (vec3(1.0 - t_fragment_opacity) * light_result);
-            } else {
-                final_fragment = light_result;
-            }
-        } else {
-            final_fragment = vec3(vec3(t_fragment_opacity) * t_light_result);
-        }
+    if(fragment_diffuse_color.x > 0.0 || fragment_diffuse_color.y > 0.0 || fragment_diffuse_color.z > 0.0) {
+        final_fragment = (vec3(t_transparency) * t_result) + (vec3(1.0 - t_transparency) * light_result);
     } else {
-        final_fragment = light_result;
+        final_fragment = texture(t_albedo_blend_map, vTex).rgb;
     }
 
     outColor = vec4(final_fragment, 1.0);

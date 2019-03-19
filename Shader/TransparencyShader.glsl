@@ -61,6 +61,9 @@ void main(void) {
 //#FRAGMENT-SHADER#//
 #version 300 es
 precision mediump float;
+#define NR_LIGHTS_PER_PACK 64
+const float SHADOW_BIAS = 0.003;
+
 in vec3 vColor;
 in vec3 vSpecular;
 in vec2 vTexPos;
@@ -68,6 +71,7 @@ in vec3 vNormal;
 in vec3 vPosition;
 flat in float vShininess;
 flat in float vTransparency;
+flat in float vReflection;
 flat in int vUseCol;
 
 uniform float near_plane;
@@ -78,8 +82,26 @@ uniform sampler2D albedo_texture;
 uniform sampler2D specular_texture;
 
 uniform sampler2D position_map;
-uniform sampler2D t_position_map;
+uniform samplerCube reflection_cubemap;
 
+struct SpotLight {
+    vec3 position;
+    vec3 direction;
+    vec3 cutoff;
+    vec3 limit;
+    vec3 color;
+    vec3 amb_factor;
+    vec3 diff_factor;
+    vec3 spec_factor;
+};
+struct OmniLight {
+    vec3 position;
+    vec3 limit;
+    vec3 color;
+    vec3 amb_factor;
+    vec3 diff_factor;
+    vec3 spec_factor;
+};
 struct DayLight {
     vec4 direction;
     vec3 color;
@@ -89,12 +111,23 @@ struct DayLight {
 };
 
 uniform lights {
-    vec4 same_space_as_d_pass;
+    vec4 omni_spot_blockcount_lastblockcount;
     DayLight daylight;
     DayLight daylight2;
+
+    OmniLight omni_lights1[NR_LIGHTS_PER_PACK];
+    OmniLight omni_lights2[NR_LIGHTS_PER_PACK];
+    OmniLight omni_lights3[NR_LIGHTS_PER_PACK];
+    OmniLight omni_lights4[NR_LIGHTS_PER_PACK];
+
+    SpotLight spot_lights1[NR_LIGHTS_PER_PACK];
+    SpotLight spot_lights2[NR_LIGHTS_PER_PACK];
+    SpotLight spot_lights3[NR_LIGHTS_PER_PACK];
+    SpotLight spot_lights4[NR_LIGHTS_PER_PACK];
 };
 
 layout(location = 0) out vec4 outColor;
+layout(location = 1) out vec4 outTransparency;
 
 vec3 calculateColor(vec3 texel, vec3 color, int useCol) {
     if(useCol == 1) {
@@ -124,6 +157,50 @@ vec3 calculateSpecularLight(vec3 surface_normal_unit, vec3 mat_spec, vec3 view_d
     return vec3(spec_strenght) * light_color * mat_spec * spec_factor;
 }
 
+vec3 calculateOmniLight(OmniLight omni_light,
+                        vec3 frag_world_normal,
+                        vec3 frag_world_position,
+                        vec3 view_to_frag_n,
+                        vec3 frag_diff,
+                        vec3 frag_spec,
+                        float frag_shini) {
+    float point_distance = length(omni_light.position - frag_world_position);
+    vec3 attenuation_factor = vec3((1.0 / (omni_light.limit.x + (omni_light.limit.y * point_distance) + (omni_light.limit.z * (point_distance * point_distance)))));
+    vec3 light_direction = normalize(omni_light.position - frag_world_position);
+    // if(attenuation_factor.x < 0.001) {
+    //     return vec3(0.0);
+    // }
+    vec3 result = vec3(0.0);
+    // result += omni_light.color * omni_light.amb_factor * frag_diff;
+    result += calculateDiffuseLight(frag_world_normal, frag_diff, light_direction, omni_light.color, omni_light.diff_factor);
+    result += calculateSpecularLight(frag_world_normal, frag_spec, view_to_frag_n, light_direction, omni_light.color, omni_light.spec_factor, frag_shini);
+    return result * attenuation_factor;
+}
+
+vec3 calculateSpotLight(SpotLight spot_light,
+                        vec3 frag_world_normal,
+                        vec3 frag_world_position,
+                        vec3 view_to_frag_n,
+                        vec3 frag_diff,
+                        vec3 frag_spec,
+                        float frag_shini) {
+    vec3 light_dir_unit = normalize(spot_light.position - frag_world_position);
+    float theta = dot(light_dir_unit, normalize(-spot_light.direction)); // Theta = winkel zum fragementhit vom spotinneren
+    if(theta > spot_light.cutoff.y) {
+        float epsilon = spot_light.cutoff.x - spot_light.cutoff.y;
+        float intensity = clamp((theta - spot_light.cutoff.y) / epsilon, 0.0, 1.0);
+        float spot_distance = length(spot_light.position - frag_world_position);
+        float attenuation = 1.0 / (spot_light.limit.x + spot_light.limit.y * spot_distance + spot_light.limit.z * (spot_distance * spot_distance));
+
+        vec3 result = vec3(0.0);
+        // amb could also be calced
+        result += vec3(intensity * attenuation) * calculateDiffuseLight(frag_world_normal, frag_diff, light_dir_unit, spot_light.color, spot_light.diff_factor);
+        result += vec3(intensity * attenuation) * calculateSpecularLight(frag_world_normal, frag_spec, view_to_frag_n, light_dir_unit, spot_light.color, spot_light.spec_factor, frag_shini);
+        return result;
+    }
+    return vec3(0.0);
+}
+
 vec3 calculateDaylight( DayLight process_daylight,
                         float daylight_factor,
                         vec3 frag_world_normal,
@@ -138,28 +215,35 @@ vec3 calculateDaylight( DayLight process_daylight,
     return (dir_amb_light_res + dir_diff_light_res + dir_spec_light_res) * vec3(daylight_factor);
 }
 
+vec3 calculateReflection(vec3 view_to_frag_n, vec3 world_normal, float intensity) {
+    // if it doesnt need to get calced...
+    if(intensity <= 0.0) { return vec3(0.0); }
+    // calc Reflection
+
+    vec3 skybox_reflect_dir = reflect(view_to_frag_n, normalize(world_normal));
+    vec3 readout_reflect_map = vec3(skybox_reflect_dir.x, -1.0 * skybox_reflect_dir.y, skybox_reflect_dir.z);
+    vec3 skybox_reflection_res = texture(reflection_cubemap, readout_reflect_map).rgb; // * vec3(intensity);
+    return skybox_reflection_res;
+}
+
 void main(void) {
     vec2 tex_position = (gl_FragCoord.xy / vec2(textureSize(position_map, 0).xy));
 
     float back_depth = texture(position_map, tex_position).r;
-    float front_depth = texture(t_position_map, tex_position).r;
 
     float linearizedDepth = linearizeDepth(gl_FragCoord.z) / far_plane;  // convert to linear values
-    if(front_depth > 0.0 && front_depth < 1.0 && linearizedDepth < front_depth) {
-        // discard;
-    }
     if(back_depth > 0.0 && back_depth < 1.0 && linearizedDepth > back_depth) {
-        outColor =  vec4(0.0, 0.0, 0.0, 1.0);
+        discard;
     } else {
-
-        vec3 base_diff_color = calculateColor(texture(albedo_texture, vTexPos).rgb, vColor, vUseCol).rgb;
-        vec3 base_spec_color = calculateColor(texture(specular_texture, vTexPos).rgb, vSpecular, vUseCol).rgb;
-
         // DAYLIGHT BALANCE
         float daylight_balance = daylight2.direction.w;
         // VIEWDIR + REFLECTIONS SOLID
         vec3 view_to_frag_n = normalize(camera_position - vPosition.xyz);
         // vec3 reflection_result = calculateReflection(view_to_frag_n, world_space_normal, fragment_reflective_intensity);
+
+        vec3 base_diff_color = calculateColor(texture(albedo_texture, vTexPos).rgb, vColor, vUseCol).rgb;
+        vec3 base_spec_color = calculateColor(texture(specular_texture, vTexPos).rgb, vSpecular, vUseCol).rgb;
+        vec3 reflection_color = calculateReflection(view_to_frag_n, vNormal, vReflection);
 
         // DAYLIGHT (DIRECTIONAL) FROM SOLID OBJECTS
         vec3 final_daylight_color = vec3(0.0);
@@ -172,9 +256,156 @@ void main(void) {
             calculateDaylight(daylight2, daylight_balance, normalize(vNormal), view_to_frag_n, base_diff_color, base_spec_color, vShininess);
         }
 
+
+        // OMNI + SPOT LIGHTS
+        int omni_block_count = int(omni_spot_blockcount_lastblockcount.x);
+        int omni_count_in_last = int(omni_spot_blockcount_lastblockcount.y);
+        int spot_block_count = int(omni_spot_blockcount_lastblockcount.z);
+        int spot_count_in_last = int(omni_spot_blockcount_lastblockcount.w);
+
+        vec3 omni_light_result = vec3(0.0);
+        for(int block_number = 1; block_number <= omni_block_count; block_number++) {
+            if(omni_block_count >= block_number) {
+                int calc_omni_lights_count = (omni_block_count == block_number) ? omni_count_in_last : NR_LIGHTS_PER_PACK;
+                for(int i = 0; i < calc_omni_lights_count; i++) {
+                    OmniLight current_omni_light;
+                    switch(block_number) {
+                        case 1:
+                        current_omni_light = omni_lights1[i];
+                        omni_light_result +=
+                            calculateOmniLight(
+                                current_omni_light,
+                                vNormal,
+                                vPosition,
+                                view_to_frag_n,
+                                base_diff_color,
+                                base_spec_color,
+                                vShininess
+                            );
+                        break;
+                        case 2:
+                        current_omni_light = omni_lights2[i];
+                        omni_light_result +=
+                            calculateOmniLight(
+                                current_omni_light,
+                                vNormal,
+                                vPosition,
+                                view_to_frag_n,
+                                base_diff_color,
+                                base_spec_color,
+                                vShininess
+                            );
+                        break;
+                        case 3:
+                        current_omni_light = omni_lights3[i];
+                        omni_light_result +=
+                            calculateOmniLight(
+                                current_omni_light,
+                                vNormal,
+                                vPosition,
+                                view_to_frag_n,
+                                base_diff_color,
+                                base_spec_color,
+                                vShininess
+                            );
+                        break;
+                        case 4:
+                        current_omni_light = omni_lights4[i];
+                        omni_light_result +=
+                            calculateOmniLight(
+                                current_omni_light,
+                                vNormal,
+                                vPosition,
+                                view_to_frag_n,
+                                base_diff_color,
+                                base_spec_color,
+                                vShininess
+                            );
+                        break;
+                        default:
+                        break;
+                    }
+                }
+            }
+        }
+
+        // CALCULATE SPOT LIGHT
+        // Do this stuff inline because its fast as fuck boii
+        vec3 spot_light_result = vec3(0.0);
+        for(int block_number = 1; block_number <= spot_block_count; block_number++) {
+            if(spot_block_count >= block_number) {
+                int calc_spot_lights_count = (spot_block_count == block_number) ? spot_count_in_last : NR_LIGHTS_PER_PACK;
+                for(int i = 0; i < calc_spot_lights_count; i++) {
+                    SpotLight current_spot_light;
+                    switch(block_number) {
+                        case 1:
+                        current_spot_light = spot_lights1[i];
+                        spot_light_result +=
+                            calculateSpotLight(
+                                current_spot_light,
+                                vNormal,
+                                vPosition,
+                                view_to_frag_n,
+                                base_diff_color,
+                                base_spec_color,
+                                vShininess
+                            );
+                        break;
+                        case 2:
+                        current_spot_light = spot_lights2[i];
+                        spot_light_result +=
+                            calculateSpotLight(
+                                current_spot_light,
+                                vNormal,
+                                vPosition,
+                                view_to_frag_n,
+                                base_diff_color,
+                                base_spec_color,
+                                vShininess
+                            );
+                        break;
+                        case 3:
+                        current_spot_light = spot_lights3[i];
+                        spot_light_result +=
+                            calculateSpotLight(
+                                current_spot_light,
+                                vNormal,
+                                vPosition,
+                                view_to_frag_n,
+                                base_diff_color,
+                                base_spec_color,
+                                vShininess
+                            );
+                        break;
+                        case 4:
+                        current_spot_light = spot_lights4[i];
+                        spot_light_result +=
+                            calculateSpotLight(
+                                current_spot_light,
+                                vNormal,
+                                vPosition,
+                                view_to_frag_n,
+                                base_diff_color,
+                                base_spec_color,
+                                vShininess
+                            );
+                        break;
+                        default:
+                        break;
+                    }
+                }
+            }
+        }
+
         // CALC SOME LIGHT SHIT
-        vec3 final_color = final_daylight_color;
-        outColor =  vec4(final_color, vTransparency);
+        vec3 light_result = final_daylight_color + omni_light_result + spot_light_result;
+        // vec3 light_result = final_daylight_color + omni_light_result + spot_light_result;
+        if(vReflection > 0.0) {
+            light_result = base_diff_color * vec3(1.0 - vReflection) + reflection_color;
+        }
+
+        outColor =  vec4(light_result, vTransparency);
+        outTransparency =  vec4(vTransparency, 0.0, 0.0, vTransparency);
     }
 
 

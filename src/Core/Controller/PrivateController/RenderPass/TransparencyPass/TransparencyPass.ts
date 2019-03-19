@@ -8,6 +8,7 @@ import {DrawMeshesWithBufferedData} from "../../../../Render/DrawMesh";
 import {TransparencyShader} from "../../../../Render/Shader/TransparencyShader";
 import {LightningPassDeferredAndBulbs} from "../LightningPass/LightningPassDeferredAndBulbs";
 import {flatVec3} from "../../../../Geometry/Vector/flatten";
+import {SkyboxPass} from "../SkyboxPass";
 
 export abstract class TransparencyPass {
 
@@ -30,8 +31,7 @@ export abstract class TransparencyPass {
         GL.enable(GL.BLEND);
         GL.blendFunc(GL.SRC_ALPHA, GL.ONE_MINUS_SRC_ALPHA);
 
-        GL.disable(GL.CULL_FACE);
-        GL.cullFace(GL.FRONT_AND_BACK);
+        GL.enable(GL.CULL_FACE);
 
         GL.enable(GL.DEPTH_TEST);
         // GL.depthFunc(GL.ALWAYS);
@@ -42,7 +42,7 @@ export abstract class TransparencyPass {
         GL.activeTexture(GL.TEXTURE2);
         GL.bindTexture(GL.TEXTURE_2D, GeometryPass.solid_storage.misc_texture);
         GL.activeTexture(GL.TEXTURE3);
-        GL.bindTexture(GL.TEXTURE_2D, TransparencyPass.transparent_storage.misc_texture);
+        GL.bindTexture(GL.TEXTURE_CUBE_MAP, SkyboxPass.cubemap_gen_result);
 
 
         const cam: Camera = MainController.SceneController.getSceneCamera();
@@ -84,6 +84,9 @@ export abstract class TransparencyPass {
             GL.bindBuffer(GL.ARRAY_BUFFER, GeometryPass.model_mesh_matrix_buffer);
             GL.bufferData(GL.ARRAY_BUFFER, current.bufferData, GL.DYNAMIC_DRAW);
 
+            GL.cullFace(GL.BACK);
+            GL.drawArraysInstanced(GL.TRIANGLES, 0, current.draw_mesh[0].related_mesh.draw_count, current.draw_mesh.length);
+            GL.cullFace(GL.FRONT);
             GL.drawArraysInstanced(GL.TRIANGLES, 0, current.draw_mesh[0].related_mesh.draw_count, current.draw_mesh.length);
         }
 

@@ -11,7 +11,6 @@ interface GeometryShaderUniformLocations {
     scene_result: WebGLUniformLocation;
     brightness_result: WebGLUniformLocation;
     position_map: WebGLUniformLocation;
-    t_material_map: WebGLUniformLocation;
     skybox: WebGLUniformLocation;
 }
 
@@ -22,8 +21,7 @@ export class FinalizeLightningShader implements Shader {
         scene_result: 0,
         brightness_result: 1,
         position_map: 2,
-        t_material_map: 3,
-        skybox: 4,
+        skybox: 3,
     };
 
     attribute_pointer: GeometryShaderAttributePointer;
@@ -41,7 +39,6 @@ export class FinalizeLightningShader implements Shader {
             scene_result: GL.getUniformLocation(this.program, "scene_result"),
             brightness_result: GL.getUniformLocation(this.program, "brightness_result"),
             position_map: GL.getUniformLocation(this.program, "position_map"),
-            t_material_map: GL.getUniformLocation(this.program, "t_material_map"),
             skybox: GL.getUniformLocation(this.program, "skybox"),
         };
         GL.uniform1i(
@@ -55,10 +52,6 @@ export class FinalizeLightningShader implements Shader {
         GL.uniform1i(
             this.uniform_locations.position_map,
             this.texture_bindings.position_map
-        );
-        GL.uniform1i(
-            this.uniform_locations.t_material_map,
-            this.texture_bindings.t_material_map
         );
         GL.uniform1i(
             this.uniform_locations.skybox,

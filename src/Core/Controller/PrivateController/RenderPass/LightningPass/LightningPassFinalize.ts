@@ -21,8 +21,6 @@ export abstract class LightningPassFinalize {
         GL.activeTexture(GL.TEXTURE2);
         GL.bindTexture(GL.TEXTURE_2D, GeometryPass.solid_storage.position_texture);
         GL.activeTexture(GL.TEXTURE3);
-        GL.bindTexture(GL.TEXTURE_2D, TransparencyPass.transparent_storage.material_texture);
-        GL.activeTexture(GL.TEXTURE4);
         GL.bindTexture(GL.TEXTURE_2D, SkyboxPass.screen_gen_result);
 
         GL.drawArrays(GL.TRIANGLES, 0, 6);

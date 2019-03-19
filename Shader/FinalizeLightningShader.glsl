@@ -29,7 +29,6 @@ uniform sampler2D skybox;
 layout(location = 0) out vec4 outColor;
 
 void main(void) {
-    float possible_opacity = texture(t_material_map, vTex).b;
     vec3 scene_pixel = texture(scene_result, vTex).rgb;
     float pixel_depth = texture(position_map, vTex).w;
     vec3 brightness_pixel = texture(brightness_result, vTex).rgb;
@@ -39,10 +38,7 @@ void main(void) {
     if(pixel_depth < 1.0) {
         // use Scene Pixel
         combine_pixel = scene_pixel;
-    } else if(possible_opacity > 0.0) {
-        vec3 skymap_pixel = texture(skybox, vTex).rgb;
-        combine_pixel = (scene_pixel * vec3(possible_opacity)) + (skymap_pixel * vec3(1.0 - possible_opacity));
-    } else {
+    }  else {
         // use Skybox Pixel
         vec3 skymap_pixel = texture(skybox, vTex).rgb;
         combine_pixel = skymap_pixel;

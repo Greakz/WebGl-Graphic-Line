@@ -98,21 +98,9 @@ export abstract class LightningPassDeferredAndBulbs {
         GL.bindTexture(GL.TEXTURE_CUBE_MAP, SkyboxPass.cubemap_gen_result);
 
         GL.activeTexture(GL.TEXTURE7);
-        GL.bindTexture(GL.TEXTURE_2D, TransparencyPass.transparent_storage.albedo_texture);
+        GL.bindTexture(GL.TEXTURE_2D, TransparencyPass.transparent_storage.blend_transparency_texture);
 
         GL.activeTexture(GL.TEXTURE8);
-        GL.bindTexture(GL.TEXTURE_2D, TransparencyPass.transparent_storage.specular_texture);
-
-        GL.activeTexture(GL.TEXTURE9);
-        GL.bindTexture(GL.TEXTURE_2D, TransparencyPass.transparent_storage.position_texture);
-
-        GL.activeTexture(GL.TEXTURE10);
-        GL.bindTexture(GL.TEXTURE_2D, TransparencyPass.transparent_storage.normal_texture);
-
-        GL.activeTexture(GL.TEXTURE11);
-        GL.bindTexture(GL.TEXTURE_2D, TransparencyPass.transparent_storage.material_texture);
-
-        GL.activeTexture(GL.TEXTURE12);
         GL.bindTexture(GL.TEXTURE_2D, TransparencyPass.transparent_storage.blend_texture);
 
 
