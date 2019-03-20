@@ -203,7 +203,6 @@ export abstract class LightningPassDeferredAndBulbs {
             needOmniUniformBlocks = Math.floor(i / MAXIMUM_LIGHTS_PER_BLOCK) + 1;
             if(needOmniUniformBlocks <= MAXIMUM_OMNI_LIGHT_BLOCKS) {
                 const l = scene_light_info.omni_lights[i];
-
                 LightningPassDeferredAndBulbs.rawOmniData.push(
                     l.position.x, l.position.y, l.position.z, LightningPassDeferredAndBulbs.calculateLightDistance(l.constant, l.linear, l.quadric),
                     l.constant, l.linear, l.quadric, 0.0,
@@ -290,11 +289,10 @@ export abstract class LightningPassDeferredAndBulbs {
 
 
     private static calculateLightDistance(constant: number, linear: number, quadric: number): number {
-        const minAttenuationValue = 5 / 256;
+        const minAttenuationValue = 256 / 5;
+        const z1 = Math.pow(linear, 2) - 4 * quadric * (constant - 1.0 * minAttenuationValue)
         return (
-            (-linear + Math.sqrt(
-                (Math.pow(linear, 2) - 4 * quadric * (constant - 1.0 * minAttenuationValue))
-            )) / (2 * quadric)
+            (-linear + Math.sqrt(z1)) / (2 * quadric)
         );
     }
 

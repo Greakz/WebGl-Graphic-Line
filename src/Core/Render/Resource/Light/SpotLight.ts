@@ -7,8 +7,8 @@ export class SpotLight {
     color: vec3 = {x: 1.0, y: 1.0, z: 1.0};
     direction: vec3 = {x: 0.0, y: -1.0, z: 0.0};
     constant: number = 1.0;
-    linear: number = 0.18;
-    quadric: number = 0.11;
+    linear: number = 0.1;
+    quadric: number = 0.08;
     inner_cutoff: number =  Math.cos(radians(20));
     outer_cutoff: number =  Math.cos(radians(32));
     amb_factor: vec3 = {x: 0, y: 0, z: 0};

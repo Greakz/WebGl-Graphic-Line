@@ -73,7 +73,7 @@ export class BasicScene extends BaseScene implements Scene {
         let genCubes: number = 2000;
         let genCubesBlank: number = 50;
         let genCubesTransparent: number = 500;
-        let genOmniLights: number = 80;
+        let genOmniLights: number = 50;
         let genSpotLights: number = 128;
 
         for (let i = 0; i < genCubes; i++) {
