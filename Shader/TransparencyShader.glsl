@@ -54,7 +54,7 @@ void main(void) {
     vReflection = specular_color.a;
     vTransparency = albedo_color.a;
     vShininess = shininess;
-    vNormal = vec3(model_matrix * mesh_matrix * vec4(VertexNormals, 0.0));
+    vNormal = normalize(vec3(model_matrix * mesh_matrix * vec4(VertexNormals, 0.0)));
     vPosition = world_pos.xyz;
     vUseCol = (useTex > 0.5 && useColor > 0.5) ? 1 : (useColor > 0.5) ? 2 : (useTex > 0.5) ? 3 : 0;
 }
@@ -85,7 +85,7 @@ uniform sampler2D position_map;
 uniform samplerCube reflection_cubemap;
 
 struct SpotLight {
-    vec3 position;
+    vec4 position;
     vec3 direction;
     vec3 cutoff;
     vec3 limit;
@@ -95,7 +95,7 @@ struct SpotLight {
     vec3 spec_factor;
 };
 struct OmniLight {
-    vec3 position;
+    vec4 position;
     vec3 limit;
     vec3 color;
     vec3 amb_factor;
@@ -164,9 +164,12 @@ vec3 calculateOmniLight(OmniLight omni_light,
                         vec3 frag_diff,
                         vec3 frag_spec,
                         float frag_shini) {
-    float point_distance = length(omni_light.position - frag_world_position);
+    float point_distance = length(omni_light.position.xyz - frag_world_position);
+    if(point_distance > omni_light.position.w) {
+        return vec3(0.0);
+    }
     vec3 attenuation_factor = vec3((1.0 / (omni_light.limit.x + (omni_light.limit.y * point_distance) + (omni_light.limit.z * (point_distance * point_distance)))));
-    vec3 light_direction = normalize(omni_light.position - frag_world_position);
+    vec3 light_direction = normalize(omni_light.position.xyz - frag_world_position);
     // if(attenuation_factor.x < 0.001) {
     //     return vec3(0.0);
     // }
@@ -184,12 +187,15 @@ vec3 calculateSpotLight(SpotLight spot_light,
                         vec3 frag_diff,
                         vec3 frag_spec,
                         float frag_shini) {
-    vec3 light_dir_unit = normalize(spot_light.position - frag_world_position);
+    float spot_distance = length(spot_light.position.xyz - frag_world_position);
+    if(spot_distance > spot_light.position.w) {
+        return vec3(0.0);
+    }
+    vec3 light_dir_unit = normalize(spot_light.position.xyz - frag_world_position);
     float theta = dot(light_dir_unit, normalize(-spot_light.direction)); // Theta = winkel zum fragementhit vom spotinneren
     if(theta > spot_light.cutoff.y) {
         float epsilon = spot_light.cutoff.x - spot_light.cutoff.y;
         float intensity = clamp((theta - spot_light.cutoff.y) / epsilon, 0.0, 1.0);
-        float spot_distance = length(spot_light.position - frag_world_position);
         float attenuation = 1.0 / (spot_light.limit.x + spot_light.limit.y * spot_distance + spot_light.limit.z * (spot_distance * spot_distance));
 
         vec3 result = vec3(0.0);
@@ -401,7 +407,7 @@ void main(void) {
         vec3 light_result = final_daylight_color + omni_light_result + spot_light_result;
         // vec3 light_result = final_daylight_color + omni_light_result + spot_light_result;
         if(vReflection > 0.0) {
-            light_result = base_diff_color * vec3(1.0 - vReflection) + reflection_color;
+            light_result = light_result * vec3(1.0 - vReflection) + reflection_color;
         }
 
         outColor =  vec4(light_result, vTransparency);

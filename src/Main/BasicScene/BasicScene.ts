@@ -73,8 +73,8 @@ export class BasicScene extends BaseScene implements Scene {
         let genCubes: number = 2000;
         let genCubesBlank: number = 50;
         let genCubesTransparent: number = 500;
-        let genOmniLights: number = 20;
-        let genSpotLights: number = 64;
+        let genOmniLights: number = 80;
+        let genSpotLights: number = 128;
 
         for (let i = 0; i < genCubes; i++) {
             const newCube = new DynamicCubeObject();
@@ -138,7 +138,7 @@ export class BasicScene extends BaseScene implements Scene {
         }
     }
 
-    private day_cyclus_lenght: number = 10;
+    private day_cyclus_lenght: number = 6;
     private day_cyclus: number = 0;
     private last_frame_time: number = (new Date()).getTime();
 

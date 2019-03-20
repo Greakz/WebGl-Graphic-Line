@@ -41,7 +41,7 @@ uniform sampler2D t_albedo_blend_map;
 
 
 struct SpotLight {
-    vec3 position;
+    vec4 position;
     vec3 direction;
     vec3 cutoff;
     vec3 limit;
@@ -53,7 +53,7 @@ struct SpotLight {
 
 
 struct OmniLight {
-    vec3 position;
+    vec4 position;
     vec3 limit;
     vec3 color;
     vec3 amb_factor;
@@ -117,9 +117,12 @@ vec3 calculateOmniLight(
     vec3 frag_spec,
     float frag_shini
 ) {
-    float point_distance = length(omni_light.position - frag_world_position);
+    float point_distance = length(omni_light.position.xyz - frag_world_position);
+    if(point_distance > omni_light.position.w) {
+        return vec3(0.0);
+    }
     vec3 attenuation_factor = vec3((1.0 / (omni_light.limit.x + (omni_light.limit.y * point_distance) + (omni_light.limit.z * (point_distance * point_distance)))));
-    vec3 light_direction = normalize(omni_light.position - frag_world_position);
+    vec3 light_direction = normalize(omni_light.position.xyz - frag_world_position);
     // if(attenuation_factor.x < 0.001) {
     //     return vec3(0.0);
     // }
@@ -137,12 +140,15 @@ vec3 calculateSpotLight(SpotLight spot_light,
                         vec3 frag_diff,
                         vec3 frag_spec,
                         float frag_shini) {
-    vec3 light_dir_unit = normalize(spot_light.position - frag_world_position);
+    float spot_distance = length(spot_light.position.xyz - frag_world_position);
+    if(spot_distance > spot_light.position.w) {
+        return vec3(0.0);
+    }
+    vec3 light_dir_unit = normalize(spot_light.position.xyz - frag_world_position);
     float theta = dot(light_dir_unit, normalize(-spot_light.direction)); // Theta = winkel zum fragementhit vom spotinneren
     if(theta > spot_light.cutoff.y) {
         float epsilon = spot_light.cutoff.x - spot_light.cutoff.y;
         float intensity = clamp((theta - spot_light.cutoff.y) / epsilon, 0.0, 1.0);
-        float spot_distance = length(spot_light.position - frag_world_position);
         float attenuation = 1.0 / (spot_light.limit.x + spot_light.limit.y * spot_distance + spot_light.limit.z * (spot_distance * spot_distance));
 
         vec3 result = vec3(0.0);

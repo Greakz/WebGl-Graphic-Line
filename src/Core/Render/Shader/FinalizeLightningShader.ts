@@ -1,6 +1,5 @@
 import {ShaderLoader} from "./ShaderLoader";
 import {Shader} from "./Shader";
-import {MainController} from "../../Controller/MainController";
 
 interface GeometryShaderAttributePointer {
     vertex_position: GLint;

@@ -5,8 +5,8 @@ export class BaseMaterial extends DefaultColorMaterial {
     readonly resource_type: 'material';
     readonly resource_id: string = 'base-material';
 
-    albedo_color: vec3 = {x: 0.01, y: 0.01, z: 0.01};
-    specular_color: vec3 = {x: 0.1, y: 0.1, z: 0.1};
+    albedo_color: vec3 = {x: 0.6, y: 0.01, z: 0.01};
+    specular_color: vec3 = {x: 0.4, y: 0.1, z: 0.1};
     shininess: number = 0.2;
     opacity: number = 1.0;
     reflection: number = 0.6;
