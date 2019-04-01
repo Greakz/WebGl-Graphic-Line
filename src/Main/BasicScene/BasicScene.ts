@@ -70,9 +70,9 @@ export class BasicScene extends BaseScene implements Scene {
     private altSpotLights: SpotLight[] = [];
 
     private alternateInit() {
-        let genCubes: number = 2000;
+        let genCubes: number = 500;
         let genCubesBlank: number = 50;
-        let genCubesTransparent: number = 500;
+        let genCubesTransparent: number = 100;
         let genOmniLights: number = 50;
         let genSpotLights: number = 128;
 

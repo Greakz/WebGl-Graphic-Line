@@ -97,24 +97,24 @@ float linearizeDepth(float depth) {
     return (2.0 * near_plane * far_plane) / (far_plane + near_plane - z * (far_plane - near_plane));
 }
 
-vec3 calculateDiffuseLight(vec3 surface_normal_unit, vec3 mat_diff, vec3 light_dir_unit, vec3 light_color, vec3 diff_factor) {
+vec3 calculateDiffuseLight(in vec3 surface_normal_unit, in vec3 mat_diff, in vec3 light_dir_unit, in vec3 light_color, in vec3 diff_factor) {
     float diff_strength = max(dot(light_dir_unit, surface_normal_unit), 0.0);
     return vec3(diff_strength) * light_color * mat_diff * diff_factor;
 }
 
-vec3 calculateSpecularLight(vec3 surface_normal_unit, vec3 mat_spec, vec3 view_dir, vec3 light_dir_unit, vec3 light_color, vec3 spec_factor, float mat_shininess) {
+vec3 calculateSpecularLight(in vec3 surface_normal_unit, in vec3 mat_spec, in vec3 view_dir, in vec3 light_dir_unit, in vec3 light_color, in vec3 spec_factor, float mat_shininess) {
     vec3 reflect_dir = reflect(-light_dir_unit, surface_normal_unit);
     float spec_strenght = pow(max(dot(view_dir, reflect_dir), 0.0), mat_shininess * 128.0);
     return vec3(spec_strenght) * light_color * mat_spec * spec_factor;
 }
 
 vec3 calculateOmniLight(
-    OmniLight omni_light,
-    vec3 frag_world_normal,
-    vec3 frag_world_position,
-    vec3 view_to_frag_n,
-    vec3 frag_diff,
-    vec3 frag_spec,
+    in OmniLight omni_light,
+    in vec3 frag_world_normal,
+    in vec3 frag_world_position,
+    in vec3 view_to_frag_n,
+    in vec3 frag_diff,
+    in vec3 frag_spec,
     float frag_shini
 ) {
     float point_distance = length(omni_light.position.xyz - frag_world_position);
@@ -133,12 +133,12 @@ vec3 calculateOmniLight(
     return result * attenuation_factor;
 }
 
-vec3 calculateSpotLight(SpotLight spot_light,
-                        vec3 frag_world_normal,
-                        vec3 frag_world_position,
-                        vec3 view_to_frag_n,
-                        vec3 frag_diff,
-                        vec3 frag_spec,
+vec3 calculateSpotLight(in SpotLight spot_light,
+                        in vec3 frag_world_normal,
+                        in vec3 frag_world_position,
+                        in vec3 view_to_frag_n,
+                        in vec3 frag_diff,
+                        in vec3 frag_spec,
                         float frag_shini) {
     float spot_distance = length(spot_light.position.xyz - frag_world_position);
     if(spot_distance > spot_light.position.w) {
@@ -160,12 +160,12 @@ vec3 calculateSpotLight(SpotLight spot_light,
     return vec3(0.0);
 }
 
-vec3 calculateDaylight(DayLight process_daylight,
+vec3 calculateDaylight(in DayLight process_daylight,
                        float daylight_factor,
-                       vec3 frag_world_normal,
-                       vec3 view_to_frag_n,
-                       vec3 frag_diff,
-                       vec3 frag_spec,
+                       in vec3 frag_world_normal,
+                       in vec3 view_to_frag_n,
+                       in vec3 frag_diff,
+                       in vec3 frag_spec,
                        float frag_shini) {
     vec3 frag_to_daylight_n = normalize(-process_daylight.direction.xyz);
     vec3 dir_amb_light_res = process_daylight.color * process_daylight.amb_factor * frag_diff;
@@ -174,7 +174,7 @@ vec3 calculateDaylight(DayLight process_daylight,
     return (dir_amb_light_res + dir_diff_light_res + dir_spec_light_res) * vec3(daylight_factor);
 }
 
-float daylightShadowFactor(vec3 world_space_position, float balance) {
+float daylightShadowFactor(in vec3 world_space_position, float balance) {
     if(balance < 0.5) {
         return 1.0;
     }
@@ -199,7 +199,7 @@ float daylightShadowFactor(vec3 world_space_position, float balance) {
     return (1.0 - (shadow * ((balance - 0.5) * 2.0)));
 }
 
-vec3 calculateReflection(vec3 view_to_frag_n, vec3 world_normal, float intensity) {
+vec3 calculateReflection(in vec3 view_to_frag_n, in vec3 world_normal, float intensity) {
     // if it doesnt need to get calced...
     if(intensity <= 0.0) { return vec3(0.0); }
     // calc Reflection
