@@ -33,7 +33,6 @@ export abstract class GeometryPass {
         const GL: WebGL2RenderingContext = MainController.CanvasController.getGL();
 
         GL.clearColor(0.0, 0.0, 0.0, 1.0);
-        GL.viewport(0, 0, 1920, 1920);
         GL.enable(GL.DEPTH_TEST);
         GL.depthFunc(GL.LEQUAL);
 
@@ -66,6 +65,7 @@ export abstract class GeometryPass {
                             GeometryPass.solid_storage.bindFramebufferAndShader(GL);
                             GeometryPass.geometryPassPrepareUniformMeshData(render_queue_entry.draw_meshes);
                             material_to_use.use(GL, MainController.ShaderController.getGeometryShader());
+                            GL.viewport(0, 0, 1920, 1920);
                             GeometryPass.geometryPassDrawMeshTasks(render_queue_entry.draw_meshes);
 
                             // SHADOW PASS

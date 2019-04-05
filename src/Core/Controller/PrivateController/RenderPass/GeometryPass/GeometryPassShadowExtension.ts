@@ -109,6 +109,7 @@ export abstract class GeometryPassShadowExtension {
     static bindForDrawShadow(): void {
         const GL: WebGL2RenderingContext = MainController.CanvasController.getGL();
         GL.bindFramebuffer(GL.FRAMEBUFFER, GeometryPassShadowExtension.shadow_framebuffer);
+        GL.viewport(0,0, GeometryPassShadowExtension.set_up_size, GeometryPassShadowExtension.set_up_size);
         MainController.ShaderController.useShadowShader();
     }
 
