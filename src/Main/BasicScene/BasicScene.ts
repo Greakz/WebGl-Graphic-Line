@@ -13,7 +13,12 @@ import {DynamicCubeBlankObject} from "./SceneObjects/Dynamic/DynamicCubeBlankObj
 import {scaleVec3} from "../../Core/Geometry/Vector/scale";
 import {NightSkybox} from "./NightSkybox";
 import {DynamicCubeTransparentObject} from "./SceneObjects/Dynamic/DynamicCubeTransparentObject";
-import {getRenderOptionsHigh, getRenderOptionsUltra, RenderOptions} from "../../Core/Scene/RenderOptions";
+import {
+    getRenderOptionsHigh,
+    getRenderOptionsMedium,
+    getRenderOptionsUltra,
+    RenderOptions
+} from "../../Core/Scene/RenderOptions";
 
 export class BasicScene extends BaseScene implements Scene {
     camera: Camera = new AdvancedCamera();

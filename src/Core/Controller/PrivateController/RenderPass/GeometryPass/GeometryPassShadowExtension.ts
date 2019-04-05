@@ -53,8 +53,6 @@ export abstract class GeometryPassShadowExtension {
     static frameSetup(frame_info: FrameInfo, newRenderOptions: RenderOptions): void {
         const GL: WebGL2RenderingContext = MainController.CanvasController.getGL();
 
-        console.log(newRenderOptions.shadow_texture_precision)
-
         if(GeometryPassShadowExtension.set_up_size !== newRenderOptions.shadow_texture_precision) {
             GeometryPassShadowExtension.setupTextures(GL, newRenderOptions.shadow_texture_precision);
             GeometryPassShadowExtension.set_up_size = newRenderOptions.shadow_texture_precision;
@@ -142,7 +140,6 @@ export abstract class GeometryPassShadowExtension {
         // BIND DEPTH Texture
         ////////////////////////////////////////////
         if(GeometryPassShadowExtension.depth_texture !== undefined) {
-            console.log('delete texture to recreate')
             GL.deleteTexture(GeometryPassShadowExtension.depth_texture)
         }
         GeometryPassShadowExtension.depth_texture = GL.createTexture();
