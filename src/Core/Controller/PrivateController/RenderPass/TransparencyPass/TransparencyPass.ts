@@ -20,7 +20,7 @@ export abstract class TransparencyPass {
         TransparencyPass.transparent_storage = new TransparencyPassStorage(GL, 1920);
     }
     
-    static frameSetup(frame_info: FrameInfo, oldRenderOptions: RenderOptions, newRenderOptions: RenderOptions): void {
+    static frameSetup(frame_info: FrameInfo, newRenderOptions: RenderOptions): void {
         // const GL: WebGL2RenderingContext = MainController.CanvasController.getGL();
     }
     

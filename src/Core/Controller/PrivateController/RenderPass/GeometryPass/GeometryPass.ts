@@ -20,13 +20,13 @@ export abstract class GeometryPass {
         GeometryPassShadowExtension.appSetup();
     }
 
-    static frameSetup(frame_info: FrameInfo, oldRenderOptions: RenderOptions, newRenderOptions: RenderOptions): void {
+    static frameSetup(frame_info: FrameInfo, newRenderOptions: RenderOptions): void {
         // const GL: WebGL2RenderingContext = MainController.CanvasController.getGL();
 
         // clear the task list for this frame
         GeometryPass.solid_storage.clearTransparancyTaskList();
 
-        GeometryPassShadowExtension.frameSetup(frame_info, oldRenderOptions, newRenderOptions);
+        GeometryPassShadowExtension.frameSetup(frame_info, newRenderOptions);
     }
 
     static runPass(render_queue: RenderQueueMeshEntry[], frame_info: FrameInfo): void {

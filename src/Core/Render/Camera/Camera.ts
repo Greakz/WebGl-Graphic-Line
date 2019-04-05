@@ -23,6 +23,8 @@ export interface Camera {
 
     update(time: number): void;
 
+    getShadowFrustum(): number;
+
     position: vec3;
     target: vec3;
 
@@ -51,6 +53,10 @@ export abstract class BaseCamera implements Camera {
 
     constructor() {
         this.recalculateMatrices();
+    }
+
+    getShadowFrustum(): number {
+        return this.farPlane / 4;
     }
 
     recalculateMatrices() {

@@ -40,10 +40,10 @@ export abstract class LightningPass {
         LightningPassFinalize.appSetup();
     }
 
-    static frameSetup(frame_info: FrameInfo, oldRenderOptions: RenderOptions, newRenderOptions: RenderOptions): void {
-        LightningPassDeferredAndBulbs.frameSetup(frame_info, oldRenderOptions, newRenderOptions);
-        LightningPassBloomExtension.frameSetup(frame_info, oldRenderOptions, newRenderOptions);
-        LightningPassFinalize.frameSetup(frame_info, oldRenderOptions, newRenderOptions);
+    static frameSetup(frame_info: FrameInfo,  newRenderOptions: RenderOptions): void {
+        LightningPassDeferredAndBulbs.frameSetup(frame_info, newRenderOptions);
+        LightningPassBloomExtension.frameSetup(frame_info, newRenderOptions);
+        LightningPassFinalize.frameSetup(frame_info, newRenderOptions);
     }
 
     static runPass(): void {

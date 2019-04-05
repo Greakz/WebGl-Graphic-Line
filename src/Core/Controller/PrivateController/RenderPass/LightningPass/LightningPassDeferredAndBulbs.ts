@@ -46,7 +46,7 @@ export abstract class LightningPassDeferredAndBulbs {
         GL.bindBuffer(GL.UNIFORM_BUFFER, null);
     }
 
-    static frameSetup(frame_info: FrameInfo, oldRenderOptions: RenderOptions, newRenderOptions: RenderOptions): void {
+    static frameSetup(frame_info: FrameInfo, newRenderOptions: RenderOptions): void {
         const GL: WebGL2RenderingContext = MainController.CanvasController.getGL();
         LightningPassDeferredAndBulbs.generateLightningData();
 

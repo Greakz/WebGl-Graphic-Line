@@ -35,7 +35,7 @@ export abstract class LightningPassFinalize {
 
     }
 
-    static frameSetup(frame_info: FrameInfo, oldRenderOptions: RenderOptions, newRenderOptions: RenderOptions) {
+    static frameSetup(frame_info: FrameInfo, newRenderOptions: RenderOptions) {
 
     }
 }

@@ -10,6 +10,7 @@ import {OutputPass} from "./RenderPass/OutputPass";
 import {SkyboxPass} from "./RenderPass/SkyboxPass";
 import {TransparencyPass} from "./RenderPass/TransparencyPass/TransparencyPass";
 import {getRenderOptionsHigh, RenderOptions} from "../../Scene/RenderOptions";
+import {GeometryPassShadowExtension} from "./RenderPass/GeometryPass/GeometryPassShadowExtension";
 
 
 export interface RenderControllerInterface {
@@ -39,8 +40,6 @@ export interface RenderControllerInterface {
 
 class RenderController implements RenderControllerInterface {
     private static readonly Log: LogInterface = LogInstance;
-
-    private render_options: RenderOptions = getRenderOptionsHigh();
 
     constructor() {
     }
@@ -103,19 +102,18 @@ class RenderController implements RenderControllerInterface {
             reflections: sceneRenderOptions.enable_reflections,
             transparency: sceneRenderOptions.enable_transparency,
         };
-        GeometryPass.frameSetup(this.frame_info, this.render_options, sceneRenderOptions);
-        TransparencyPass.frameSetup(this.frame_info, this.render_options, sceneRenderOptions);
-        SkyboxPass.frameSetup(this.frame_info, this.render_options, sceneRenderOptions);
-        LightningPass.frameSetup(this.frame_info, this.render_options, sceneRenderOptions);
-        OutputPass.frameSetup(this.frame_info, this.render_options, sceneRenderOptions);
-        this.render_options = sceneRenderOptions
+        GeometryPass.frameSetup(this.frame_info, sceneRenderOptions);
+        TransparencyPass.frameSetup(this.frame_info, sceneRenderOptions);
+        SkyboxPass.frameSetup(this.frame_info, sceneRenderOptions);
+        LightningPass.frameSetup(this.frame_info, sceneRenderOptions);
+        OutputPass.frameSetup(this.frame_info, sceneRenderOptions);
     }
 
     public framebufferDebugPass() {
         MainController.ShaderController.getFramebufferDebugShader().textureDebugPass(
             [
-                LightningPass.lightning_storage.light_blurred_result,
-                TransparencyPass.transparent_storage.blend_texture,
+                GeometryPassShadowExtension.depth_texture,
+                GeometryPassShadowExtension.shadow_texture,
                 LightningPass.lightning_storage.light_calculation_result,
                 LightningPass.lightning_storage.light_final_result,
             ]

@@ -17,7 +17,7 @@ export function getRenderOptionsUltra(): RenderOptions {
         render_texture_precision: 1920,
 
         enable_shadow: true,
-        shadow_texture_precision: 1024,
+        shadow_texture_precision: 1920,
 
         enable_bloom: true,
         bloom_blur_precision: 3,
@@ -31,7 +31,7 @@ export function getRenderOptionsHigh(): RenderOptions {
         render_texture_precision: 1600,
 
         enable_shadow: true,
-        shadow_texture_precision: 512,
+        shadow_texture_precision: 1024,
 
         enable_bloom: true,
         bloom_blur_precision: 2,

@@ -21,6 +21,8 @@ export abstract class GeometryPassShadowExtension {
     static depth_texture: WebGLTexture;
     static shadow_texture: WebGLTexture;
 
+    static set_up_size: number = 1920;
+
     static appSetup(): void {
        const GL: WebGL2RenderingContext = MainController.CanvasController.getGL();
         /**
@@ -28,60 +30,17 @@ export abstract class GeometryPassShadowExtension {
          * RGB = XYZ from ScreenSpace pressed
          */
 
-        const SIZEX = 1920;
-        const SIZEY = 1920;
-        const INTERN_FORMAT = GL.RGBA32F;
-        const FILTER = GL.NEAREST;
-        const LEVEL = 1;
-
         ////////////////////////////////////////////
         // BIND FRAMEBUFFER
         ////////////////////////////////////////////
         GeometryPassShadowExtension.shadow_framebuffer = GL.createFramebuffer();
-        GL.bindFramebuffer(GL.FRAMEBUFFER, GeometryPassShadowExtension.shadow_framebuffer);
-        GL.activeTexture(GL.TEXTURE0);
 
-        ////////////////////////////////////////////
-        // BIND DEPTH Texture
-        ////////////////////////////////////////////
-        GeometryPassShadowExtension.depth_texture = GL.createTexture();
-        GL.bindTexture(GL.TEXTURE_2D, GeometryPassShadowExtension.depth_texture);
-        // GL.texImage2D(GL.TEXTURE_2D, 0, GL.DEPTH_COMPONENT32F, SIZEX, SIZEY, 0, GL.DEPTH_COMPONENT, GL.FLOAT, null);
-        GL.pixelStorei(GL.UNPACK_FLIP_Y_WEBGL, 0);
-        GL.texStorage2D(
-            GL.TEXTURE_2D,
-            LEVEL,
-            GL.DEPTH_COMPONENT32F,
-            SIZEX,
-            SIZEY
-        );
-        GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MIN_FILTER, FILTER);
-        GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MAG_FILTER, FILTER);
-        GL.framebufferTexture2D(GL.FRAMEBUFFER, GL.DEPTH_ATTACHMENT, GL.TEXTURE_2D, GeometryPassShadowExtension.depth_texture, 0);
-
-        ////////////////////////////////////////////
-        // CREATE POSITION TEXTURE
-        ////////////////////////////////////////////
-        GeometryPassShadowExtension.shadow_texture = GL.createTexture();
-        GL.bindTexture(GL.TEXTURE_2D, GeometryPassShadowExtension.shadow_texture);
-        GL.pixelStorei(GL.UNPACK_FLIP_Y_WEBGL, 0);
-        GL.texStorage2D(
-            GL.TEXTURE_2D,
-            LEVEL,
-            INTERN_FORMAT,
-            SIZEX,
-            SIZEY
-        );
-        GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MIN_FILTER, FILTER);
-        GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MAG_FILTER, FILTER);
-        GL.framebufferTexture2D(GL.FRAMEBUFFER, GL.COLOR_ATTACHMENT0, GL.TEXTURE_2D, GeometryPassShadowExtension.shadow_texture, 0);
-
+        GeometryPassShadowExtension.setupTextures(GL, GeometryPassShadowExtension.set_up_size);
         ////////////////////////////////////////////
         // SETUP DRAW BUFFER
         // CHECK STATUS
         // & UNBIND THE SHIT
         ////////////////////////////////////////////
-        GL.drawBuffers([GL.COLOR_ATTACHMENT0]);
 
         checkFramebuffer(GL, GeometryPassShadowExtension.shadow_framebuffer);
 
@@ -91,11 +50,19 @@ export abstract class GeometryPassShadowExtension {
         GL.bindFramebuffer(GL.FRAMEBUFFER, null);
     }
     
-    static frameSetup(frame_info: FrameInfo, oldRenderOptions: RenderOptions, newRenderOptions: RenderOptions): void {
+    static frameSetup(frame_info: FrameInfo, newRenderOptions: RenderOptions): void {
         const GL: WebGL2RenderingContext = MainController.CanvasController.getGL();
+
+        console.log(newRenderOptions.shadow_texture_precision)
+
+        if(GeometryPassShadowExtension.set_up_size !== newRenderOptions.shadow_texture_precision) {
+            GeometryPassShadowExtension.setupTextures(GL, newRenderOptions.shadow_texture_precision);
+            GeometryPassShadowExtension.set_up_size = newRenderOptions.shadow_texture_precision;
+        }
+
         GL.bindFramebuffer(GL.FRAMEBUFFER, GeometryPassShadowExtension.shadow_framebuffer);
+        GL.viewport(0, 0, GeometryPassShadowExtension.set_up_size, GeometryPassShadowExtension.set_up_size);
         GL.clearColor(0.0, 0.0, 0.0, 1.0);
-        GL.viewport(0, 0, 1920, 1920);
         GL.enable(GL.DEPTH_TEST);
         GL.depthFunc(GL.LEQUAL);
         GL.clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT);
@@ -112,15 +79,15 @@ export abstract class GeometryPassShadowExtension {
 
         const cam: Camera = MainController.SceneController.getSceneCamera();
         GeometryPassShadowExtension.proj_matrix = flatMat4(getOrthographicMatrix(
-            -(cam.farPlane / 4),
-            (cam.farPlane / 4),
-            -(cam.farPlane / 4),
-            (cam.farPlane / 4),
+            -(cam.getShadowFrustum()),
+            (cam.getShadowFrustum()),
+            -(cam.getShadowFrustum()),
+            (cam.getShadowFrustum()),
             5.0,
             (cam.farPlane)
         ));
         GeometryPassShadowExtension.view_matrix = flatMat4(lookAtMatrix(
-            addVec3(cam.target, scaleVec3(daylight.direction, -(cam.farPlane / 4))),
+            addVec3(cam.target, scaleVec3(daylight.direction, -cam.getShadowFrustum())),
             cam.target,
             calculateUsefulUpVector(daylight.direction)
         ));
@@ -160,6 +127,57 @@ export abstract class GeometryPassShadowExtension {
             false,
             new Float32Array(GeometryPassShadowExtension.proj_matrix)
         );
+    }
+
+    static setupTextures(GL: WebGL2RenderingContext, size: number) {
+        const INTERN_FORMAT = GL.RGBA32F;
+        const FILTER = GL.NEAREST;
+        const LEVEL = 1;
+
+        GL.bindFramebuffer(GL.FRAMEBUFFER, GeometryPassShadowExtension.shadow_framebuffer);
+        GL.activeTexture(GL.TEXTURE0);
+
+        ////////////////////////////////////////////
+        // BIND DEPTH Texture
+        ////////////////////////////////////////////
+        if(GeometryPassShadowExtension.depth_texture !== undefined) {
+            console.log('delete texture to recreate')
+            GL.deleteTexture(GeometryPassShadowExtension.depth_texture)
+        }
+        GeometryPassShadowExtension.depth_texture = GL.createTexture();
+        GL.bindTexture(GL.TEXTURE_2D, GeometryPassShadowExtension.depth_texture);
+        GL.pixelStorei(GL.UNPACK_FLIP_Y_WEBGL, 0);
+        GL.texStorage2D(
+            GL.TEXTURE_2D,
+            LEVEL,
+            GL.DEPTH_COMPONENT32F,
+            size,
+            size
+        );
+        GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MIN_FILTER, FILTER);
+        GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MAG_FILTER, FILTER);
+        GL.framebufferTexture2D(GL.FRAMEBUFFER, GL.DEPTH_ATTACHMENT, GL.TEXTURE_2D, GeometryPassShadowExtension.depth_texture, 0);
+
+        ////////////////////////////////////////////
+        // CREATE POSITION TEXTURE
+        ////////////////////////////////////////////
+        if(GeometryPassShadowExtension.shadow_texture !== undefined) {
+            GL.deleteTexture(GeometryPassShadowExtension.shadow_texture)
+        }
+        GeometryPassShadowExtension.shadow_texture = GL.createTexture();
+        GL.bindTexture(GL.TEXTURE_2D, GeometryPassShadowExtension.shadow_texture);
+        GL.pixelStorei(GL.UNPACK_FLIP_Y_WEBGL, 0);
+        GL.texStorage2D(
+            GL.TEXTURE_2D,
+            LEVEL,
+            INTERN_FORMAT,
+            size,
+            size
+        );
+        GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MIN_FILTER, FILTER);
+        GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MAG_FILTER, FILTER);
+        GL.framebufferTexture2D(GL.FRAMEBUFFER, GL.COLOR_ATTACHMENT0, GL.TEXTURE_2D, GeometryPassShadowExtension.shadow_texture, 0);
+        GL.drawBuffers([GL.COLOR_ATTACHMENT0]);
     }
 }
 

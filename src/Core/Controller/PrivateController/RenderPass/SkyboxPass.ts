@@ -146,7 +146,7 @@ export abstract class SkyboxPass {
      * SETUP before each Frame
      * @param frame_info
      */
-    static frameSetup(frame_info: FrameInfo, oldRenderOptions: RenderOptions, newRenderOptions: RenderOptions): void {
+    static frameSetup(frame_info: FrameInfo, newRenderOptions: RenderOptions): void {
         // const GL: WebGL2RenderingContext = MainController.CanvasController.getGL();
     }
 

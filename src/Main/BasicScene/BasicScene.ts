@@ -13,7 +13,7 @@ import {DynamicCubeBlankObject} from "./SceneObjects/Dynamic/DynamicCubeBlankObj
 import {scaleVec3} from "../../Core/Geometry/Vector/scale";
 import {NightSkybox} from "./NightSkybox";
 import {DynamicCubeTransparentObject} from "./SceneObjects/Dynamic/DynamicCubeTransparentObject";
-import {getRenderOptionsHigh, RenderOptions} from "../../Core/Scene/RenderOptions";
+import {getRenderOptionsHigh, getRenderOptionsUltra, RenderOptions} from "../../Core/Scene/RenderOptions";
 
 export class BasicScene extends BaseScene implements Scene {
     camera: Camera = new AdvancedCamera();
@@ -34,6 +34,8 @@ export class BasicScene extends BaseScene implements Scene {
     private omniLight: OmniLight = new OmniLight();
 
     init() {
+
+        // this.render_options.shadow_texture_precision = 512;
 
         this.day_light_alt.color = {x: 0.7, y: 0.8, z: 0.9};
         this.day_light_alt.amb_factor = {x: 0.3, y: 0.3, z: 0.3};
