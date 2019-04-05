@@ -20,6 +20,7 @@ import {
 } from "./LightningPass";
 import {SceneLightInfo} from "../../../SceneController";
 import {TransparencyPass} from "../TransparencyPass/TransparencyPass";
+import {RenderOptions} from "../../../../Scene/RenderOptions";
 
 export abstract class LightningPassDeferredAndBulbs {
 
@@ -45,7 +46,7 @@ export abstract class LightningPassDeferredAndBulbs {
         GL.bindBuffer(GL.UNIFORM_BUFFER, null);
     }
 
-    static frameSetup(frame_info: FrameInfo): void {
+    static frameSetup(frame_info: FrameInfo, oldRenderOptions: RenderOptions, newRenderOptions: RenderOptions): void {
         const GL: WebGL2RenderingContext = MainController.CanvasController.getGL();
         LightningPassDeferredAndBulbs.generateLightningData();
 

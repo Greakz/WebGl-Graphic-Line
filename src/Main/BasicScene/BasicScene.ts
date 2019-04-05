@@ -13,6 +13,7 @@ import {DynamicCubeBlankObject} from "./SceneObjects/Dynamic/DynamicCubeBlankObj
 import {scaleVec3} from "../../Core/Geometry/Vector/scale";
 import {NightSkybox} from "./NightSkybox";
 import {DynamicCubeTransparentObject} from "./SceneObjects/Dynamic/DynamicCubeTransparentObject";
+import {getRenderOptionsHigh, RenderOptions} from "../../Core/Scene/RenderOptions";
 
 export class BasicScene extends BaseScene implements Scene {
     camera: Camera = new AdvancedCamera();
@@ -20,6 +21,8 @@ export class BasicScene extends BaseScene implements Scene {
     day_light_alt: DayLight = new DayLight();
     sky_box: Skybox = new DaySkybox();
     sky_box_alt: Skybox = new NightSkybox();
+
+    render_options: RenderOptions = getRenderOptionsHigh();
 
     private groundPlane: StaticPlaneObject = new StaticPlaneObject();
     private exampleCube: DynamicCubeObject = new DynamicCubeBlankObject();

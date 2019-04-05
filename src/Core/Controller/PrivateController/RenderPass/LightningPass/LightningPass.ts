@@ -13,6 +13,7 @@ import {PreClipScreenPlaneVao} from "./PreClipScreenPlaneVao";
 import {LightBulbMeshVao} from "./LightBulbMeshVao";
 import {LightningPassDeferredAndBulbs} from "./LightningPassDeferredAndBulbs";
 import {LightningPassFinalize} from "./LightningPassFinalize";
+import {RenderOptions} from "../../../../Scene/RenderOptions";
 
 export const MAXIMUM_OMNI_LIGHT_BLOCKS: number = 4;
 export const MAXIMUM_SPOT_LIGHT_BLOCKS: number = 4;
@@ -39,10 +40,10 @@ export abstract class LightningPass {
         LightningPassFinalize.appSetup();
     }
 
-    static frameSetup(frame_info: FrameInfo): void {
-        LightningPassDeferredAndBulbs.frameSetup(frame_info);
-        LightningPassBloomExtension.frameSetup(frame_info);
-        LightningPassFinalize.frameSetup(frame_info);
+    static frameSetup(frame_info: FrameInfo, oldRenderOptions: RenderOptions, newRenderOptions: RenderOptions): void {
+        LightningPassDeferredAndBulbs.frameSetup(frame_info, oldRenderOptions, newRenderOptions);
+        LightningPassBloomExtension.frameSetup(frame_info, oldRenderOptions, newRenderOptions);
+        LightningPassFinalize.frameSetup(frame_info, oldRenderOptions, newRenderOptions);
     }
 
     static runPass(): void {

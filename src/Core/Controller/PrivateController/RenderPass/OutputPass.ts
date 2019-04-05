@@ -1,6 +1,7 @@
 import {MainController} from "../../MainController";
 import {FrameInfo} from "../RenderController";
 import {LightningPass} from "./LightningPass/LightningPass";
+import {RenderOptions} from "../../../Scene/RenderOptions";
 
 export abstract class OutputPass {
     //////////////////////////////
@@ -47,7 +48,7 @@ export abstract class OutputPass {
         GL.vertexAttribPointer(output_shader.attribute_pointer.texture_position, 2, GL.FLOAT, false, 0, 0);
     }
 
-    static frameSetup(frame_info: FrameInfo): void {
+    static frameSetup(frame_info: FrameInfo, oldRenderOptions: RenderOptions, newRenderOptions: RenderOptions): void {
         const GL: WebGL2RenderingContext = MainController.CanvasController.getGL();
         GL.bindBuffer(GL.ARRAY_BUFFER, OutputPass.plane_texture_buffer);
         const texData = [

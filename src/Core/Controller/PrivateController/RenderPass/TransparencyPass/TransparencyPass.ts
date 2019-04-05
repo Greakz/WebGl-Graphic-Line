@@ -9,6 +9,7 @@ import {TransparencyShader} from "../../../../Render/Shader/TransparencyShader";
 import {LightningPassDeferredAndBulbs} from "../LightningPass/LightningPassDeferredAndBulbs";
 import {flatVec3} from "../../../../Geometry/Vector/flatten";
 import {SkyboxPass} from "../SkyboxPass";
+import {RenderOptions} from "../../../../Scene/RenderOptions";
 
 export abstract class TransparencyPass {
 
@@ -19,7 +20,7 @@ export abstract class TransparencyPass {
         TransparencyPass.transparent_storage = new TransparencyPassStorage(GL, 1920);
     }
     
-    static frameSetup(frame_info: FrameInfo): void {
+    static frameSetup(frame_info: FrameInfo, oldRenderOptions: RenderOptions, newRenderOptions: RenderOptions): void {
         // const GL: WebGL2RenderingContext = MainController.CanvasController.getGL();
     }
     

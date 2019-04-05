@@ -4,6 +4,7 @@ import {GeometryPass} from "../GeometryPass/GeometryPass";
 import {SkyboxPass} from "../SkyboxPass";
 import {FrameInfo} from "../../RenderController";
 import {TransparencyPass} from "../TransparencyPass/TransparencyPass";
+import {RenderOptions} from "../../../../Scene/RenderOptions";
 
 export abstract class LightningPassFinalize {
 
@@ -34,7 +35,7 @@ export abstract class LightningPassFinalize {
 
     }
 
-    static frameSetup(frame_info: FrameInfo) {
+    static frameSetup(frame_info: FrameInfo, oldRenderOptions: RenderOptions, newRenderOptions: RenderOptions) {
 
     }
 }

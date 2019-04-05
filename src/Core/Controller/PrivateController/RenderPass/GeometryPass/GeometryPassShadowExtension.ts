@@ -11,6 +11,7 @@ import {addVec3} from "../../../../Geometry/Vector/add";
 import {scaleVec3} from "../../../../Geometry/Vector/scale";
 import {vec3} from "../../../../Geometry/Vector/vec";
 import {crossProductVec3} from "../../../../Geometry/Vector/crossProduct";
+import {RenderOptions} from "../../../../Scene/RenderOptions";
 
 export abstract class GeometryPassShadowExtension {
 
@@ -90,7 +91,7 @@ export abstract class GeometryPassShadowExtension {
         GL.bindFramebuffer(GL.FRAMEBUFFER, null);
     }
     
-    static frameSetup(frame_info: FrameInfo): void {
+    static frameSetup(frame_info: FrameInfo, oldRenderOptions: RenderOptions, newRenderOptions: RenderOptions): void {
         const GL: WebGL2RenderingContext = MainController.CanvasController.getGL();
         GL.bindFramebuffer(GL.FRAMEBUFFER, GeometryPassShadowExtension.shadow_framebuffer);
         GL.clearColor(0.0, 0.0, 0.0, 1.0);
@@ -100,7 +101,6 @@ export abstract class GeometryPassShadowExtension {
         GL.clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT);
 
         let daylight: DayLight;
-
         if(
             MainController.SceneController.getSceneAltBalance() > 0.5 &&
             MainController.SceneController.getSceneDayLightAlt() != null

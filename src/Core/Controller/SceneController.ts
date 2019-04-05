@@ -9,6 +9,7 @@ import {SceneLight} from "../Render/Resource/Light/SceneLight";
 import {SpotLight} from "../Render/Resource/Light/SpotLight";
 import {MainController} from "./MainController";
 import {Skybox} from "../Render/Skybox/Skybox";
+import {RenderOptions} from "../Scene/RenderOptions";
 
 export interface SceneControllerInterface {
     pushSceneObject(sceneObject: SceneObject): void
@@ -152,6 +153,9 @@ class SceneController implements PrivateSceneControllerInterface {
     getSceneDayLightAlt(): DayLight | null {
         return this.scene.day_light_alt;
     }
+    getSceneRenderOptions(): RenderOptions {
+        return this.scene.render_options;
+    }
 
     getSceneLightInfo(): SceneLightInfo {
         return {
@@ -243,6 +247,7 @@ export interface PrivateSceneControllerInterface extends SceneControllerInterfac
     getSceneSkybox(): Skybox
     getSceneSkyboxAlt(): Skybox | undefined
     getSceneAltBalance(): number
+    getSceneRenderOptions(): RenderOptions;
 }
 
 var SceneControllerInstance: SceneController = new SceneController();

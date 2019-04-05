@@ -6,25 +6,13 @@ import {Texture, Texture2DI, TextureCubeMapI} from "../../Render/Resource/Textur
 import {Image} from "../../Render/Resource/Image/Image";
 import {GeometryPass} from "./RenderPass/GeometryPass/GeometryPass";
 import {LightningPass} from "./RenderPass/LightningPass/LightningPass";
-import {OutputShader} from "../../Render/Shader/OutputShader";
 import {OutputPass} from "./RenderPass/OutputPass";
-import {GeometryPassShadowExtension} from "./RenderPass/GeometryPass/GeometryPassShadowExtension";
 import {SkyboxPass} from "./RenderPass/SkyboxPass";
-import {TextureCubeMap} from "../../Render/Resource/Texture/TextureCubeMap";
 import {TransparencyPass} from "./RenderPass/TransparencyPass/TransparencyPass";
-import {LightningPassFinalize} from "./RenderPass/LightningPass/LightningPassFinalize";
+import {getRenderOptionsHigh, RenderOptions} from "../../Scene/RenderOptions";
 
-export interface GraphicOptions {
-
-}
 
 export interface RenderControllerInterface {
-    setGraphicOptions(options: GraphicOptions);
-
-    getGraphicOptions(): GraphicOptions;
-
-    shadowPass(): void;
-
     geometryPass(): void;
 
     framebufferDebugPass(): void;
@@ -34,8 +22,6 @@ export interface RenderControllerInterface {
     lightningPass(): void;
 
     outputPass(): void;
-
-    postProcessPass(): void;
 
     addModel(model: Model): void;
 
@@ -54,7 +40,7 @@ export interface RenderControllerInterface {
 class RenderController implements RenderControllerInterface {
     private static readonly Log: LogInterface = LogInstance;
 
-    private graphic_options: GraphicOptions = {};
+    private render_options: RenderOptions = getRenderOptionsHigh();
 
     constructor() {
     }
@@ -64,18 +50,17 @@ class RenderController implements RenderControllerInterface {
      */
     private render_queue: RenderQueueMeshEntry[] = [];
 
-    /**
-     * RenderQueue for the Lightning Pass
-     */
-    private light_queue: { [key: string]: LightQueueEntry; } = {};
-
     private frame_info: FrameInfo = {
         height: 0,
         width: 0,
         tex_bottom: 0,
         tex_left: 0,
         tex_right: 0,
-        tex_top: 0
+        tex_top: 0,
+        shadows: true,
+        bloom: true,
+        reflections: true,
+        transparency: true,
     };
 
     public getFrameInfo(): FrameInfo {
@@ -105,19 +90,25 @@ class RenderController implements RenderControllerInterface {
             top = 1.0;
             bottom = 0.0;
         }
+        const sceneRenderOptions: RenderOptions = MainController.SceneController.getSceneRenderOptions()
         this.frame_info = {
             height: MainController.CanvasController.getHeight(),
             width: MainController.CanvasController.getWidth(),
             tex_bottom: bottom,
             tex_left: left,
             tex_right: right,
-            tex_top: top
+            tex_top: top,
+            shadows: sceneRenderOptions.enable_shadow,
+            bloom: sceneRenderOptions.enable_bloom,
+            reflections: sceneRenderOptions.enable_reflections,
+            transparency: sceneRenderOptions.enable_transparency,
         };
-        GeometryPass.frameSetup(this.frame_info);
-        TransparencyPass.frameSetup(this.frame_info);
-        SkyboxPass.frameSetup(this.frame_info);
-        LightningPass.frameSetup(this.frame_info);
-        OutputPass.frameSetup(this.frame_info);
+        GeometryPass.frameSetup(this.frame_info, this.render_options, sceneRenderOptions);
+        TransparencyPass.frameSetup(this.frame_info, this.render_options, sceneRenderOptions);
+        SkyboxPass.frameSetup(this.frame_info, this.render_options, sceneRenderOptions);
+        LightningPass.frameSetup(this.frame_info, this.render_options, sceneRenderOptions);
+        OutputPass.frameSetup(this.frame_info, this.render_options, sceneRenderOptions);
+        this.render_options = sceneRenderOptions
     }
 
     public framebufferDebugPass() {
@@ -132,11 +123,8 @@ class RenderController implements RenderControllerInterface {
     }
     public cubemapDebugPass() {
         MainController.ShaderController.getCubeMapDebugShader().cubeMapDebugPass(
-           SkyboxPass.cubemap_gen_result
+            MainController.SceneController.getSceneSkyboxAlt().cube_map.get()
         );
-    }
-
-    public shadowPass() {
     }
 
     public geometryPass() {
@@ -152,18 +140,6 @@ class RenderController implements RenderControllerInterface {
 
     public outputPass() {
         OutputPass.runPass(this.frame_info);
-    }
-
-    public postProcessPass() {
-
-    }
-
-    public setGraphicOptions(options: GraphicOptions) {
-        this.graphic_options = options;
-    }
-
-    public getGraphicOptions(): GraphicOptions {
-        return this.graphic_options;
     }
 
     public addModel(model: Model) {
@@ -280,6 +256,10 @@ export interface FrameInfo {
     tex_right: number;
     tex_top: number;
     tex_bottom: number;
+    shadows: boolean;
+    bloom: boolean;
+    reflections: boolean;
+    transparency: boolean;
 }
 
 export interface RenderQueueMeshEntry {

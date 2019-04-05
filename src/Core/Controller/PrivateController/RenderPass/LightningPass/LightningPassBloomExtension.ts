@@ -10,6 +10,7 @@ import {Camera} from "../../../../Render/Camera/Camera";
 import {addVec3} from "../../../../Geometry/Vector/add";
 import {scaleVec3} from "../../../../Geometry/Vector/scale";
 import {LightningPass} from "./LightningPass";
+import {RenderOptions} from "../../../../Scene/RenderOptions";
 
 export abstract class LightningPassBloomExtension {
 
@@ -17,7 +18,7 @@ export abstract class LightningPassBloomExtension {
         const GL: WebGL2RenderingContext = MainController.CanvasController.getGL();
     }
 
-    static frameSetup(frame_info: FrameInfo): void {
+    static frameSetup(frame_info: FrameInfo, oldRenderOptions: RenderOptions, newRenderOptions: RenderOptions): void {
         const GL: WebGL2RenderingContext = MainController.CanvasController.getGL();
 
     }

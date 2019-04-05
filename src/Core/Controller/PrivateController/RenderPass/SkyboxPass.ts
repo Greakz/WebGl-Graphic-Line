@@ -10,6 +10,7 @@ import {CustomSkyBoxShader} from "../../../Render/Shader/CustomSkyBoxShader";
 import {getRotationYMatrix} from "../../../Geometry/Matrix/rotation";
 import {Skybox} from "../../../Render/Skybox/Skybox";
 import {DayLight} from "../../../Render/Resource/Light/DayLight";
+import {RenderOptions} from "../../../Scene/RenderOptions";
 
 
 export abstract class SkyboxPass {
@@ -145,7 +146,7 @@ export abstract class SkyboxPass {
      * SETUP before each Frame
      * @param frame_info
      */
-    static frameSetup(frame_info: FrameInfo): void {
+    static frameSetup(frame_info: FrameInfo, oldRenderOptions: RenderOptions, newRenderOptions: RenderOptions): void {
         // const GL: WebGL2RenderingContext = MainController.CanvasController.getGL();
     }
 

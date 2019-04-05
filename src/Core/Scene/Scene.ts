@@ -1,6 +1,7 @@
 import { Camera } from '../Render/Camera/Camera'
 import {DayLight} from "../Render/Resource/Light/DayLight";
 import {Skybox} from "../Render/Skybox/Skybox";
+import {RenderOptions} from "./RenderOptions";
 
 export interface Scene {
     day_light: DayLight;
@@ -9,6 +10,7 @@ export interface Scene {
     sky_box_alt: Skybox | null;
     alt_balance: number;
     camera: Camera;
+    render_options: RenderOptions;
     init(): void;
     update(time: number): void;
 }

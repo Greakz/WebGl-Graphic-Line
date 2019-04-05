@@ -5,6 +5,7 @@ import {DrawMesh, DrawMeshesWithBufferedData} from "../../../../Render/DrawMesh"
 import {GeometryPassShadowExtension} from "./GeometryPassShadowExtension";
 import {GeometryPassStorage} from "./GeometryPassStorage";
 import {TransparencyPass} from "../TransparencyPass/TransparencyPass";
+import {RenderOptions} from "../../../../Scene/RenderOptions";
 
 export abstract class GeometryPass {
 
@@ -19,13 +20,13 @@ export abstract class GeometryPass {
         GeometryPassShadowExtension.appSetup();
     }
 
-    static frameSetup(frame_info: FrameInfo): void {
+    static frameSetup(frame_info: FrameInfo, oldRenderOptions: RenderOptions, newRenderOptions: RenderOptions): void {
         // const GL: WebGL2RenderingContext = MainController.CanvasController.getGL();
 
         // clear the task list for this frame
         GeometryPass.solid_storage.clearTransparancyTaskList();
 
-        GeometryPassShadowExtension.frameSetup(frame_info);
+        GeometryPassShadowExtension.frameSetup(frame_info, oldRenderOptions, newRenderOptions);
     }
 
     static runPass(render_queue: RenderQueueMeshEntry[], frame_info: FrameInfo): void {
