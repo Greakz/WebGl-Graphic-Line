@@ -39,6 +39,7 @@ uniform sampler2D shadow_map;
 uniform sampler2D t_transparency_map;
 uniform sampler2D t_albedo_blend_map;
 
+uniform ivec4 enable_shad_shadblur_refl_trans;
 
 struct SpotLight {
     vec4 position;
@@ -174,7 +175,9 @@ vec3 calculateDaylight(in DayLight process_daylight,
     return (dir_amb_light_res + dir_diff_light_res + dir_spec_light_res) * vec3(daylight_factor);
 }
 
-float daylightShadowFactor(in vec3 world_space_position, float balance) {
+float daylightShadowFactor(in vec3 world_space_position, float balance, int blur) {
+    // shadows are only generated for the more active daylight source.
+    // therefore should be skipped if below 0.5 since these values references a non active daylight
     if(balance < 0.5) {
         return 1.0;
     }
@@ -186,16 +189,21 @@ float daylightShadowFactor(in vec3 world_space_position, float balance) {
     vec2 texelSize = 1.0 / vec2(float(textureSize.x), float(textureSize.y));
 
     float shadow = 0.0;
-    for(int x = -1; x <= 1; ++x)
-    {
-        for(int y = -1; y <= 1; ++y)
+    if(blur != 0) {
+        for(int x = -1; x <= 1; ++x)
         {
-            float pcfDepth = texture(shadow_map, fragment_daylight_space.xy + vec2(x, y) * texelSize).r;
-            float add = x == 0 && y == 0 ? 3.0 : 1.0;
-            shadow += fragment_daylight_space.z - SHADOW_BIAS > pcfDepth ? add : 0.0;
+            for(int y = -1; y <= 1; ++y)
+            {
+                float pcfDepth = texture(shadow_map, fragment_daylight_space.xy + vec2(x, y) * texelSize).r;
+                float add = x == 0 && y == 0 ? 3.0 : 1.0;
+                shadow += fragment_daylight_space.z - SHADOW_BIAS > pcfDepth ? add : 0.0;
+            }
         }
+        shadow /= 11.0;
+    } else {
+        float pcfDepth = texture(shadow_map, fragment_daylight_space.xy).r;
+        shadow = fragment_daylight_space.z - SHADOW_BIAS > pcfDepth ? 1.0 : 0.0;
     }
-    shadow /= 11.0;
     return (1.0 - (shadow * ((balance - 0.5) * 2.0)));
 }
 
@@ -231,17 +239,21 @@ void main(void) {
     vec3 reflection_result = calculateReflection(view_to_frag_n, world_space_normal, fragment_reflective_intensity);
 
     // DAYLIGHT (DIRECTIONAL) FROM SOLID OBJECTS
-    vec3 final_daylight_color = vec3(0.0);
+    vec3 daylight1_color = vec3(0.0);
     if(daylight_balance < 1.0) {
-        final_daylight_color +=
-            calculateDaylight(daylight, 1.0 - daylight_balance, world_space_normal, view_to_frag_n, fragment_diffuse_color, fragment_specular_color, fragment_shininess_intensity)
-            * daylightShadowFactor(world_space_position, 1.0 - daylight_balance);
+        daylight1_color = calculateDaylight(daylight, 1.0 - daylight_balance, world_space_normal, view_to_frag_n, fragment_diffuse_color, fragment_specular_color, fragment_shininess_intensity);
+        if(enable_shad_shadblur_refl_trans.x != 0) {
+            daylight1_color *= daylightShadowFactor(world_space_position, 1.0 - daylight_balance, enable_shad_shadblur_refl_trans.y);
+        }
     }
+    vec3 daylight2_color = vec3(0.0);
     if(daylight_balance > 0.0) {
-        final_daylight_color +=
-            calculateDaylight(daylight2, daylight_balance, world_space_normal, view_to_frag_n, fragment_diffuse_color, fragment_specular_color, fragment_shininess_intensity)
-            * daylightShadowFactor(world_space_position, daylight_balance);
+        daylight2_color = calculateDaylight(daylight2, daylight_balance, world_space_normal, view_to_frag_n, fragment_diffuse_color, fragment_specular_color, fragment_shininess_intensity);
+        if(enable_shad_shadblur_refl_trans.x != 0) {
+            daylight2_color *= daylightShadowFactor(world_space_position, daylight_balance, enable_shad_shadblur_refl_trans.y);
+        }
     }
+    vec3 final_daylight_color = daylight1_color + daylight2_color;
 
     // OMNI AND SPOT LIGHT SETTINGS
     int omni_block_count = int(omni_spot_blockcount_lastblockcount.x);

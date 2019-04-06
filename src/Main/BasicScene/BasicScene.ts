@@ -14,7 +14,7 @@ import {scaleVec3} from "../../Core/Geometry/Vector/scale";
 import {NightSkybox} from "./NightSkybox";
 import {DynamicCubeTransparentObject} from "./SceneObjects/Dynamic/DynamicCubeTransparentObject";
 import {
-    getRenderOptionsHigh,
+    getRenderOptionsHigh, getRenderOptionsLow,
     getRenderOptionsMedium,
     getRenderOptionsUltra,
     RenderOptions
@@ -27,7 +27,10 @@ export class BasicScene extends BaseScene implements Scene {
     sky_box: Skybox = new DaySkybox();
     sky_box_alt: Skybox = new NightSkybox();
 
-    render_options: RenderOptions = getRenderOptionsHigh();
+    //render_options: RenderOptions = getRenderOptionsUltra();
+    //render_options: RenderOptions = getRenderOptionsHigh();
+    // render_options: RenderOptions = getRenderOptionsMedium();
+     render_options: RenderOptions = getRenderOptionsLow();
 
     private groundPlane: StaticPlaneObject = new StaticPlaneObject();
     private exampleCube: DynamicCubeObject = new DynamicCubeBlankObject();
@@ -40,7 +43,6 @@ export class BasicScene extends BaseScene implements Scene {
 
     init() {
 
-        // this.render_options.shadow_texture_precision = 512;
 
         this.day_light_alt.color = {x: 0.7, y: 0.8, z: 0.9};
         this.day_light_alt.amb_factor = {x: 0.3, y: 0.3, z: 0.3};

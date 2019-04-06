@@ -37,6 +37,7 @@ export abstract class GeometryPass {
         GL.depthFunc(GL.LEQUAL);
 
         GeometryPass.solid_storage.bindFramebufferAndShader(GL);
+        GL.viewport(0, 0, 1920, 1920);
         GL.clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT);
 
         // used by both shaders!
@@ -62,15 +63,19 @@ export abstract class GeometryPass {
                             GeometryPass.solid_storage.addToTransparancyTaskList(transparancyWithDataTask);
                         } else {
                             // solid pass!
-                            GeometryPass.solid_storage.bindFramebufferAndShader(GL);
                             GeometryPass.geometryPassPrepareUniformMeshData(render_queue_entry.draw_meshes);
                             material_to_use.use(GL, MainController.ShaderController.getGeometryShader());
-                            GL.viewport(0, 0, 1920, 1920);
                             GeometryPass.geometryPassDrawMeshTasks(render_queue_entry.draw_meshes);
 
-                            // SHADOW PASS
-                            GeometryPassShadowExtension.bindForDrawShadow();
-                            GeometryPass.geometryPassDrawMeshTasks(render_queue_entry.draw_meshes);
+                            if(frame_info.shadows) {
+                                // SHADOW PASS
+                                GeometryPassShadowExtension.bindForDrawShadow();
+                                GeometryPass.geometryPassDrawMeshTasks(render_queue_entry.draw_meshes);
+
+                                // Set back to solid pass
+                                GeometryPass.solid_storage.bindFramebufferAndShader(GL);
+                                GL.viewport(0, 0, 1920, 1920);
+                            }
                         }
                     }
                 );

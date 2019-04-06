@@ -57,6 +57,7 @@ class RenderController implements RenderControllerInterface {
         tex_right: 0,
         tex_top: 0,
         shadows: true,
+        shadow_blur: true,
         bloom: true,
         reflections: true,
         transparency: true,
@@ -98,6 +99,7 @@ class RenderController implements RenderControllerInterface {
             tex_right: right,
             tex_top: top,
             shadows: sceneRenderOptions.enable_shadow,
+            shadow_blur: sceneRenderOptions.enable_shadow_blur,
             bloom: sceneRenderOptions.enable_bloom,
             reflections: sceneRenderOptions.enable_reflections,
             transparency: sceneRenderOptions.enable_transparency,
@@ -255,9 +257,20 @@ export interface FrameInfo {
     tex_top: number;
     tex_bottom: number;
     shadows: boolean;
+    shadow_blur: boolean;
     bloom: boolean;
     reflections: boolean;
     transparency: boolean;
+}
+
+export function bufferEnableIVec4ShadShBlurReflTran(GL: WebGL2RenderingContext, ivec4_uniform_location: WebGLUniformLocation, frame_info: FrameInfo) {
+    GL.uniform4i(
+        ivec4_uniform_location,
+        frame_info.shadows ? 1 : 0,
+        frame_info.shadow_blur ? 1 : 0,
+        frame_info.reflections ? 1 : 0,
+        frame_info.transparency ? 1 : 0
+    );
 }
 
 export interface RenderQueueMeshEntry {

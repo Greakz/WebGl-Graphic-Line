@@ -1,14 +1,6 @@
 import {MainController} from "../../../MainController";
-import {checkFramebuffer} from "../../../../Util/FramebufferCheck";
-import {FrameInfo, RenderQueueMaterialEntry, RenderQueueMeshEntry} from "../../RenderController";
-import {DrawMesh} from "../../../../Render/DrawMesh";
+import {bufferEnableIVec4ShadShBlurReflTran, FrameInfo} from "../../RenderController";
 import {DayLight} from "../../../../Render/Resource/Light/DayLight";
-import {flatMat4} from "../../../../Geometry/Matrix/flatten";
-import {getOrthographicMatrix} from "../../../../Geometry/Matrix/orthographic";
-import {lookAtMatrix} from "../../../../Geometry/Matrix/lookAt";
-import {Camera} from "../../../../Render/Camera/Camera";
-import {addVec3} from "../../../../Geometry/Vector/add";
-import {scaleVec3} from "../../../../Geometry/Vector/scale";
 import {GeometryPass} from "../GeometryPass/GeometryPass";
 import {GeometryPassShadowExtension} from "../GeometryPass/GeometryPassShadowExtension";
 import {SkyboxPass} from "../SkyboxPass";
@@ -49,7 +41,12 @@ export abstract class LightningPassDeferredAndBulbs {
     static frameSetup(frame_info: FrameInfo, newRenderOptions: RenderOptions): void {
         const GL: WebGL2RenderingContext = MainController.CanvasController.getGL();
         LightningPassDeferredAndBulbs.generateLightningData();
-
+        LightningPass.lightning_storage.bindLightCalculationFramebufferAndShader(GL);
+        bufferEnableIVec4ShadShBlurReflTran(
+            GL,
+            MainController.ShaderController.getDeferredLightningShader().uniform_locations.enable_shad_shadblur_refl_trans,
+            frame_info
+        );
     }
 
     static runPass() {

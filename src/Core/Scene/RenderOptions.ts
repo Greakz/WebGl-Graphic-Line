@@ -1,8 +1,11 @@
+import {FrameInfo} from "../Controller/PrivateController/RenderController";
+
 export interface RenderOptions {
 
     render_texture_precision: number // 512 - 2048
 
     enable_shadow: boolean
+    enable_shadow_blur: boolean
     shadow_texture_precision: number // 128 - 2048
 
     enable_bloom: boolean
@@ -17,6 +20,7 @@ export function getRenderOptionsUltra(): RenderOptions {
         render_texture_precision: 1920,
 
         enable_shadow: true,
+        enable_shadow_blur: true,
         shadow_texture_precision: 1920,
 
         enable_bloom: true,
@@ -31,6 +35,7 @@ export function getRenderOptionsHigh(): RenderOptions {
         render_texture_precision: 1600,
 
         enable_shadow: true,
+        enable_shadow_blur: false,
         shadow_texture_precision: 1024,
 
         enable_bloom: true,
@@ -45,6 +50,7 @@ export function getRenderOptionsMedium(): RenderOptions {
         render_texture_precision: 1377,
 
         enable_shadow: true,
+        enable_shadow_blur: false,
         shadow_texture_precision: 512,
 
         enable_bloom: true,
@@ -59,6 +65,7 @@ export function getRenderOptionsLow(): RenderOptions {
         render_texture_precision: 1024,
 
         enable_shadow: false,
+        enable_shadow_blur: false,
         shadow_texture_precision: 1,
 
         enable_bloom: false,

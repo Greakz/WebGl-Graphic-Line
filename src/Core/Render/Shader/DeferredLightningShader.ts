@@ -24,6 +24,8 @@ interface GeometryShaderUniformLocations {
 
     t_transparency_map: WebGLUniformLocation;
     t_albedo_blend_map: WebGLUniformLocation;
+
+    enable_shad_shadblur_refl_trans: WebGLUniformLocation;
 }
 
 export class DeferredLightningShader implements Shader {
@@ -76,6 +78,8 @@ export class DeferredLightningShader implements Shader {
 
             t_transparency_map: GL.getUniformLocation(this.program, "t_transparency_map"),
             t_albedo_blend_map: GL.getUniformLocation(this.program, "t_albedo_blend_map"),
+
+            enable_shad_shadblur_refl_trans: GL.getUniformLocation(this.program, "enable_shad_shadblur_refl_trans"),
         };
         GL.uniform1i(
             this.uniform_locations.albedo_map,
