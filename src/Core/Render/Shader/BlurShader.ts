@@ -10,6 +10,7 @@ interface BlurShaderAttributePointer {
 interface BlurShaderUniformLocations {
     source: WebGLUniformLocation;
     vertical: WebGLUniformLocation;
+    range: WebGLUniformLocation;
 }
 
 export class BlurShader implements Shader {
@@ -33,6 +34,7 @@ export class BlurShader implements Shader {
         this.uniform_locations = {
             source: GL.getUniformLocation(this.program, "source"),
             vertical: GL.getUniformLocation(this.program, "vertical"),
+            range: GL.getUniformLocation(this.program, "range"),
         };
         GL.uniform1i(
             this.uniform_locations.source,

@@ -8,7 +8,7 @@ import {RenderOptions} from "../../../../Scene/RenderOptions";
 
 export abstract class LightningPassFinalize {
 
-    static runPass() {
+    static runPass(frame_info: FrameInfo) {
         const GL: WebGL2RenderingContext = MainController.CanvasController.getGL();
 
         LightningPass.lightning_storage.bindLightFinalFramebufferAndShader(GL);
@@ -17,8 +17,15 @@ export abstract class LightningPassFinalize {
 
         GL.activeTexture(GL.TEXTURE0);
         GL.bindTexture(GL.TEXTURE_2D, LightningPass.lightning_storage.light_calculation_result);
-        GL.activeTexture(GL.TEXTURE1);
-        GL.bindTexture(GL.TEXTURE_2D, LightningPass.lightning_storage.light_blurred_result);
+
+        if(frame_info.bloom) {
+            GL.activeTexture(GL.TEXTURE1);
+            GL.bindTexture(GL.TEXTURE_2D, LightningPass.lightning_storage.light_blurred_result);
+        } else {
+            GL.activeTexture(GL.TEXTURE1);
+            GL.bindTexture(GL.TEXTURE_2D, LightningPass.lightning_storage.light_bulb_result);
+        }
+
         GL.activeTexture(GL.TEXTURE2);
         GL.bindTexture(GL.TEXTURE_2D, GeometryPass.solid_storage.position_texture);
         GL.activeTexture(GL.TEXTURE3);

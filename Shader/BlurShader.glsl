@@ -17,10 +17,10 @@ precision mediump float;
 in vec2 vTex;
 
 const float weights[5] = float[5](0.3, 0.2, 0.15, 0.2, 0.2);
-const int range = 2;
 
 uniform sampler2D source;
 uniform int vertical;
+uniform int range;
 // uniform sampler2D codiertemapblamitstencilinfos;
 
 // output

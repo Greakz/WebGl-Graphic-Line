@@ -54,7 +54,7 @@ export function getRenderOptionsMedium(): RenderOptions {
         shadow_texture_precision: 512,
 
         enable_bloom: true,
-        bloom_blur_precision: 1,
+        bloom_blur_precision: 2,
 
         enable_reflections: true,
         enable_transparency: false

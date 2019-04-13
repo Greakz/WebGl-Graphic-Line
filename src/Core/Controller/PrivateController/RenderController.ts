@@ -135,7 +135,7 @@ class RenderController implements RenderControllerInterface {
     }
 
     public lightningPass() {
-        LightningPass.runPass();
+        LightningPass.runPass(this.frame_info);
     }
 
     public outputPass() {

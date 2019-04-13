@@ -42,19 +42,23 @@ export abstract class LightningPass {
 
     static frameSetup(frame_info: FrameInfo,  newRenderOptions: RenderOptions): void {
         LightningPassDeferredAndBulbs.frameSetup(frame_info, newRenderOptions);
-        LightningPassBloomExtension.frameSetup(frame_info, newRenderOptions);
+        if(frame_info.bloom) {
+            LightningPassBloomExtension.frameSetup(frame_info, newRenderOptions);
+        }
         LightningPassFinalize.frameSetup(frame_info, newRenderOptions);
     }
 
-    static runPass(): void {
+    static runPass(frame_info: FrameInfo): void {
         // generates: LightingPassStorage.light_combine_framebuffer,
         //            LightingPassStorage.light_brightness_result
         LightningPassDeferredAndBulbs.runPass();
 
         // generates: LightingPassStorage.light_blurred_result
-        LightningPassBloomExtension.runPass();
+        if(frame_info.bloom) {
+            LightningPassBloomExtension.runPass();
+        }
 
         // generates: LightingPassStorage.light_final_result
-        LightningPassFinalize.runPass();
+        LightningPassFinalize.runPass(frame_info);
     }
 }

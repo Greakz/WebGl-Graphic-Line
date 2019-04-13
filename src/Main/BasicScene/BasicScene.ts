@@ -27,10 +27,10 @@ export class BasicScene extends BaseScene implements Scene {
     sky_box: Skybox = new DaySkybox();
     sky_box_alt: Skybox = new NightSkybox();
 
-    //render_options: RenderOptions = getRenderOptionsUltra();
-    //render_options: RenderOptions = getRenderOptionsHigh();
+    render_options: RenderOptions = getRenderOptionsUltra();
+    // render_options: RenderOptions = getRenderOptionsHigh();
     // render_options: RenderOptions = getRenderOptionsMedium();
-     render_options: RenderOptions = getRenderOptionsLow();
+    // render_options: RenderOptions = getRenderOptionsLow();
 
     private groundPlane: StaticPlaneObject = new StaticPlaneObject();
     private exampleCube: DynamicCubeObject = new DynamicCubeBlankObject();
@@ -42,8 +42,6 @@ export class BasicScene extends BaseScene implements Scene {
     private omniLight: OmniLight = new OmniLight();
 
     init() {
-
-
         this.day_light_alt.color = {x: 0.7, y: 0.8, z: 0.9};
         this.day_light_alt.amb_factor = {x: 0.3, y: 0.3, z: 0.3};
         this.day_light_alt.diffuse_factor = {x: 0.2, y: 0.2, z: 0.2};

@@ -11,6 +11,7 @@ import {addVec3} from "../../../../Geometry/Vector/add";
 import {scaleVec3} from "../../../../Geometry/Vector/scale";
 import {LightningPass} from "./LightningPass";
 import {RenderOptions} from "../../../../Scene/RenderOptions";
+import {BlurShader} from "../../../../Render/Shader/BlurShader";
 
 export abstract class LightningPassBloomExtension {
 
@@ -20,7 +21,12 @@ export abstract class LightningPassBloomExtension {
 
     static frameSetup(frame_info: FrameInfo, newRenderOptions: RenderOptions): void {
         const GL: WebGL2RenderingContext = MainController.CanvasController.getGL();
-
+        const blur_shader: BlurShader = MainController.ShaderController.getBlurShader();
+        GL.useProgram(blur_shader.program);
+        GL.uniform1i(
+            blur_shader.uniform_locations.range,
+            newRenderOptions.bloom_blur_precision
+        );
     }
 
     private static view_matrix: number[];
