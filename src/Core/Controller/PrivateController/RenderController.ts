@@ -9,8 +9,7 @@ import {LightningPass} from "./RenderPass/LightningPass/LightningPass";
 import {OutputPass} from "./RenderPass/OutputPass";
 import {SkyboxPass} from "./RenderPass/SkyboxPass";
 import {TransparencyPass} from "./RenderPass/TransparencyPass/TransparencyPass";
-import {getRenderOptionsHigh, RenderOptions} from "../../Scene/RenderOptions";
-import {GeometryPassShadowExtension} from "./RenderPass/GeometryPass/GeometryPassShadowExtension";
+import {RenderOptions} from "../../Scene/RenderOptions";
 
 
 export interface RenderControllerInterface {
@@ -40,6 +39,9 @@ export interface RenderControllerInterface {
 
 class RenderController implements RenderControllerInterface {
     private static readonly Log: LogInterface = LogInstance;
+
+    private used_render_size: number = 1024;
+    private last_render_precision_change = Date.now();
 
     constructor() {
     }
@@ -93,7 +95,28 @@ class RenderController implements RenderControllerInterface {
             top = 1.0;
             bottom = 0.0;
         }
-        const sceneRenderOptions: RenderOptions = MainController.SceneController.getSceneRenderOptions()
+        const sceneRenderOptions: RenderOptions = MainController.SceneController.getSceneRenderOptions();
+
+        const rend_size: number = sceneRenderOptions.render_texture_precision != 'auto'
+            ? sceneRenderOptions.render_texture_precision
+            : Math.max(
+                MainController.CanvasController.getWidth(),
+                MainController.CanvasController.getHeight(),
+            );
+        if(rend_size !== this.used_render_size) {
+            console.log('found ')
+            if(Date.now() - 1000 > this.last_render_precision_change) {
+                this.used_render_size = rend_size;
+                this.last_render_precision_change = Date.now();
+            }
+        }
+        let use_bloom_blur_prec: number;
+        if(sceneRenderOptions.render_texture_precision === 'auto'){
+            use_bloom_blur_prec = Math.floor(this.used_render_size / 600)
+        } else {
+            use_bloom_blur_prec = sceneRenderOptions.bloom_blur_precision
+        }
+
         this.frame_info = {
             height: MainController.CanvasController.getHeight(),
             width: MainController.CanvasController.getWidth(),
@@ -101,12 +124,12 @@ class RenderController implements RenderControllerInterface {
             tex_left: left,
             tex_right: right,
             tex_top: top,
-            rend_size: sceneRenderOptions.render_texture_precision,
+            rend_size: this.used_render_size,
             shadows: sceneRenderOptions.enable_shadow,
             shadow_blur: sceneRenderOptions.enable_shadow_blur,
             shadow_texture_precision: sceneRenderOptions.shadow_texture_precision,
             bloom: sceneRenderOptions.enable_bloom,
-            bloom_blur_precision: sceneRenderOptions.bloom_blur_precision,
+            bloom_blur_precision: use_bloom_blur_prec,
             reflections: sceneRenderOptions.enable_reflections,
             transparency: sceneRenderOptions.enable_transparency,
         };

@@ -404,7 +404,7 @@ void main(void) {
     vec3 light_result = final_daylight_color + omni_light_result + spot_light_result;
     if(fragment_reflective_intensity > 0.0 && enable_shad_shadblur_refl_trans.z == 1) {
         // add Possible Reflections to Normal Layer
-        light_result = fragment_diffuse_color * vec3(1.0 - fragment_reflective_intensity) + reflection_result;
+        light_result = fragment_diffuse_color * vec3(1.0 - fragment_reflective_intensity) + reflection_result * fragment_reflective_intensity;
     }
 
     if(enable_shad_shadblur_refl_trans.w == 1) {

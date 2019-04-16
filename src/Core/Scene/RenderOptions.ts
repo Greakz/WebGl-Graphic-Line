@@ -2,7 +2,7 @@ import {FrameInfo} from "../Controller/PrivateController/RenderController";
 
 export interface RenderOptions {
 
-    render_texture_precision: number // 512 - 2048
+    render_texture_precision: number | 'auto' // 512 - 2048
 
     enable_shadow: boolean
     enable_shadow_blur: boolean
@@ -17,7 +17,7 @@ export interface RenderOptions {
 
 export function getRenderOptionsUltra(): RenderOptions {
     return {
-        render_texture_precision: 1920,
+        render_texture_precision: 'auto',
 
         enable_shadow: true,
         enable_shadow_blur: true,
