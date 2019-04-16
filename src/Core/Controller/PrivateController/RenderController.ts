@@ -114,10 +114,10 @@ class RenderController implements RenderControllerInterface {
     public framebufferDebugPass() {
         MainController.ShaderController.getFramebufferDebugShader().textureDebugPass(
             [
-                GeometryPassShadowExtension.depth_texture,
-                GeometryPassShadowExtension.shadow_texture,
-                LightningPass.lightning_storage.light_calculation_result,
                 LightningPass.lightning_storage.light_final_result,
+                GeometryPass.solid_storage.material_texture,
+                GeometryPass.solid_storage.specular_texture,
+                GeometryPass.solid_storage.albedo_texture,
             ]
         );
     }

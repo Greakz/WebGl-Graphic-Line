@@ -236,7 +236,11 @@ void main(void) {
 
     // VIEWDIR + REFLECTIONS SOLID
     vec3 view_to_frag_n = normalize(camera_position - world_space_position.xyz);
-    vec3 reflection_result = calculateReflection(view_to_frag_n, world_space_normal, fragment_reflective_intensity);
+
+    vec3 reflection_result = vec3(0.0);
+    if(enable_shad_shadblur_refl_trans.z == 1) {
+        reflection_result = calculateReflection(view_to_frag_n, world_space_normal, fragment_reflective_intensity);
+    }
 
     // DAYLIGHT (DIRECTIONAL) FROM SOLID OBJECTS
     vec3 daylight1_color = vec3(0.0);
@@ -398,16 +402,21 @@ void main(void) {
     }
 
     vec3 light_result = final_daylight_color + omni_light_result + spot_light_result;
-    if(fragment_reflective_intensity > 0.0) {
+    if(fragment_reflective_intensity > 0.0 && enable_shad_shadblur_refl_trans.z == 1) {
+        // add Possible Reflections to Normal Layer
         light_result = fragment_diffuse_color * vec3(1.0 - fragment_reflective_intensity) + reflection_result;
     }
 
-    vec3 final_fragment = vec3(0.0);
-    if(fragment_diffuse_color.x > 0.0 || fragment_diffuse_color.y > 0.0 || fragment_diffuse_color.z > 0.0) {
-        final_fragment = (vec3(t_transparency) * t_result) + (vec3(1.0 - t_transparency) * light_result);
+    if(enable_shad_shadblur_refl_trans.w == 1) {
+        if((fragment_diffuse_color.x > 0.0 || fragment_diffuse_color.y > 0.0 || fragment_diffuse_color.z > 0.0)) {
+            // combine Transparent and Normal Layer
+            outColor =  vec4((vec3(t_transparency) * t_result) + (vec3(1.0 - t_transparency) * light_result), 1.0);
+        } else {
+            // Normal Layer has nothing and shows Background | show Transparent Layer
+            outColor =  vec4(texture(t_albedo_blend_map, vTex).rgb, 1.0);
+        }
     } else {
-        final_fragment = texture(t_albedo_blend_map, vTex).rgb;
+        // No Transparency at this texel | show Normal Layer
+        outColor =  vec4(light_result, 1.0);
     }
-
-    outColor = vec4(final_fragment, 1.0);
 }

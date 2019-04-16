@@ -27,10 +27,10 @@ export class BasicScene extends BaseScene implements Scene {
     sky_box: Skybox = new DaySkybox();
     sky_box_alt: Skybox = new NightSkybox();
 
-    render_options: RenderOptions = getRenderOptionsUltra();
+    // render_options: RenderOptions = getRenderOptionsUltra();
     // render_options: RenderOptions = getRenderOptionsHigh();
     // render_options: RenderOptions = getRenderOptionsMedium();
-    // render_options: RenderOptions = getRenderOptionsLow();
+    render_options: RenderOptions = getRenderOptionsLow();
 
     private groundPlane: StaticPlaneObject = new StaticPlaneObject();
     private exampleCube: DynamicCubeObject = new DynamicCubeBlankObject();

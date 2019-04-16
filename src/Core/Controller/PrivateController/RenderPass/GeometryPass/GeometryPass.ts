@@ -55,7 +55,7 @@ export abstract class GeometryPass {
 
                         const material_to_use = render_queue_entry.draw_meshes[0].related_material;
 
-                        if (material_to_use.opacity < 1) {
+                        if (material_to_use.opacity < 1 && frame_info.transparency) {
                             // transparency pass!
                             material_to_use.use(GL, MainController.ShaderController.getGeometryShader());
                             const transparancyWithDataTask = GeometryPass.geometryPassPrepareUniformMeshData(render_queue_entry.draw_meshes);
