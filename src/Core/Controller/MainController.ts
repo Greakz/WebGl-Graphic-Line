@@ -93,15 +93,14 @@ export class MainController {
             RENDER SCENE
          */
         MainController.RenderController.initRenderPassRun();
-        // MainController.RenderController.shadowPass();
+
         MainController.RenderController.geometryPass();
         MainController.RenderController.lightningPass();
-        MainController.RenderController.framebufferDebugPass();
-        // MainController.RenderController.cubemapDebugPass();
-        // MainController.RenderController.outputPass();
-        // MainController.RenderController.postProcessPass();
+        MainController.RenderController.outputPass();
 
-        // MainController.Log.info("MainController", "Finishing Frame")
+        // MainController.RenderController.cubemapDebugPass();
+        // MainController.RenderController.framebufferDebugPass();
+
 
     }
 
