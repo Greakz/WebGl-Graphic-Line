@@ -30,6 +30,8 @@ export abstract class SkyboxPass {
     static screen_gen_framebuffer: WebGLFramebuffer;
     static screen_gen_result: WebGLTexture;
 
+    static used_size: number = 1024
+
     /**
      * SINGE SETUP AT THE APPLICATION START
      */
@@ -37,24 +39,8 @@ export abstract class SkyboxPass {
         const GL: WebGL2RenderingContext = MainController.CanvasController.getGL();
         //const camera: Camera = MainController.SceneController.getSceneCamera();
 
-
-        const SIZEX = 1920;
-        const SIZEY = 1920;
-        const INTERN_FORMAT = GL.RGBA32F;
-        const FILTER = GL.NEAREST;
-        const LEVEL = 1;
-
         const farplane = 100;
         this.model_mat = new Float32Array(flatMat4(getScalingMatrix(farplane,farplane,farplane)));
-
-        ////////////////////////////////
-        // SKYBOX GENERATION
-        ////////////////////////////////
-        SkyboxPass.cubemap_gen_framebuffer = GL.createFramebuffer();
-        GL.bindFramebuffer(GL.FRAMEBUFFER, SkyboxPass.cubemap_gen_framebuffer);
-
-
-
         SkyboxPass.projection_matrix = new Float32Array(flatMat4(getPerspectiveMatrix(radians(90), 1, 5.0, farplane)));
         SkyboxPass.cubemap_matrices = [
             new Float32Array(flatMat4(lookAtMatrix({x: 0, y: 0, z: 0}, {x: -1.0, y: 0.0, z: 0.0}, {x: 0.0, y: 1.0, z: 0.0}))),
@@ -65,79 +51,10 @@ export abstract class SkyboxPass {
             new Float32Array(flatMat4(lookAtMatrix({x: 0, y: 0, z: 0}, {x: 0.0, y: 0.0, z: 1.0}, {x: 0.0, y: 1.0, z: 0.0}))),
         ];
         GL.enable(GL.DEPTH_TEST);
-        SkyboxPass.cubemap_gen_result = GL.createTexture();
-        GL.bindTexture(GL.TEXTURE_CUBE_MAP,  SkyboxPass.cubemap_gen_result);
-
-        const cube_map_size: number = 1024;
-
-        // GL.pixelStorei(GL.UNPACK_ALIGNMENT, 1);
-        GL.texImage2D(GL.TEXTURE_CUBE_MAP_POSITIVE_X, 0, GL.RGB, cube_map_size, cube_map_size, 0, GL.RGB, GL.UNSIGNED_BYTE, null);
-        GL.framebufferTexture2D(GL.FRAMEBUFFER, GL.COLOR_ATTACHMENT0, GL.TEXTURE_CUBE_MAP_POSITIVE_X, SkyboxPass.cubemap_gen_result, 0);
-
-        GL.texImage2D(GL.TEXTURE_CUBE_MAP_NEGATIVE_X, 0, GL.RGB, cube_map_size, cube_map_size, 0, GL.RGB, GL.UNSIGNED_BYTE, null);
-        GL.framebufferTexture2D(GL.FRAMEBUFFER, GL.COLOR_ATTACHMENT1, GL.TEXTURE_CUBE_MAP_NEGATIVE_X, SkyboxPass.cubemap_gen_result, 0);
-
-        GL.texImage2D(GL.TEXTURE_CUBE_MAP_POSITIVE_Y, 0, GL.RGB, cube_map_size, cube_map_size, 0, GL.RGB, GL.UNSIGNED_BYTE, null);
-        GL.framebufferTexture2D(GL.FRAMEBUFFER, GL.COLOR_ATTACHMENT2, GL.TEXTURE_CUBE_MAP_POSITIVE_Y, SkyboxPass.cubemap_gen_result, 0);
-
-        GL.texImage2D(GL.TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, GL.RGB, cube_map_size, cube_map_size, 0, GL.RGB, GL.UNSIGNED_BYTE, null);
-        GL.framebufferTexture2D(GL.FRAMEBUFFER, GL.COLOR_ATTACHMENT3, GL.TEXTURE_CUBE_MAP_NEGATIVE_Y, SkyboxPass.cubemap_gen_result, 0);
-
-        GL.texImage2D(GL.TEXTURE_CUBE_MAP_POSITIVE_Z, 0, GL.RGB, cube_map_size, cube_map_size, 0, GL.RGB, GL.UNSIGNED_BYTE, null);
-        GL.framebufferTexture2D(GL.FRAMEBUFFER, GL.COLOR_ATTACHMENT4, GL.TEXTURE_CUBE_MAP_POSITIVE_Z, SkyboxPass.cubemap_gen_result, 0);
-
-        GL.texImage2D(GL.TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, GL.RGB, cube_map_size, cube_map_size, 0, GL.RGB, GL.UNSIGNED_BYTE, null);
-        GL.framebufferTexture2D(GL.FRAMEBUFFER, GL.COLOR_ATTACHMENT5, GL.TEXTURE_CUBE_MAP_NEGATIVE_Z, SkyboxPass.cubemap_gen_result, 0);
-
-
-        GL.texParameteri(GL.TEXTURE_CUBE_MAP, GL.TEXTURE_MIN_FILTER, GL.NEAREST);
-        GL.texParameteri(GL.TEXTURE_CUBE_MAP, GL.TEXTURE_MAG_FILTER, GL.NEAREST);
-        GL.texParameteri(GL.TEXTURE_CUBE_MAP, GL.TEXTURE_WRAP_R, GL.CLAMP_TO_EDGE);
-        GL.texParameteri(GL.TEXTURE_CUBE_MAP, GL.TEXTURE_WRAP_S, GL.CLAMP_TO_EDGE);
-        GL.texParameteri(GL.TEXTURE_CUBE_MAP, GL.TEXTURE_WRAP_T, GL.CLAMP_TO_EDGE);
-
-        GL.drawBuffers([
-            GL.COLOR_ATTACHMENT0,
-            GL.COLOR_ATTACHMENT1,
-            GL.COLOR_ATTACHMENT2,
-            GL.COLOR_ATTACHMENT3,
-            GL.COLOR_ATTACHMENT4,
-            GL.COLOR_ATTACHMENT5,
-        ]);
-        GL.bindTexture(GL.TEXTURE_CUBE_MAP,  null);
-
-        checkFramebuffer(GL, SkyboxPass.cubemap_gen_framebuffer);
-
         ////////////////////////////////
-        // SCREEN GENERATION
+        // SKYBOX GENERATION
         ////////////////////////////////
-        SkyboxPass.screen_gen_framebuffer = GL.createFramebuffer();
-        GL.bindFramebuffer(GL.FRAMEBUFFER, SkyboxPass.screen_gen_framebuffer);
-        GL.activeTexture(GL.TEXTURE0);
-
-        SkyboxPass.screen_gen_result = GL.createTexture();
-        GL.bindTexture(GL.TEXTURE_2D, SkyboxPass.screen_gen_result);
-        GL.pixelStorei(GL.UNPACK_FLIP_Y_WEBGL, 0);
-        GL.texStorage2D(
-            GL.TEXTURE_2D,
-            LEVEL,
-            INTERN_FORMAT,
-            SIZEX,
-            SIZEY
-        );
-        GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MIN_FILTER, FILTER);
-        GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MAG_FILTER, FILTER);
-        GL.framebufferTexture2D(GL.FRAMEBUFFER, GL.COLOR_ATTACHMENT0, GL.TEXTURE_2D, SkyboxPass.screen_gen_result, 0);
-
-        GL.drawBuffers([GL.COLOR_ATTACHMENT0]);
-
-        checkFramebuffer(GL, SkyboxPass.screen_gen_framebuffer);
-
-        ////////////////////////////////
-        // CLEAR BINDINGS AFTER INITIALISATION
-        ////////////////////////////////
-        GL.bindFramebuffer(GL.FRAMEBUFFER, null);
-        GL.bindTexture(GL.TEXTURE_2D, null);
+        SkyboxPass.recreateStorage(GL, SkyboxPass.used_size);
 
         SkyboxPass.appSetupPrepareVao(GL);
     }
@@ -146,8 +63,14 @@ export abstract class SkyboxPass {
      * SETUP before each Frame
      * @param frame_info
      */
-    static frameSetup(frame_info: FrameInfo, newRenderOptions: RenderOptions): void {
-        // const GL: WebGL2RenderingContext = MainController.CanvasController.getGL();
+    static frameSetup(frame_info: FrameInfo): void {
+        if(frame_info.rend_size != this.used_size) {
+            this.recreateStorage(
+                MainController.CanvasController.getGL(),
+                frame_info.rend_size
+            );
+            SkyboxPass.used_size = frame_info.rend_size;
+        }
     }
 
     /**
@@ -159,7 +82,7 @@ export abstract class SkyboxPass {
         MainController.ShaderController.useCustomSkyBoxShader();
         const cstmShader: CustomSkyBoxShader = MainController.ShaderController.getCustomSkyBoxShader();
         GL.bindFramebuffer(GL.FRAMEBUFFER, SkyboxPass.cubemap_gen_framebuffer);
-        GL.viewport(0, 0, 1024, 1024);
+        GL.viewport(0, 0, SkyboxPass.used_size, SkyboxPass.used_size);
         GL.clearColor(0.0, 0.0, 0.0, 1.0);
         GL.disable(GL.CULL_FACE);
 
@@ -218,7 +141,7 @@ export abstract class SkyboxPass {
         const model_mat = new Float32Array(flatMat4(getScalingMatrix(farplane,farplane,farplane)));
         GL.bindFramebuffer(GL.FRAMEBUFFER, this.screen_gen_framebuffer);
         MainController.ShaderController.useSkyBoxShader();
-        GL.viewport(0, 0, 1920, 1920);
+        GL.viewport(0, 0, SkyboxPass.used_size, SkyboxPass.used_size);
         GL.clearColor(0.0, 0.0, 0.0, 1.0);
         GL.clear(GL.COLOR_BUFFER_BIT);
         GL.disable(GL.CULL_FACE);
@@ -299,5 +222,89 @@ export abstract class SkyboxPass {
         GL.enableVertexAttribArray(0);
         GL.bindBuffer(GL.ARRAY_BUFFER, null);
         GL.bindVertexArray(null);
+    }
+
+    private static recreateStorage(GL: WebGL2RenderingContext, SIZE: number) {
+        const INTERN_FORMAT = GL.RGBA32F;
+        const FILTER = GL.NEAREST;
+        const LEVEL = 1;
+        SkyboxPass.cubemap_gen_framebuffer = GL.createFramebuffer();
+        GL.bindFramebuffer(GL.FRAMEBUFFER, SkyboxPass.cubemap_gen_framebuffer);
+
+
+        SkyboxPass.cubemap_gen_result = GL.createTexture();
+        GL.bindTexture(GL.TEXTURE_CUBE_MAP,  SkyboxPass.cubemap_gen_result);
+
+        const cube_map_size: number = 1024;
+
+        // GL.pixelStorei(GL.UNPACK_ALIGNMENT, 1);
+        GL.texImage2D(GL.TEXTURE_CUBE_MAP_POSITIVE_X, 0, GL.RGB, cube_map_size, cube_map_size, 0, GL.RGB, GL.UNSIGNED_BYTE, null);
+        GL.framebufferTexture2D(GL.FRAMEBUFFER, GL.COLOR_ATTACHMENT0, GL.TEXTURE_CUBE_MAP_POSITIVE_X, SkyboxPass.cubemap_gen_result, 0);
+
+        GL.texImage2D(GL.TEXTURE_CUBE_MAP_NEGATIVE_X, 0, GL.RGB, cube_map_size, cube_map_size, 0, GL.RGB, GL.UNSIGNED_BYTE, null);
+        GL.framebufferTexture2D(GL.FRAMEBUFFER, GL.COLOR_ATTACHMENT1, GL.TEXTURE_CUBE_MAP_NEGATIVE_X, SkyboxPass.cubemap_gen_result, 0);
+
+        GL.texImage2D(GL.TEXTURE_CUBE_MAP_POSITIVE_Y, 0, GL.RGB, cube_map_size, cube_map_size, 0, GL.RGB, GL.UNSIGNED_BYTE, null);
+        GL.framebufferTexture2D(GL.FRAMEBUFFER, GL.COLOR_ATTACHMENT2, GL.TEXTURE_CUBE_MAP_POSITIVE_Y, SkyboxPass.cubemap_gen_result, 0);
+
+        GL.texImage2D(GL.TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, GL.RGB, cube_map_size, cube_map_size, 0, GL.RGB, GL.UNSIGNED_BYTE, null);
+        GL.framebufferTexture2D(GL.FRAMEBUFFER, GL.COLOR_ATTACHMENT3, GL.TEXTURE_CUBE_MAP_NEGATIVE_Y, SkyboxPass.cubemap_gen_result, 0);
+
+        GL.texImage2D(GL.TEXTURE_CUBE_MAP_POSITIVE_Z, 0, GL.RGB, cube_map_size, cube_map_size, 0, GL.RGB, GL.UNSIGNED_BYTE, null);
+        GL.framebufferTexture2D(GL.FRAMEBUFFER, GL.COLOR_ATTACHMENT4, GL.TEXTURE_CUBE_MAP_POSITIVE_Z, SkyboxPass.cubemap_gen_result, 0);
+
+        GL.texImage2D(GL.TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, GL.RGB, cube_map_size, cube_map_size, 0, GL.RGB, GL.UNSIGNED_BYTE, null);
+        GL.framebufferTexture2D(GL.FRAMEBUFFER, GL.COLOR_ATTACHMENT5, GL.TEXTURE_CUBE_MAP_NEGATIVE_Z, SkyboxPass.cubemap_gen_result, 0);
+
+
+        GL.texParameteri(GL.TEXTURE_CUBE_MAP, GL.TEXTURE_MIN_FILTER, GL.NEAREST);
+        GL.texParameteri(GL.TEXTURE_CUBE_MAP, GL.TEXTURE_MAG_FILTER, GL.NEAREST);
+        GL.texParameteri(GL.TEXTURE_CUBE_MAP, GL.TEXTURE_WRAP_R, GL.CLAMP_TO_EDGE);
+        GL.texParameteri(GL.TEXTURE_CUBE_MAP, GL.TEXTURE_WRAP_S, GL.CLAMP_TO_EDGE);
+        GL.texParameteri(GL.TEXTURE_CUBE_MAP, GL.TEXTURE_WRAP_T, GL.CLAMP_TO_EDGE);
+
+        GL.drawBuffers([
+            GL.COLOR_ATTACHMENT0,
+            GL.COLOR_ATTACHMENT1,
+            GL.COLOR_ATTACHMENT2,
+            GL.COLOR_ATTACHMENT3,
+            GL.COLOR_ATTACHMENT4,
+            GL.COLOR_ATTACHMENT5,
+        ]);
+        GL.bindTexture(GL.TEXTURE_CUBE_MAP,  null);
+
+        checkFramebuffer(GL, SkyboxPass.cubemap_gen_framebuffer);
+
+        ////////////////////////////////
+        // SCREEN GENERATION
+        ////////////////////////////////
+        SkyboxPass.screen_gen_framebuffer = GL.createFramebuffer();
+        GL.bindFramebuffer(GL.FRAMEBUFFER, SkyboxPass.screen_gen_framebuffer);
+        GL.activeTexture(GL.TEXTURE0);
+
+        SkyboxPass.screen_gen_result = GL.createTexture();
+        GL.bindTexture(GL.TEXTURE_2D, SkyboxPass.screen_gen_result);
+        GL.pixelStorei(GL.UNPACK_FLIP_Y_WEBGL, 0);
+        GL.texStorage2D(
+            GL.TEXTURE_2D,
+            LEVEL,
+            INTERN_FORMAT,
+            SIZE,
+            SIZE
+        );
+        GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MIN_FILTER, FILTER);
+        GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MAG_FILTER, FILTER);
+        GL.framebufferTexture2D(GL.FRAMEBUFFER, GL.COLOR_ATTACHMENT0, GL.TEXTURE_2D, SkyboxPass.screen_gen_result, 0);
+
+        GL.drawBuffers([GL.COLOR_ATTACHMENT0]);
+
+        checkFramebuffer(GL, SkyboxPass.screen_gen_framebuffer);
+
+        ////////////////////////////////
+        // CLEAR BINDINGS AFTER INITIALISATION
+        ////////////////////////////////
+        GL.bindFramebuffer(GL.FRAMEBUFFER, null);
+        GL.bindTexture(GL.TEXTURE_2D, null);
+
     }
 }

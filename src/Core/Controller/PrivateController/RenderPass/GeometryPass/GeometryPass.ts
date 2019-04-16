@@ -20,13 +20,14 @@ export abstract class GeometryPass {
         GeometryPassShadowExtension.appSetup();
     }
 
-    static frameSetup(frame_info: FrameInfo, newRenderOptions: RenderOptions): void {
+    static frameSetup(frame_info: FrameInfo): void {
         // const GL: WebGL2RenderingContext = MainController.CanvasController.getGL();
 
         // clear the task list for this frame
         GeometryPass.solid_storage.clearTransparancyTaskList();
+        GeometryPass.solid_storage.setupFrame(frame_info);
 
-        GeometryPassShadowExtension.frameSetup(frame_info, newRenderOptions);
+        GeometryPassShadowExtension.frameSetup(frame_info);
     }
 
     static runPass(render_queue: RenderQueueMeshEntry[], frame_info: FrameInfo): void {
@@ -37,7 +38,7 @@ export abstract class GeometryPass {
         GL.depthFunc(GL.LEQUAL);
 
         GeometryPass.solid_storage.bindFramebufferAndShader(GL);
-        GL.viewport(0, 0, 1920, 1920);
+        GL.viewport(0, 0, frame_info.rend_size, frame_info.rend_size);
         GL.clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT);
 
         // used by both shaders!
@@ -74,7 +75,7 @@ export abstract class GeometryPass {
 
                                 // Set back to solid pass
                                 GeometryPass.solid_storage.bindFramebufferAndShader(GL);
-                                GL.viewport(0, 0, 1920, 1920);
+                                GL.viewport(0, 0, frame_info.rend_size, frame_info.rend_size);
                             }
                         }
                     }

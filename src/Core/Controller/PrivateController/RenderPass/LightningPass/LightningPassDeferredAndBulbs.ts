@@ -38,7 +38,7 @@ export abstract class LightningPassDeferredAndBulbs {
         GL.bindBuffer(GL.UNIFORM_BUFFER, null);
     }
 
-    static frameSetup(frame_info: FrameInfo, newRenderOptions: RenderOptions): void {
+    static frameSetup(frame_info: FrameInfo): void {
         const GL: WebGL2RenderingContext = MainController.CanvasController.getGL();
         LightningPassDeferredAndBulbs.generateLightningData();
         LightningPass.lightning_storage.bindLightCalculationFramebufferAndShader(GL);
@@ -49,9 +49,9 @@ export abstract class LightningPassDeferredAndBulbs {
         );
     }
 
-    static runPass() {
+    static runPass(frame_info: FrameInfo) {
         LightningPassDeferredAndBulbs.bindSceneLightUniformBuffer();
-        LightningPassDeferredAndBulbs.deferredShadingPass();
+        LightningPassDeferredAndBulbs.deferredShadingPass(frame_info);
         LightningPassDeferredAndBulbs.lightBulbPass();
         LightningPassDeferredAndBulbs.combineBulbAndCalcResult();
     }
@@ -59,12 +59,12 @@ export abstract class LightningPassDeferredAndBulbs {
     /**
      *
      */
-    private static deferredShadingPass() {
+    private static deferredShadingPass(frame_info: FrameInfo) {
         const GL: WebGL2RenderingContext = MainController.CanvasController.getGL();
 
         LightningPass.lightning_storage.bindLightCalculationFramebufferAndShader(GL);
         GL.clearColor(0.0, 0.0, 0.0, 1.0);
-        GL.viewport(0, 0, 1920, 1920);
+        GL.viewport(0, 0, frame_info.rend_size, frame_info.rend_size);
         GL.clear(GL.COLOR_BUFFER_BIT);
 
         // Use The PlaneVao

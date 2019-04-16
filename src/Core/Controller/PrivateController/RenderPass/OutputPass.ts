@@ -48,7 +48,7 @@ export abstract class OutputPass {
         GL.vertexAttribPointer(output_shader.attribute_pointer.texture_position, 2, GL.FLOAT, false, 0, 0);
     }
 
-    static frameSetup(frame_info: FrameInfo, newRenderOptions: RenderOptions): void {
+    static frameSetup(frame_info: FrameInfo): void {
         const GL: WebGL2RenderingContext = MainController.CanvasController.getGL();
         GL.bindBuffer(GL.ARRAY_BUFFER, OutputPass.plane_texture_buffer);
         const texData = [

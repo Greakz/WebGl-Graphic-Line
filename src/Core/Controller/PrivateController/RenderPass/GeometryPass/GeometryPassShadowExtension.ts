@@ -50,12 +50,12 @@ export abstract class GeometryPassShadowExtension {
         GL.bindFramebuffer(GL.FRAMEBUFFER, null);
     }
     
-    static frameSetup(frame_info: FrameInfo, newRenderOptions: RenderOptions): void {
+    static frameSetup(frame_info: FrameInfo): void {
         const GL: WebGL2RenderingContext = MainController.CanvasController.getGL();
 
-        if(GeometryPassShadowExtension.set_up_size !== newRenderOptions.shadow_texture_precision) {
-            GeometryPassShadowExtension.setupTextures(GL, newRenderOptions.shadow_texture_precision);
-            GeometryPassShadowExtension.set_up_size = newRenderOptions.shadow_texture_precision;
+        if(GeometryPassShadowExtension.set_up_size !== frame_info.shadow_texture_precision) {
+            GeometryPassShadowExtension.setupTextures(GL, frame_info.shadow_texture_precision);
+            GeometryPassShadowExtension.set_up_size = frame_info.shadow_texture_precision;
         }
 
         GL.bindFramebuffer(GL.FRAMEBUFFER, GeometryPassShadowExtension.shadow_framebuffer);

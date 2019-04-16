@@ -20,15 +20,15 @@ export abstract class TransparencyPass {
         TransparencyPass.transparent_storage = new TransparencyPassStorage(GL, 1920);
     }
     
-    static frameSetup(frame_info: FrameInfo, newRenderOptions: RenderOptions): void {
-        // const GL: WebGL2RenderingContext = MainController.CanvasController.getGL();
+    static frameSetup(frame_info: FrameInfo): void {
+        TransparencyPass.transparent_storage.setupFrame(frame_info);
     }
     
-    static runPass(): void {
+    static runPass(frame_info: FrameInfo): void {
         const GL: WebGL2RenderingContext = MainController.CanvasController.getGL();
 
         GL.clearColor(0.0, 0.0, 0.0, 1.0);
-        GL.viewport(0, 0, 1920, 1920);
+        GL.viewport(0, 0, frame_info.rend_size, frame_info.rend_size);
         GL.enable(GL.BLEND);
         GL.blendFunc(GL.SRC_ALPHA, GL.ONE_MINUS_SRC_ALPHA);
 

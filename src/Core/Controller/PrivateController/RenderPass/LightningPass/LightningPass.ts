@@ -31,7 +31,7 @@ export abstract class LightningPass {
     static appSetup(): void {
         const GL: WebGL2RenderingContext = MainController.CanvasController.getGL();
 
-        LightningPass.lightning_storage = new LightningPassStorage(GL, 1920);
+        LightningPass.lightning_storage = new LightningPassStorage(GL, 1024);
         LightningPass.pre_clip_screen_plane_vao = new PreClipScreenPlaneVao(GL);
         LightningPass.light_bulb_mesh_vao = new LightBulbMeshVao(GL);
 
@@ -40,18 +40,19 @@ export abstract class LightningPass {
         LightningPassFinalize.appSetup();
     }
 
-    static frameSetup(frame_info: FrameInfo,  newRenderOptions: RenderOptions): void {
-        LightningPassDeferredAndBulbs.frameSetup(frame_info, newRenderOptions);
+    static frameSetup(frame_info: FrameInfo): void {
+        LightningPassDeferredAndBulbs.frameSetup(frame_info);
+        LightningPass.lightning_storage.setupFrame(frame_info);
         if(frame_info.bloom) {
-            LightningPassBloomExtension.frameSetup(frame_info, newRenderOptions);
+            LightningPassBloomExtension.frameSetup(frame_info);
         }
-        LightningPassFinalize.frameSetup(frame_info, newRenderOptions);
+        LightningPassFinalize.frameSetup(frame_info);
     }
 
     static runPass(frame_info: FrameInfo): void {
         // generates: LightingPassStorage.light_combine_framebuffer,
         //            LightingPassStorage.light_brightness_result
-        LightningPassDeferredAndBulbs.runPass();
+        LightningPassDeferredAndBulbs.runPass(frame_info);
 
         // generates: LightingPassStorage.light_blurred_result
         if(frame_info.bloom) {

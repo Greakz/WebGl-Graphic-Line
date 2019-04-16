@@ -19,13 +19,13 @@ export abstract class LightningPassBloomExtension {
         const GL: WebGL2RenderingContext = MainController.CanvasController.getGL();
     }
 
-    static frameSetup(frame_info: FrameInfo, newRenderOptions: RenderOptions): void {
+    static frameSetup(frame_info: FrameInfo): void {
         const GL: WebGL2RenderingContext = MainController.CanvasController.getGL();
         const blur_shader: BlurShader = MainController.ShaderController.getBlurShader();
         GL.useProgram(blur_shader.program);
         GL.uniform1i(
             blur_shader.uniform_locations.range,
-            newRenderOptions.bloom_blur_precision
+            frame_info.bloom_blur_precision
         );
     }
 

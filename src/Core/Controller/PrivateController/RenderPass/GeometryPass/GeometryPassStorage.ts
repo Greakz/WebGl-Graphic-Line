@@ -1,7 +1,8 @@
 // idee: sammeln alles was der ausspuckt, weil dann für solid shit und für transparenz und son müll
 import {checkFramebuffer} from "../../../../Util/FramebufferCheck";
 import {MainController} from "../../../MainController";
-import {DrawMesh, DrawMeshesWithBufferedData} from "../../../../Render/DrawMesh";
+import {DrawMeshesWithBufferedData} from "../../../../Render/DrawMesh";
+import {FrameInfo} from "../../RenderController";
 
 
 export class GeometryPassStorage {
@@ -19,6 +20,8 @@ export class GeometryPassStorage {
 
     collected_transparency_tasks: DrawMeshesWithBufferedData[];
 
+    used_size: number;
+
     clearTransparancyTaskList(): void {
         this.collected_transparency_tasks = [];
     }
@@ -27,12 +30,14 @@ export class GeometryPassStorage {
         this.collected_transparency_tasks.push(draw_mesh);
     }
 
-    getTransparancyTaskList(): DrawMeshesWithBufferedData[] {
-        return this.collected_transparency_tasks;
-    }
-
-    setupFrame() {
-
+    setupFrame(frame_info: FrameInfo) {
+        if(frame_info.rend_size != this.used_size) {
+            this.recreateStorage(
+                MainController.CanvasController.getGL(),
+                frame_info.rend_size
+            );
+            this.used_size = frame_info.rend_size;
+        }
     }
 
     bindFramebufferAndShader(GL: WebGL2RenderingContext) {
@@ -44,6 +49,11 @@ export class GeometryPassStorage {
     }
 
     constructor(GL: WebGL2RenderingContext, SIZE: number) {
+        this.used_size = SIZE;
+        this.recreateStorage(GL, SIZE);
+    }
+
+    private recreateStorage(GL: WebGL2RenderingContext, SIZE: number) {
 
         const INTERN_FORMAT: GLint = GL.RGBA32F;
         const FILTER = GL.NEAREST;
@@ -95,7 +105,6 @@ export class GeometryPassStorage {
         // reset used bindings
         GL.bindTexture(GL.TEXTURE_2D, null);
         GL.bindFramebuffer(GL.FRAMEBUFFER, null);
-
     }
 
     private createTexture(GL: WebGL2RenderingContext, internal_format: GLint, filter: GLint, size: number) {

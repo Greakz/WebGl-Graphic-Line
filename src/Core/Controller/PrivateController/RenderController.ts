@@ -56,9 +56,12 @@ class RenderController implements RenderControllerInterface {
         tex_left: 0,
         tex_right: 0,
         tex_top: 0,
+        rend_size: 1024,
         shadows: true,
         shadow_blur: true,
+        shadow_texture_precision: 1,
         bloom: true,
+        bloom_blur_precision: 1,
         reflections: true,
         transparency: true,
     };
@@ -98,17 +101,20 @@ class RenderController implements RenderControllerInterface {
             tex_left: left,
             tex_right: right,
             tex_top: top,
+            rend_size: sceneRenderOptions.render_texture_precision,
             shadows: sceneRenderOptions.enable_shadow,
             shadow_blur: sceneRenderOptions.enable_shadow_blur,
+            shadow_texture_precision: sceneRenderOptions.shadow_texture_precision,
             bloom: sceneRenderOptions.enable_bloom,
+            bloom_blur_precision: sceneRenderOptions.bloom_blur_precision,
             reflections: sceneRenderOptions.enable_reflections,
             transparency: sceneRenderOptions.enable_transparency,
         };
-        GeometryPass.frameSetup(this.frame_info, sceneRenderOptions);
-        TransparencyPass.frameSetup(this.frame_info, sceneRenderOptions);
-        SkyboxPass.frameSetup(this.frame_info, sceneRenderOptions);
-        LightningPass.frameSetup(this.frame_info, sceneRenderOptions);
-        OutputPass.frameSetup(this.frame_info, sceneRenderOptions);
+        GeometryPass.frameSetup(this.frame_info);
+        TransparencyPass.frameSetup(this.frame_info);
+        SkyboxPass.frameSetup(this.frame_info);
+        LightningPass.frameSetup(this.frame_info);
+        OutputPass.frameSetup(this.frame_info);
     }
 
     public framebufferDebugPass() {
@@ -131,7 +137,7 @@ class RenderController implements RenderControllerInterface {
         SkyboxPass.runGenerateCubemapSkyboxPass();
         GeometryPass.runPass(this.render_queue, this.frame_info);
         SkyboxPass.runGenerateOutputSkyboxPass();
-        TransparencyPass.runPass();
+        TransparencyPass.runPass(this.frame_info);
     }
 
     public lightningPass() {
@@ -256,9 +262,12 @@ export interface FrameInfo {
     tex_right: number;
     tex_top: number;
     tex_bottom: number;
+    rend_size: number;
     shadows: boolean;
     shadow_blur: boolean;
+    shadow_texture_precision: number;
     bloom: boolean;
+    bloom_blur_precision: number;
     reflections: boolean;
     transparency: boolean;
 }
