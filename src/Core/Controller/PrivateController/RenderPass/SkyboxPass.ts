@@ -82,7 +82,7 @@ export abstract class SkyboxPass {
         MainController.ShaderController.useCustomSkyBoxShader();
         const cstmShader: CustomSkyBoxShader = MainController.ShaderController.getCustomSkyBoxShader();
         GL.bindFramebuffer(GL.FRAMEBUFFER, SkyboxPass.cubemap_gen_framebuffer);
-        GL.viewport(0, 0, SkyboxPass.used_size, SkyboxPass.used_size);
+        GL.viewport(0, 0, 1024, 1024);
         GL.clearColor(0.0, 0.0, 0.0, 1.0);
         GL.disable(GL.CULL_FACE);
 
